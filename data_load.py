@@ -20,7 +20,7 @@ class LiverDataSet(torch.utils.data.Dataset):
 
         self.data_files.sort(key = lambda x: (get_type(x), get_patient(x), get_item(x)))
         half_dataset_len = int(len(self.data_files)/2)
-        self.data_files = zip(self.data_files[half_dataset_len:], self.data_files[:half_dataset_len])
+        self.data_files = list(zip(self.data_files[half_dataset_len:], self.data_files[:half_dataset_len]))
     
     def __getitem__(self, idx):
 

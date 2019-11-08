@@ -5,6 +5,8 @@ import numpy as np
 from subprocess import call
 from loss import dice as dice_loss
 from data_load import LiverDataSet
+import platform
+import time
 
 import torch
 import torch.nn as nn
@@ -13,6 +15,8 @@ from torch.autograd import Variable
 
 
 ### variables ###
+isWindows = 'Windows' in platform.system()
+num_workers = 0 if isWindows else 2
 
 model_name = '25D'
 
@@ -46,6 +50,7 @@ print(str(epochs) + " epochs - lr: " + str(lr) + " - batch size: " + str(batch_s
 
 # GPU enabled
 cuda = torch.cuda.is_available()
+print('CUDA is available = ', cuda)
 
 # cross-entropy loss: weighting of negative vs positive pixels and NLL loss layer
 # Tumor
@@ -53,27 +58,37 @@ cuda = torch.cuda.is_available()
 # Liver
 loss_weight = torch.FloatTensor([0.10, 0.90])
 if cuda: loss_weight = loss_weight.cuda()
-criterion = nn.NLLLoss2d(weight=loss_weight)
+# criterion = nn.NLLLoss2d(weight=loss_weight)
+criterion = nn.NLLLoss(weight=loss_weight)
 
 # network and optimizer
+print('Building Network...')
 net = networks.VNet_Xtra(dice=dice, dropout=dropout, context=context)
 if cuda: net = torch.nn.DataParallel(net, device_ids=list(range(torch.cuda.device_count()))).cuda()
 optimizer = optim.Adam(net.parameters(), lr=lr)
+print('Network built!')
 
 # train data loader
+print('Building Training Set Loader...')
 train = LiverDataSet(directory=train_folder, augment=augment, context=context)
-train_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights=train.getWeights(), num_samples=num_samples)
-train_data = torch.utils.data.DataLoader(train, batch_size=batch_size, shuffle=True, sampler=train_sampler, num_workers=2)
+train_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights=train.getWeights(),
+                                                               num_samples=num_samples)
+train_data = torch.utils.data.DataLoader(train, batch_size=batch_size, shuffle=False,
+                                         sampler=train_sampler, num_workers=num_workers)
+print('Training Loader built!')
 
 # validation data loader (per patient)
+print('Building Validation Set Loader...')
 val = LiverDataSet(directory=val_folder, context=context)
 val_data_list = []
 patients = val.getPatients()
 for key in patients.keys():
     samples = patients[key]
     val_sampler = torch.utils.data.sampler.SubsetRandomSampler(samples)
-    val_data = torch.utils.data.DataLoader(val, batch_size=batch_size, shuffle=False, sampler=val_sampler, num_workers=2)
+    val_data = torch.utils.data.DataLoader(val, batch_size=batch_size, shuffle=False,
+                                           sampler=val_sampler, num_workers=num_workers)
     val_data_list.append(val_data)
+print('Validation Loader built!')
 
 # train loop
 
@@ -81,6 +96,7 @@ print('Start training...')
 
 for epoch in range(epochs):
 
+    epoch_start_time = time.time()
     running_loss = 0.0
 
     # lower learning rate
@@ -91,7 +107,7 @@ for epoch in range(epochs):
 
     # switch to train mode
     net.train()
-    
+
     for i, data in enumerate(train_data):
 
         # wrap data in Variables
@@ -104,7 +120,7 @@ for epoch in range(epochs):
 
         # get either dice loss or cross-entropy
         if dice:
-            outputs = outputs[:,1,:,:].unsqueeze(dim=1)
+            outputs = outputs[:, 1, :, :].unsqueeze(dim=1)
             loss = dice_loss(outputs, labels)
         else:
             labels = labels.squeeze(dim=1)
@@ -114,16 +130,21 @@ for epoch in range(epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        
+
         # save and print statistics
-        running_loss += loss.data[0]
-    
+        running_loss += loss.data
+        # running_loss += loss.data[0]
+
+    epoch_end_time = time.time()
+    epoch_elapsed_time = epoch_end_time - epoch_start_time
     # print statistics
     if dice:
-        print('  [epoch %d] - train dice loss: %.3f' % (epoch + 1, running_loss/(i+1)))
+        print('  [epoch %d] - train dice loss: %.3f - time: %.1f'
+              .format(epoch + 1, running_loss / (i + 1), epoch_elapsed_time))
     else:
-        print('  [epoch %d] - train cross-entropy loss: %.3f' % (epoch + 1, running_loss/(i+1)))
-    
+        print('  [epoch %d] - train cross-entropy loss: %.3f - time: %.1f'
+              .format(epoch + 1, running_loss / (i + 1), epoch_elapsed_time))
+
     # switch to eval mode
     net.eval()
 
@@ -131,7 +152,7 @@ for epoch in range(epochs):
     all_accuracy = []
 
     # only validate every 10 epochs
-    if (epoch+1)%10 != 0: continue
+    if (epoch + 1) % 10 != 0: continue
 
     # loop through patients
     for val_data in val_data_list:
@@ -146,10 +167,10 @@ for epoch in range(epochs):
             inputs, labels = data
             if cuda: inputs, labels = inputs.cuda(), labels.cuda()
             inputs, labels = Variable(inputs, volatile=True), Variable(labels, volatile=True)
-            
+
             # inference
             outputs = net(inputs)
-            
+
             # log softmax into softmax
             if not dice: outputs = outputs.exp()
 
@@ -161,16 +182,16 @@ for epoch in range(epochs):
             accuracy += (outputs == labels).sum() / float(outputs.size)
 
             # dice
-            intersect += (outputs+labels==2).sum()
+            intersect += (outputs + labels == 2).sum()
             union += np.sum(outputs) + np.sum(labels)
 
-        all_accuracy.append(accuracy / float(i+1))
+        all_accuracy.append(accuracy / float(i + 1))
         all_dice.append(1 - (2 * intersect + 1e-5) / (union + 1e-5))
 
     print('    val dice loss: %.9f - val accuracy: %.8f' % (np.mean(all_dice), np.mean(all_accuracy)))
-    
+
 # save weights
 
-torch.save(net, "model_"+str(model_name)+".pht")
+torch.save(net, "model_" + str(model_name) + ".pht")
 
 print('Finished training...')
