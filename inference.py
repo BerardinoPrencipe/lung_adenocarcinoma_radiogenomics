@@ -14,8 +14,10 @@ model_name = '25D'
 context = 2
 
 # directory where to store nii.gz or numpy files
-result_folder = 'results'
-test_folder = '../../data/Test Batch 1'
+# result_folder = 'results'
+result_folder = 'E:/Datasets/LiTS/results'
+# test_folder = '../../data/Test Batch 1'
+test_folder = 'F:/Datasets/LiTS/test'
 
 #################
 
@@ -97,6 +99,6 @@ for file_name in files:
 	output = nib.Nifti1Image(output, affine=input_aff)
 
 	new_file_name = "test-segmentation-" + file_name.split("-")[-1]
-	print new_file_name
+	print(new_file_name)
 	
 	nib.save(output, os.path.join(result_folder, new_file_name))
