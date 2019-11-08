@@ -34,7 +34,8 @@ lr = 1e-2
 batch_size = 10
 num_samples = 1000
 low_lr_epoch = 80
-epochs = 100
+epochs = 1000
+val_epochs = 100
 
 #################
 
@@ -43,6 +44,10 @@ epochs = 100
 train_folder = 'E:/Datasets/LiTS/train'
 # val_folder = 'data/val'
 val_folder = 'E:/Datasets/LiTS/val'
+
+logs_folder = 'logs'
+if not os.path.exists(logs_folder):
+    os.makedirs(logs_folder)
 
 print(model_name)
 print("augment="+str(augment)+" dropout="+str(dropout))
@@ -113,7 +118,7 @@ for epoch in range(epochs):
         # wrap data in Variables
         inputs, labels = data
         if cuda: inputs, labels = inputs.cuda(), labels.cuda()
-        inputs, labels = Variable(inputs), Variable(labels)
+        # inputs, labels = Variable(inputs), Variable(labels)
 
         # forward pass and loss calculation
         outputs = net(inputs)
@@ -139,10 +144,10 @@ for epoch in range(epochs):
     epoch_elapsed_time = epoch_end_time - epoch_start_time
     # print statistics
     if dice:
-        print('  [epoch %d] - train dice loss: %.3f - time: %.1f'
+        print('  [epoch {:04d}] - train dice loss: {:.4f} - time: {:.1f}'
               .format(epoch + 1, running_loss / (i + 1), epoch_elapsed_time))
     else:
-        print('  [epoch %d] - train cross-entropy loss: %.3f - time: %.1f'
+        print('  [epoch {:04d}] - train cross-entropy loss: {:.4f} - time: {:.1f}'
               .format(epoch + 1, running_loss / (i + 1), epoch_elapsed_time))
 
     # switch to eval mode
@@ -151,44 +156,51 @@ for epoch in range(epochs):
     all_dice = []
     all_accuracy = []
 
-    # only validate every 10 epochs
-    if (epoch + 1) % 10 != 0: continue
+    # only validate every 'val_epochs' epochs
+    if epoch % val_epochs != 0: continue
 
     # loop through patients
+    eval_start_time = time.time()
     for val_data in val_data_list:
 
         accuracy = 0.0
         intersect = 0.0
         union = 0.0
 
-        for i, data in enumerate(val_data):
+        with torch.no_grad():
+            for i, data in enumerate(val_data):
 
-            # wrap data in Variable
-            inputs, labels = data
-            if cuda: inputs, labels = inputs.cuda(), labels.cuda()
-            inputs, labels = Variable(inputs, volatile=True), Variable(labels, volatile=True)
+                # wrap data in Variable
+                inputs, labels = data
+                if cuda: inputs, labels = inputs.cuda(), labels.cuda()
+                # inputs, labels = Variable(inputs), Variable(labels)
 
-            # inference
-            outputs = net(inputs)
+                # inference
+                outputs = net(inputs)
 
-            # log softmax into softmax
-            if not dice: outputs = outputs.exp()
+                # log softmax into softmax
+                if not dice: outputs = outputs.exp()
 
-            # round outputs to either 0 or 1
-            outputs = outputs[:, 1, :, :].unsqueeze(dim=1).round()
+                # round outputs to either 0 or 1
+                outputs = outputs[:, 1, :, :].unsqueeze(dim=1).round()
 
-            # accuracy
-            outputs, labels = outputs.data.cpu().numpy(), labels.data.cpu().numpy()
-            accuracy += (outputs == labels).sum() / float(outputs.size)
+                # accuracy
+                outputs, labels = outputs.data.cpu().numpy(), labels.data.cpu().numpy()
+                accuracy += (outputs == labels).sum() / float(outputs.size)
 
-            # dice
-            intersect += (outputs + labels == 2).sum()
-            union += np.sum(outputs) + np.sum(labels)
+                # dice
+                intersect += (outputs + labels == 2).sum()
+                union += np.sum(outputs) + np.sum(labels)
 
         all_accuracy.append(accuracy / float(i + 1))
         all_dice.append(1 - (2 * intersect + 1e-5) / (union + 1e-5))
+    eval_end_time = time.time()
+    eval_elapsed_time = eval_end_time - eval_start_time
+    checkpoint_path = os.path.join(logs_folder, 'model_epoch_{:04d}.pht'.format(epoch))
+    print('    val dice loss: {:.4f} - val accuracy: {:.4f} - time: {:.1f}'
+          .format(np.mean(all_dice), np.mean(all_accuracy), eval_elapsed_time))
+    torch.save(net.state_dict(), checkpoint_path)
 
-    print('    val dice loss: %.9f - val accuracy: %.8f' % (np.mean(all_dice), np.mean(all_accuracy)))
 
 # save weights
 
