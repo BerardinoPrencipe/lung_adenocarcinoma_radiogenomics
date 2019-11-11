@@ -1,7 +1,7 @@
 import numpy as np
 import nibabel as nib
 import os.path
-
+from utils import normalize_data
 
 ### variables ###
 
@@ -37,8 +37,6 @@ for file_name in os.listdir(source_folder):
 
     print(file_name)
 
-    # create new file name by stripping .nii.gz and adding .npy
-    # new_file_name = file_name[:-7]
     # create new file name by stripping .nii and adding .npy
     new_file_name = file_name[:-4]
 
@@ -52,8 +50,8 @@ for file_name in os.listdir(source_folder):
     data = data.get_data()
 
     # check if it is a volume file and clip and standardize if so
-    if file_name[:3] == 'vol': 
-        data = np.clip(data, -200, 200) / 400.0 + 0.5
+    if file_name[:3] == 'vol':
+        data = normalize_data(data, dmin=-200, dmax=200)
 
     # check if it is a segmentation file and select only the tumor (2) as positive label
     if file_name[:3] == 'seg': data = (data==LIVER_CLASS).astype(np.uint8)

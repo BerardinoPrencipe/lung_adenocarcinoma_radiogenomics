@@ -3,7 +3,7 @@ import networks
 import numpy as np
 import torch
 import nibabel as nib
-from torch.autograd import Variable
+from utils import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model
 
 ### variables ###
 
@@ -13,10 +13,11 @@ model_name = '25D'
 # the number of context slices before and after as defined as in train.py before training
 context = 2
 
+LIVER_CLASS = 1
+TUMOR_CLASS = 2
+
 # directory where to store nii.gz or numpy files
-# result_folder = 'results'
 result_folder = 'E:/Datasets/LiTS/results'
-# test_folder = '../../data/Test Batch 1'
 test_folder = 'F:/Datasets/LiTS/test'
 
 #################
@@ -29,76 +30,40 @@ if not os.path.isdir(result_folder):
 files = [file for file in os.listdir(test_folder) if file[:4]=="test"]
 
 # load network
+logs_dir = 'logs'
 cuda = torch.cuda.is_available()
-net = torch.load("model_"+model_name+".pht")
-if cuda: net = torch.nn.DataParallel(net, device_ids=list(range(torch.cuda.device_count()))).cuda()
+use_multi_gpu = False
+net = torch.load(os.path.join(logs_dir,"model_"+model_name+".pht"))
+if cuda and use_multi_gpu: net = use_multi_gpu_model(net)
 net.eval() # inference mode
 
-for file_name in files:
+for file_name in files[:1]:
 
-	# load file
-	data = nib.load(os.path.join(test_folder, file_name))
+    # load file
+    data = nib.load(os.path.join(test_folder, file_name))
 
-	# save affine
-	input_aff = data.affine
+    # save affine
+    input_aff = data.affine
 
-	# convert to numpy
-	data = data.get_data()
+    # convert to numpy
+    data = data.get_data()
 
-	# normalize data
-	data = np.clip(data, -200, 200) / 400.0 + 0.5
-	
-	# transpose so the z-axis (slices) are the first dimension
-	data = np.transpose(data, (2, 0, 1))
+    # normalize data
+    data = normalize_data(data, dmin=-200, dmax=200)
 
-	# save output here
-	output = np.zeros((len(data), 512, 512))
+    # transpose so the z-axis (slices) are the first dimension
+    data = np.transpose(data, (2, 0, 1))
 
-	# loop through z-axis
-	for i in range(len(data)):
+    output = perform_inference_volumetric_image(net, data, context=2)
 
-		# append multiple slices in a row
-		slices_input = []
-		z = i - context
+    # transpose so z-axis is last axis again and transform into nifti file
+    output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
+    output_nib = nib.Nifti1Image(output, affine=input_aff)
 
-		# middle slice first, same as during training
-		slices_input.append(np.expand_dims(data[i], 0))
+    new_file_name = "test-segmentation-" + file_name.split("-")[-1]
+    print(new_file_name)
 
-		while z <= i + context:
+    nib.save(output_nib, os.path.join(result_folder, new_file_name))
 
-			if z == i:
-				# middle slice is already appended
-				pass
-			elif z < 0:
-				# append first slice if z falls outside of data bounds
-				slices_input.append(np.expand_dims(data[0], 0))
-			elif z >= len(data):
-				# append last slice if z falls outside of data bounds
-				slices_input.append(np.expand_dims(data[len(data)-1], 0))
-			else:
-				# append slice z
-				slices_input.append(np.expand_dims(data[z], 0))
-			z += 1
 
-		inputs = np.expand_dims(np.concatenate(slices_input, 0), 0)
-		
-		# run slices through the network and save the predictions
-		inputs = Variable(torch.from_numpy(inputs).float(), volatile=True)
-		if cuda: inputs = inputs.cuda()
 
-		# inference
-		outputs = net(inputs)
-		outputs = outputs[0, 1, :, :].round()
-		outputs = outputs.data.cpu().numpy()
-
-		# save slices (* 2 because of liver tumor predictions, not liver predictions)
-		output[i, :, :] = outputs * 2
-
-	# transpose so z-axis is last axis again and transform into nifti file
-	output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
-	output = nib.Nifti1Image(output, affine=input_aff)
-
-	new_file_name = "test-segmentation-" + file_name.split("-")[-1]
-	print(new_file_name)
-	
-	nib.save(output, os.path.join(result_folder, new_file_name))

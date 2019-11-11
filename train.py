@@ -11,8 +11,8 @@ import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.autograd import Variable
 
+from utils import use_multi_gpu_model
 
 ### variables ###
 isWindows = 'Windows' in platform.system()
@@ -31,7 +31,8 @@ context = 2
 
 # learning rate, batch size, samples per epoch, epoch where to lower learning rate and total number of epochs
 lr = 1e-2
-batch_size = 10
+# batch_size = 10
+batch_size = 4
 num_samples = 1000
 low_lr_epoch = 80
 epochs = 1000
@@ -39,10 +40,10 @@ val_epochs = 100
 
 #################
 
+LIVER_CLASS = 1
+TUMOR_CLASS = 2
 
-# train_folder = 'data/train'
 train_folder = 'E:/Datasets/LiTS/train'
-# val_folder = 'data/val'
 val_folder = 'E:/Datasets/LiTS/val'
 
 logs_folder = 'logs'
@@ -55,7 +56,9 @@ print(str(epochs) + " epochs - lr: " + str(lr) + " - batch size: " + str(batch_s
 
 # GPU enabled
 cuda = torch.cuda.is_available()
+use_multi_gpu = False
 print('CUDA is available = ', cuda)
+print('Using multi-GPU   = ', use_multi_gpu)
 
 # cross-entropy loss: weighting of negative vs positive pixels and NLL loss layer
 # Tumor
@@ -63,13 +66,13 @@ print('CUDA is available = ', cuda)
 # Liver
 loss_weight = torch.FloatTensor([0.10, 0.90])
 if cuda: loss_weight = loss_weight.cuda()
-# criterion = nn.NLLLoss2d(weight=loss_weight)
 criterion = nn.NLLLoss(weight=loss_weight)
 
 # network and optimizer
 print('Building Network...')
 net = networks.VNet_Xtra(dice=dice, dropout=dropout, context=context)
-if cuda: net = torch.nn.DataParallel(net, device_ids=list(range(torch.cuda.device_count()))).cuda()
+if cuda and not use_multi_gpu: net = net.cuda()
+if cuda and use_multi_gpu: net = use_multi_gpu_model(net)
 optimizer = optim.Adam(net.parameters(), lr=lr)
 print('Network built!')
 
@@ -118,7 +121,6 @@ for epoch in range(epochs):
         # wrap data in Variables
         inputs, labels = data
         if cuda: inputs, labels = inputs.cuda(), labels.cuda()
-        # inputs, labels = Variable(inputs), Variable(labels)
 
         # forward pass and loss calculation
         outputs = net(inputs)
@@ -138,7 +140,6 @@ for epoch in range(epochs):
 
         # save and print statistics
         running_loss += loss.data
-        # running_loss += loss.data[0]
 
     epoch_end_time = time.time()
     epoch_elapsed_time = epoch_end_time - epoch_start_time
@@ -159,6 +160,9 @@ for epoch in range(epochs):
     # only validate every 'val_epochs' epochs
     if epoch % val_epochs != 0: continue
 
+    checkpoint_path = os.path.join(logs_folder, 'model_epoch_{:04d}.pht'.format(epoch))
+    torch.save(net.state_dict(), checkpoint_path)
+
     # loop through patients
     eval_start_time = time.time()
     for val_data in val_data_list:
@@ -173,7 +177,6 @@ for epoch in range(epochs):
                 # wrap data in Variable
                 inputs, labels = data
                 if cuda: inputs, labels = inputs.cuda(), labels.cuda()
-                # inputs, labels = Variable(inputs), Variable(labels)
 
                 # inference
                 outputs = net(inputs)
@@ -189,21 +192,23 @@ for epoch in range(epochs):
                 accuracy += (outputs == labels).sum() / float(outputs.size)
 
                 # dice
-                intersect += (outputs + labels == 2).sum()
+                intersect += (outputs + labels == LIVER_CLASS).sum()
                 union += np.sum(outputs) + np.sum(labels)
 
         all_accuracy.append(accuracy / float(i + 1))
         all_dice.append(1 - (2 * intersect + 1e-5) / (union + 1e-5))
     eval_end_time = time.time()
     eval_elapsed_time = eval_end_time - eval_start_time
-    checkpoint_path = os.path.join(logs_folder, 'model_epoch_{:04d}.pht'.format(epoch))
     print('    val dice loss: {:.4f} - val accuracy: {:.4f} - time: {:.1f}'
           .format(np.mean(all_dice), np.mean(all_accuracy), eval_elapsed_time))
-    torch.save(net.state_dict(), checkpoint_path)
 
 
 # save weights
-
-torch.save(net, "model_" + str(model_name) + ".pht")
+final_model_name = "model_" + str(model_name) + ".pht"
+final_model_name_state_dict = "model_state_dict_" + str(model_name) + ".pht"
+path_final_model = os.path.join(logs_folder, final_model_name)
+path_final_model_state_dict = os.path.join(logs_folder, final_model_name_state_dict)
+torch.save(net, path_final_model)
+torch.save(net.state_dict(), path_final_model_state_dict)
 
 print('Finished training...')
