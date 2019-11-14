@@ -1,14 +1,16 @@
 import torch
 import torchvision
 
-model = torchvision.models.resnet18()
+with torch.no_grad():
+    model = torchvision.models.resnet18().cuda()
 
-example = torch.rand(1,3,224,224)
+    example = torch.rand(1,3,224,224).cuda()
 
-tr = torch.jit.trace(model,example)
+    tr = torch.jit.trace(model,example)
 
-out_tr = tr(torch.ones(1,3,224,224))
-out_or = model(torch.ones(1,3,224,224))
+    example_input = torch.ones(1,3,224,224).cuda()
+    out_tr = tr(example_input)
+    out_or = model(example_input)
 
-print('Out TR: ', out_tr[0,:5])
-print('Out OR: ', out_or[0,:5])
+    print('Out TR: ', out_tr[0,:5])
+    print('Out OR: ', out_or[0,:5])

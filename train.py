@@ -192,7 +192,7 @@ for epoch in range(epochs):
                 accuracy += (outputs == labels).sum() / float(outputs.size)
 
                 # dice
-                intersect += (outputs + labels == LIVER_CLASS).sum()
+                intersect += (outputs + labels == 2).sum()
                 union += np.sum(outputs) + np.sum(labels)
 
         all_accuracy.append(accuracy / float(i + 1))
