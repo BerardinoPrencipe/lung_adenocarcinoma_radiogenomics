@@ -21,12 +21,16 @@ context = 2
 
 with torch.no_grad():
     eps = 1e-6
-    example = torch.rand(net_input_shape).cuda()
+    example = torch.rand(net_input_shape)
+    if cuda: example = example.cuda()
     net = torch.load(path_final_model)
     if cuda: net = net.cuda()
+    else: net = net.cpu()
     net.eval()
     tr = torch.jit.trace(net, example)
-    input_gpu = torch.rand(net_input_shape).cuda()
+    input_gpu = torch.rand(net_input_shape)
+    if cuda: input_gpu = input_gpu.cuda()
+
     output_traced = tr(input_gpu)
     output_original = net(input_gpu)
     print("Output TorchScript1 [0,0,0,:5] = ", output_traced[0,0,0,:5])
@@ -35,4 +39,8 @@ with torch.no_grad():
     print("Elements withing range traced 1= ",( ( output_traced < (output_original + eps) ) * ((output_original - eps) < output_traced ) ).sum())
     print("Total elements                 = ", 512 * 512 * 2)
 
-tr.save(os.path.join(logs_dir,"traced_model_"+model_name+".pt"))
+if cuda:
+    traced_model_name = "traced_model_"+model_name+".pt"
+else:
+    traced_model_name = "traced_model_cpu_"+model_name+".pt"
+tr.save(os.path.join(logs_dir,traced_model_name))
