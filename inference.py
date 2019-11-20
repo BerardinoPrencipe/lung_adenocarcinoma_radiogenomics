@@ -9,6 +9,7 @@ from utils import normalize_data, perform_inference_volumetric_image, use_multi_
 
 # name of the model saved
 model_name = '25D'
+use_traced_model = True
 
 # the number of context slices before and after as defined as in train.py before training
 context = 2
@@ -33,9 +34,12 @@ files = [file for file in os.listdir(test_folder) if file[:4]=="test"]
 logs_dir = 'logs'
 cuda = torch.cuda.is_available()
 use_multi_gpu = False
-net = torch.load(os.path.join(logs_dir,"model_"+model_name+".pht"))
-if cuda and use_multi_gpu: net = use_multi_gpu_model(net)
-net.eval() # inference mode
+if use_traced_model:
+    net = torch.jit.load(os.path.join(logs_dir, "traced_model_" + model_name + ".pt"))
+else:
+    net = torch.load(os.path.join(logs_dir,"model_"+model_name+".pht"))
+    if cuda and use_multi_gpu: net = use_multi_gpu_model(net)
+    net.eval() # inference mode
 
 for file_name in files[:1]:
 
