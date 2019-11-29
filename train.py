@@ -38,7 +38,7 @@ else:
     batch_size = 4
 num_samples = 1000
 low_lr_epoch = 80
-epochs = 40000
+epochs = 4000
 val_epochs = 800
 
 #################
