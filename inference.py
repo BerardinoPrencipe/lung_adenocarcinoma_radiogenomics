@@ -3,7 +3,10 @@ import networks
 import numpy as np
 import torch
 import nibabel as nib
-from utils import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model
+import itk
+import SimpleITK as sitk
+from utils import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model, post_process_liver
+import matplotlib.pyplot as plt
 
 ### variables ###
 
@@ -58,16 +61,20 @@ for file_name in files[:1]:
     # transpose so the z-axis (slices) are the first dimension
     data = np.transpose(data, (2, 0, 1))
 
-    output = perform_inference_volumetric_image(net, data, context=2)
+    output = perform_inference_volumetric_image(net, data, context=2, do_round=True)
+    output = output.astype(np.uint8)
 
     # transpose so z-axis is last axis again and transform into nifti file
     output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
+    output_post = post_process_liver(output)
+
     output_nib = nib.Nifti1Image(output, affine=input_aff)
+    output_nib_after = nib.Nifti1Image(output_post, affine=input_aff)
 
     new_file_name = "test-segmentation-" + file_name.split("-")[-1]
+    new_file_name_after = "test-segmentation-after-" + file_name.split("-")[-1]
     print(new_file_name)
+    print(new_file_name_after)
 
     nib.save(output_nib, os.path.join(result_folder, new_file_name))
-
-
-
+    nib.save(output_nib_after, os.path.join(result_folder, new_file_name_after))

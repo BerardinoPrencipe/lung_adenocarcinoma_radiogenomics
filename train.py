@@ -22,6 +22,7 @@ model_name = '25D'
 
 augment = True
 dropout = True
+use_multi_gpu = True
 
 # using dice loss or cross-entropy loss
 dice = True
@@ -31,22 +32,24 @@ context = 2
 
 # learning rate, batch size, samples per epoch, epoch where to lower learning rate and total number of epochs
 lr = 1e-2
-# batch_size = 10
-batch_size = 4
+if use_multi_gpu:
+    batch_size = 10
+else:
+    batch_size = 4
 num_samples = 1000
 low_lr_epoch = 80
-epochs = 1000
-val_epochs = 100
+epochs = 40000
+val_epochs = 800
 
 #################
-
-LIVER_CLASS = 1
-TUMOR_CLASS = 2
 
 train_folder = 'E:/Datasets/LiTS/train'
 val_folder = 'E:/Datasets/LiTS/val'
 
-logs_folder = 'logs'
+if use_multi_gpu:
+    logs_folder = 'logs/multi_gpu'
+else:
+    logs_folder = 'logs'
 if not os.path.exists(logs_folder):
     os.makedirs(logs_folder)
 
@@ -56,7 +59,6 @@ print(str(epochs) + " epochs - lr: " + str(lr) + " - batch size: " + str(batch_s
 
 # GPU enabled
 cuda = torch.cuda.is_available()
-use_multi_gpu = False
 print('CUDA is available = ', cuda)
 print('Using multi-GPU   = ', use_multi_gpu)
 
@@ -204,8 +206,8 @@ for epoch in range(epochs):
 
 
 # save weights
-final_model_name = "model_" + str(model_name) + ".pht"
-final_model_name_state_dict = "model_state_dict_" + str(model_name) + ".pht"
+final_model_name = "model_" + str(model_name) + "_v2.pht"
+final_model_name_state_dict = "model_state_dict_" + str(model_name) + "_v2.pht"
 path_final_model = os.path.join(logs_folder, final_model_name)
 path_final_model_state_dict = os.path.join(logs_folder, final_model_name_state_dict)
 torch.save(net, path_final_model)
