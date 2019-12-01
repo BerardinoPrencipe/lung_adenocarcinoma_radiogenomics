@@ -15,7 +15,7 @@ def perform_inference_volumetric_image(net, data, context=2, do_round=True):
     start_time = time.time()
 
     # save output here
-    output = np.zeros((len(data), 512, 512))
+    output = np.zeros(data.shape)
 
     # loop through z-axis
     for i in range(len(data)):
