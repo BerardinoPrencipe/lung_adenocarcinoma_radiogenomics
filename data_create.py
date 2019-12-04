@@ -1,7 +1,7 @@
 import numpy as np
 import nibabel as nib
 import os.path
-from utils import normalize_data
+from utils import normalize_data, get_patient_id
 
 ### variables ###
 
@@ -22,8 +22,7 @@ TUMOR_CLASS = 2
 # destination_folder = 'data'
 destination_folder = 'E:/Datasets/LiTS'
 
-# returns the patient number from the filename
-def get_patient(s): return int(s.split("-")[-1].split(".")[0])
+
 
 # create destination folder and possible subfolders
 subfolders = ["train", "val"]
@@ -41,7 +40,7 @@ for file_name in os.listdir(source_folder):
     new_file_name = file_name[:-4]
 
     # decide whether it will go to the train or val folder
-    sub = subfolders[1] if get_patient(file_name) in val_list else subfolders[0]
+    sub = subfolders[1] if get_patient_id(file_name) in val_list else subfolders[0]
 
     # load file
     data = nib.load(os.path.join(source_folder, file_name))

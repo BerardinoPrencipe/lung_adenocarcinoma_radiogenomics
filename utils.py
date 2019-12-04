@@ -100,3 +100,21 @@ def post_process_liver(output, vector_radius=(25, 25, 25), kernel=sitk.sitkBall)
     print("Liver Voxels after Closing         : ", largest_conn_comp_closed_np.sum())
 
     return largest_conn_comp_closed_np
+
+
+# returns the patient number from the filename
+def get_patient_id(s):
+    return int(s.split("-")[-1].split(".")[0])
+
+
+def get_dice(y_true, y_pred, smooth=1.):
+    y_true_f = y_true.flatten()
+    y_pred_f = y_pred.flatten()
+    intersection = np.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (np.sum(y_true_f) + np.sum(y_pred_f) + smooth)
+
+
+def get_iou(y_true, y_pred, smooth=1.):
+    dice = get_dice(y_true, y_pred, smooth=smooth)
+    iou = dice/(2-dice)
+    return iou
