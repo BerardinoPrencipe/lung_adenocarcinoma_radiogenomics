@@ -4,7 +4,7 @@ import networks
 import numpy as np
 from subprocess import call
 from loss import dice as dice_loss
-from data_load import LiverDataSet
+from projects.liver.data_load import LiverDataSet
 import platform
 import time
 

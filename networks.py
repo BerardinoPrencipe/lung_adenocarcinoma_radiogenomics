@@ -234,7 +234,7 @@ class VNet(nn.Module):
 
 class VNet_Xtra(nn.Module):
 
-    def __init__(self, dice=False, dropout=False, context=0):
+    def __init__(self, dice=False, dropout=False, context=0, num_outs=2):
 
         super(VNet_Xtra, self).__init__()
 
@@ -311,8 +311,8 @@ class VNet_Xtra(nn.Module):
 
         self.conv9 =        nn.Conv2d(32, 32, 5, stride=1, padding=2)
         self.bn9 =          nn.BatchNorm2d(32)
-        self.conv9_1x1 =    nn.Conv2d(32, 2, 1, stride=1, padding=0)
-        self.bn9_1x1 =      nn.BatchNorm2d(2)
+        self.conv9_1x1 =    nn.Conv2d(32, num_outs, 1, stride=1, padding=0)
+        self.bn9_1x1 =      nn.BatchNorm2d(num_outs)
 
         if dice:
             self.final =        F.softmax
