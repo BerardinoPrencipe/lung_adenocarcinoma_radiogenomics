@@ -5,6 +5,7 @@ import SimpleITK as sitk
 import nibabel as nib
 import os
 import cv2
+import imageio
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -253,3 +254,18 @@ def apply_mask(image, mask_2d, transparency=0.25, color=None, show_results=False
         plt.show()
 
     return out_image
+
+
+def create_gif(image_path, mask_path, path_out):
+    images = []
+    image3d, mask3d = nib.load(image_path), nib.load(mask_path)
+    image3d, mask3d = image3d.get_data(), mask3d.get_data()
+    image3d, mask3d = np.transpose(image3d, (1, 0, 2)), np.transpose(mask3d, (1, 0, 2))
+    num_slices = image3d.shape[2]
+    image3d = normalize_data(image3d, -200, 200)
+    image3d, mask3d = image3d * 128, mask3d * 127
+    for i in reversed(range(num_slices)):
+        image_montage = montage([image3d[:,:,i],image3d[:,:,i]+mask3d[:,:,i]],dim=(1,2),normalization=False)
+        image_montage = image_montage.astype(np.uint8)
+        images.append(image_montage)
+    imageio.mimsave(path_out, images, format='GIF')
