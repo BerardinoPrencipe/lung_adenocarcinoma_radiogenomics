@@ -87,9 +87,14 @@ conversion_dict = {
     'artery'        : 5,
 }
 
+
+def get_dir_num(patient):
+    return int(os.path.basename(os.path.dirname(patient['images_folder']))[10:])
+
+
 for patient in patients:
 
-    parent_dir_num = int(os.path.basename(os.path.dirname(patient['images_folder']))[10:])
+    parent_dir_num = get_dir_num(patient)
     print('Parent dir num = ', parent_dir_num)
 
     dicom_dir_images = patient['images_folder']
@@ -105,6 +110,7 @@ for patient in patients:
     image = reader.Execute()
     size = image.GetSize()
     print("Image size: ", size[0], size[1], size[2])
+    spacing = image.GetSpacing()
     image_data = sitk.GetArrayFromImage(image)
 
     print('Reading DICOM directory: ', dicom_dir_liver)
@@ -141,13 +147,32 @@ for patient in patients:
     if not os.path.exists(path_image):
         os.makedirs(path_image)
     filename_mask_out = os.path.join(path_mask, 'mask.dcm')
+    itk_mask_out.SetSpacing(spacing)
     sitk.WriteImage(itk_mask_out, filename_mask_out)
+
     filename_image_out = os.path.join(path_image, 'image.dcm')
     image_data  = normalize_data(image_data, -200, 200)
     image_data_ = (image_data*255).astype(np.uint8)
     image_new = sitk.GetImageFromArray(image_data_)
+    image_new.SetSpacing(spacing)
     sitk.WriteImage(image_new, filename_image_out)
 
+show_mask = False
+if show_mask:
+    if ( not "SITK_NOSHOW" in os.environ ):
+        sitk.Show(itk_mask_out, "Dicom Series")
 
-if ( not "SITK_NOSHOW" in os.environ ):
-    sitk.Show(itk_mask_out, "Dicom Series")
+cnt_2 = 0
+cnt_3 = 0
+for patient in patients:
+    num_vessels_type = len(patient['vessels_subdirs'])
+    num = get_dir_num(patient)
+    print("Patient {:02d}/{:02d} - Num Vessels Types: {}".format(num, len(patients), num_vessels_type))
+    print("Vessels subdirs: ", patient['vessels_subdirs'])
+    if num_vessels_type == 2:
+        cnt_2 += 1
+    if num_vessels_type == 3:
+        cnt_3 += 1
+print("Counter 1 = ", len(patients) - cnt_2 - cnt_3)
+print("Counter 2 = ", cnt_2)
+print("Counter 3 = ", cnt_3)
