@@ -50,7 +50,7 @@ for filename in filenames_filt:
 
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
-    actor.GetProperty().GetPointSize()
+    # actor.GetProperty().GetPointSize()
     actor.GetProperty().SetColor(r,g,b)
 
     renderer.AddActor(actor)

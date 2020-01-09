@@ -4,20 +4,23 @@ import SimpleITK as sitk
 import numpy as np
 from utils import normalize_data
 
+do_unzip = False
+
 path_ircadb     = 'F:/Datasets/3Dircadb1'
 path_ircadb_out = 'datasets/ircadb'
 subfolders = os.listdir(path_ircadb)
 
 #%% Unzip
-for subfolder in subfolders:
-    print('\n\nSubfolder = ', subfolder)
-    files = os.listdir(os.path.join(path_ircadb, subfolder))
-    zip_files = [file for file in files if file.endswith(".zip")]
-    for zip_file in zip_files:
-        subfolder_path = os.path.join(os.path.join(path_ircadb, subfolder))
-        print('Extracting ', zip_file, ' in ', subfolder_path)
-        with zipfile.ZipFile(os.path.join(subfolder_path, zip_file)) as zip_ref:
-            zip_ref.extractall(subfolder_path)
+if do_unzip:
+    for subfolder in subfolders:
+        print('\n\nSubfolder = ', subfolder)
+        files = os.listdir(os.path.join(path_ircadb, subfolder))
+        zip_files = [file for file in files if file.endswith(".zip")]
+        for zip_file in zip_files:
+            subfolder_path = os.path.join(os.path.join(path_ircadb, subfolder))
+            print('Extracting ', zip_file, ' in ', subfolder_path)
+            with zipfile.ZipFile(os.path.join(subfolder_path, zip_file)) as zip_ref:
+                zip_ref.extractall(subfolder_path)
 
 
 #%% Create list of dicts
@@ -75,16 +78,16 @@ print('Artery        counter = {:2d}'.format(artery_cnt))
 # Legenda
 # 1 --> Liver           --- 'liver'
 # 2 --> Vena Cava       --- 'venacava'
-# 3 --> Venous System   --- 'venoussystem'
-# 4 --> Portal Vein     --- 'portalvein'
-# 5 --> Artery          --- 'artery'
+# 2 --> Venous System   --- 'venoussystem'
+# 3 --> Portal Vein     --- 'portalvein'
+# 4 --> Artery          --- 'artery'
 
 conversion_dict = {
     'liver'         : 1,
     'venacava'      : 2,
-    'venoussystem'  : 3,
-    'portalvein'    : 4,
-    'artery'        : 5,
+    'venoussystem'  : 2,
+    'portalvein'    : 3,
+    'artery'        : 4,
 }
 
 
@@ -137,6 +140,12 @@ for patient in patients:
     print('Unique Values Mask    = ', np.unique(liver_vessels_mask))
 
     itk_mask_out = sitk.GetImageFromArray(liver_vessels_mask)
+
+    itk_liver_mask_out = sitk.GetImageFromArray(1*(liver_vessels_mask==conversion_dict['liver']).astype(np.uint8))
+    itk_hv_mask_out = sitk.GetImageFromArray(1*(liver_vessels_mask==conversion_dict['venacava']).astype(np.uint8))
+    itk_pv_mask_out = sitk.GetImageFromArray(1*(liver_vessels_mask==conversion_dict['portalvein']).astype(np.uint8))
+    itk_artery_mask_out = sitk.GetImageFromArray(1*(liver_vessels_mask==conversion_dict['artery']).astype(np.uint8))
+
     path_out = os.path.join(path_ircadb_out, 'patient-{:02d}'.format(parent_dir_num))
     if not os.path.exists(path_out):
         os.makedirs(path_out)
@@ -146,11 +155,27 @@ for patient in patients:
     path_image = os.path.join(path_out, 'image')
     if not os.path.exists(path_image):
         os.makedirs(path_image)
-    filename_mask_out = os.path.join(path_mask, 'mask.dcm')
+    filename_mask_out = os.path.join(path_mask, 'mask.nii')
     itk_mask_out.SetSpacing(spacing)
     sitk.WriteImage(itk_mask_out, filename_mask_out)
 
-    filename_image_out = os.path.join(path_image, 'image.dcm')
+    filename_liver_out = os.path.join(path_mask, 'liver.nii')
+    itk_liver_mask_out.SetSpacing(spacing)
+    sitk.WriteImage(itk_liver_mask_out, filename_liver_out)
+
+    filename_hv_out = os.path.join(path_mask, 'hv.nii')
+    itk_hv_mask_out.SetSpacing(spacing)
+    sitk.WriteImage(itk_hv_mask_out, filename_hv_out)
+
+    filename_pv_out = os.path.join(path_mask, 'pv.nii')
+    itk_pv_mask_out.SetSpacing(spacing)
+    sitk.WriteImage(itk_pv_mask_out, filename_pv_out)
+
+    filename_artery_out = os.path.join(path_mask, 'artery.nii')
+    itk_artery_mask_out.SetSpacing(spacing)
+    sitk.WriteImage(itk_artery_mask_out, filename_artery_out)
+
+    filename_image_out = os.path.join(path_image, 'image.nii')
     image_data  = normalize_data(image_data, -200, 200)
     image_data_ = (image_data*255).astype(np.uint8)
     image_new = sitk.GetImageFromArray(image_data_)
