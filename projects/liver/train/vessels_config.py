@@ -32,12 +32,13 @@ config = {
     'context'       : 2,                    # how many slices of context (2.5D)
     'lr'            : 1e-2,                 # learning rate
     'batch_size'    : batch_size,
-    'num_samples'   : 100,                  # samples per epoch
-    'low_lr_epoch'  : 20,                   # epoch where to lower learning rate
-    'epochs'        : 40,                   # total number of epochs
-    'val_epochs'    : 8,
+    'num_samples'   : 500,                  # samples per epoch
+    'low_lr_epoch'  : 200,                   # epoch where to lower learning rate
+    'epochs'        : 1000,                   # total number of epochs
+    'val_epochs'    : 200,
     'num_outs'      : 2,
-    'criterion'     : criterion
+    'criterion'     : criterion,
+    'num_workers'   : num_workers
 }
 #################
 

@@ -116,3 +116,10 @@ def train_model(net, optimizer, train_data, config, val_data_list=None, logs_fol
               .format(np.mean(all_dice), np.mean(all_accuracy), eval_elapsed_time))
     print('Training ended!')
     return net
+
+
+def get_model_name(model_name):
+    ts = time.gmtime()
+    ts_hr = time.strftime("%Y-%m-%d__%H_%M_%S", ts)
+    final_model_name = model_name + "__" + str(ts_hr) + ".pht"
+    return final_model_name
