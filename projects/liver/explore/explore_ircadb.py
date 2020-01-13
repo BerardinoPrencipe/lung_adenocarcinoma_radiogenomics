@@ -5,6 +5,7 @@ import numpy as np
 from utils import normalize_data
 
 do_unzip = False
+window_hu = (-150,350)
 
 path_ircadb     = 'F:/Datasets/3Dircadb1'
 path_ircadb_out = 'datasets/ircadb'
@@ -176,7 +177,8 @@ for patient in patients:
     sitk.WriteImage(itk_artery_mask_out, filename_artery_out)
 
     filename_image_out = os.path.join(path_image, 'image.nii')
-    image_data  = normalize_data(image_data, -200, 200)
+    # image_data  = normalize_data(image_data, -200, 200)
+    image_data  = normalize_data(image_data, window_hu[0], window_hu[1])
     image_data_ = (image_data*255).astype(np.uint8)
     image_new = sitk.GetImageFromArray(image_data_)
     image_new.SetSpacing(spacing)

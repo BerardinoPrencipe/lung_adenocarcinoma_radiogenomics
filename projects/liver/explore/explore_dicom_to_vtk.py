@@ -50,8 +50,8 @@ for path_image in path_images:
     actor.GetMapper().ScalarVisibilityOff()
 
     renderer.AddActor(actor)
-    renderer.SetBackground(0.1,0.1,0.1)
 
+renderer.SetBackground(0.1,0.1,0.1)
 renderWindow.AddRenderer(renderer)
 renderWindow.Render()
 

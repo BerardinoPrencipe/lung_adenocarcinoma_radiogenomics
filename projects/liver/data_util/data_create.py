@@ -6,7 +6,6 @@ from utils import normalize_data, get_patient_id
 ### variables ###
 
 # validation list
-# val_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 val_list = [idx for idx in range(20)]
 
 dataset_folder = 'F:/Datasets/LiTS/train'
@@ -19,10 +18,7 @@ LIVER_CLASS = 1
 TUMOR_CLASS = 2
 
 # destination folder where the subfolders with npy files will go
-# destination_folder = 'data'
 destination_folder = 'E:/Datasets/LiTS'
-
-
 
 # create destination folder and possible subfolders
 subfolders = ["train", "val"]

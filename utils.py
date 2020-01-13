@@ -12,6 +12,10 @@ import matplotlib.pyplot as plt
 
 cuda = torch.cuda.is_available()
 
+def print_dict(dict_to_print):
+    for x in dict_to_print:
+        print("{:15s} : {}".format(x, dict_to_print[x]))
+
 
 def normalize_data(data, dmin=-200, dmax=200):
     return np.clip(data, dmin, dmax) / (dmax-dmin) + 0.5

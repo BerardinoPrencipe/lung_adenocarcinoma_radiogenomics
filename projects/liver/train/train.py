@@ -4,7 +4,7 @@ import networks
 import numpy as np
 from subprocess import call
 from loss import dice as dice_loss
-from projects.liver.data_load import LiverDataSet
+from projects.liver.data_util.data_load import LiverDataSet
 import platform
 import time
 
@@ -47,9 +47,9 @@ train_folder = 'E:/Datasets/LiTS/train'
 val_folder = 'E:/Datasets/LiTS/val'
 
 if use_multi_gpu:
-    logs_folder = 'logs/multi_gpu'
+    logs_folder = 'logs/liver/multi_gpu'
 else:
-    logs_folder = 'logs'
+    logs_folder = 'logs/liver'
 if not os.path.exists(logs_folder):
     os.makedirs(logs_folder)
 
