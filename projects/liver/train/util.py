@@ -2,7 +2,7 @@ import torch
 import time
 import os
 import numpy as np
-from loss import dice as dice_loss
+from semseg.loss import dice as dice_loss
 
 
 def get_loss(outputs, labels, config):
