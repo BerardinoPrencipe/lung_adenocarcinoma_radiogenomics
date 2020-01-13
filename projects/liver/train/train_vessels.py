@@ -1,6 +1,6 @@
 import os
 import time
-import networks
+import semseg.models.vnet
 import numpy as np
 from subprocess import call
 import platform
@@ -24,7 +24,7 @@ def run(config):
 
     # network and optimizer
     print('Building Network...')
-    net = networks.build_VNet_Xtra_with_config(config)
+    net = semseg.models.vnet.build_VNet_Xtra_with_config(config)
     optimizer = optim.Adam(net.parameters(), lr=config['lr'])
     print('Network built!')
 
