@@ -28,14 +28,15 @@ config = {
     'dropout'       : True,
     'cuda'          : cuda,
     'use_multi_gpu' : use_multi_gpu,
-    'dice'          : True,               # using dice loss or cross-entropy loss
-    'context'       : 2,                  # how many slices of context (2.5D)
-    'lr'            : 1e-2,               # learning rate
+    'dice'          : True,                 # using dice loss or cross-entropy loss
+    'context'       : 2,                    # how many slices of context (2.5D)
+    'lr'            : 1e-2,                 # learning rate
     'batch_size'    : batch_size,
-    'num_samples'   : 100,               # samples per epoch
-    'low_lr_epoch'  : 20,                 # epoch where to lower learning rate
-    'epochs'        : 40,               # total number of epochs
+    'num_samples'   : 100,                  # samples per epoch
+    'low_lr_epoch'  : 20,                   # epoch where to lower learning rate
+    'epochs'        : 40,                   # total number of epochs
     'val_epochs'    : 8,
+    'num_outs'      : 2,
     'criterion'     : criterion
 }
 #################
