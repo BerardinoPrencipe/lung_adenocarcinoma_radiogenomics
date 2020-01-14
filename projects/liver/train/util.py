@@ -5,17 +5,18 @@ import numpy as np
 from semseg.loss import dice as dice_loss
 
 
-def get_loss(outputs, labels, config):
-    if config['dice']:
+def get_loss(outputs, labels, criterion):
+    if criterion is None:
         outputs = outputs[:, 1, :, :].unsqueeze(dim=1)
         loss = dice_loss(outputs, labels)
     else:
         labels = labels.squeeze(dim=1)
-        loss = config['criterion'](outputs, labels)
+        loss = criterion(outputs, labels)
     return loss
 
 
-def train_model(net, optimizer, train_data, config, val_data_list=None, logs_folder=None):
+def train_model(net, optimizer, train_data, config,
+                criterion=None, val_data_list=None, logs_folder=None):
     print('Start training...')
     # train loop
     for epoch in range(config['epochs']):
@@ -42,7 +43,7 @@ def train_model(net, optimizer, train_data, config, val_data_list=None, logs_fol
             outputs = net(inputs)
 
             # get either dice loss or cross-entropy
-            loss = get_loss(outputs, labels, config)
+            loss = get_loss(outputs, labels, criterion)
 
             # empty gradients, perform backward pass and update weights
             optimizer.zero_grad()
@@ -55,7 +56,7 @@ def train_model(net, optimizer, train_data, config, val_data_list=None, logs_fol
         epoch_end_time = time.time()
         epoch_elapsed_time = epoch_end_time - epoch_start_time
         # print statistics
-        if config['dice']:
+        if criterion is None:
             print('  [epoch {:04d}] - train dice loss: {:.4f} - time: {:.1f}'
                   .format(epoch + 1, running_loss / (i + 1), epoch_elapsed_time))
         else:
@@ -95,7 +96,7 @@ def train_model(net, optimizer, train_data, config, val_data_list=None, logs_fol
                     outputs = net(inputs)
 
                     # log softmax into softmax
-                    if not config['dice']: outputs = outputs.exp()
+                    if criterion is not None: outputs = outputs.exp()
 
                     # round outputs to either 0 or 1
                     outputs = outputs[:, 1, :, :].unsqueeze(dim=1).round()

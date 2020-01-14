@@ -43,13 +43,13 @@ val_epochs = 800
 
 #################
 
-train_folder = 'E:/Datasets/ircadb/train'
-val_folder = 'E:/Datasets/ircadb/val'
+train_folder = 'E:/Datasets/LiTS/train'
+val_folder = 'E:/Datasets/LiTS/val'
 
 if use_multi_gpu:
-    logs_folder = 'logs/vessels/multi_gpu'
+    logs_folder = 'logs/liver/multi_gpu'
 else:
-    logs_folder = 'logs/vessels'
+    logs_folder = 'logs/liver'
 if not os.path.exists(logs_folder):
     os.makedirs(logs_folder)
 
@@ -66,7 +66,7 @@ print('Using multi-GPU   = ', use_multi_gpu)
 # Tumor
 # loss_weight = torch.FloatTensor([0.01, 0.99])
 # Liver
-loss_weight = torch.FloatTensor([0.04, 0.96])
+loss_weight = torch.FloatTensor([0.10, 0.90])
 if cuda: loss_weight = loss_weight.cuda()
 criterion = nn.NLLLoss(weight=loss_weight)
 
@@ -203,3 +203,14 @@ for epoch in range(epochs):
     eval_elapsed_time = eval_end_time - eval_start_time
     print('    val dice loss: {:.4f} - val accuracy: {:.4f} - time: {:.1f}'
           .format(np.mean(all_dice), np.mean(all_accuracy), eval_elapsed_time))
+
+
+# save weights
+final_model_name = "model_" + str(model_name) + "_v2.pht"
+final_model_name_state_dict = "model_state_dict_" + str(model_name) + "_v2.pht"
+path_final_model = os.path.join(logs_folder, final_model_name)
+path_final_model_state_dict = os.path.join(logs_folder, final_model_name_state_dict)
+torch.save(net, path_final_model)
+torch.save(net.state_dict(), path_final_model_state_dict)
+
+print('Finished training...')
