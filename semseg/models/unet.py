@@ -8,11 +8,11 @@ import torch.nn.functional as F
 
 class UNet(nn.Module):
 
-    def __init__(self, dice=False):
+    def __init__(self, n_channels, n_classes, dice=False):
 
         super(UNet, self).__init__()
 
-        self.conv1_input = nn.Conv2d(1, 64, 3, padding=1)
+        self.conv1_input = nn.Conv2d(n_channels, 64, 3, padding=1)
         self.conv1 = nn.Conv2d(64, 64, 3, padding=1)
         self.conv2_input = nn.Conv2d(64, 128, 3, padding=1)
         self.conv2 = nn.Conv2d(128, 128, 3, padding=1)
@@ -35,7 +35,7 @@ class UNet(nn.Module):
         self.conv9_up = nn.ConvTranspose2d(128, 64, 2, 2)
         self.conv9_input = nn.Conv2d(128, 64, 3, padding=1)
         self.conv9 = nn.Conv2d(64, 64, 3, padding=1)
-        self.conv9_output = nn.Conv2d(64, 2, 1)
+        self.conv9_output = nn.Conv2d(64, n_classes, 1)
 
         if dice:
             self.final = F.softmax
@@ -89,7 +89,7 @@ class UNet(nn.Module):
         layer9 = torch.cat((layer1, layer9), 1)
         layer9 = F.relu(self.conv9_input(layer9))
         layer9 = F.relu(self.conv9(layer9))
-        layer9 = self.final(self.conv9_output(layer9))
+        layer9 = self.final(self.conv9_output(layer9), dim=1)
 
         return layer9
 
@@ -99,29 +99,29 @@ class UNet(nn.Module):
 
 class UNetSmall(nn.Module):
 
-    def __init__(self, dice=False):
+    def __init__(self, n_channels, n_classes, dice=False):
 
         super(UNetSmall, self).__init__()
 
-        self.conv1_input = nn.Conv2d(1, 64 / 2, 3, padding=1)
-        self.conv1 = nn.Conv2d(64 / 2, 64 / 2, 3, padding=1)
-        self.conv2_input = nn.Conv2d(64 / 2, 128 / 2, 3, padding=1)
-        self.conv2 = nn.Conv2d(128 / 2, 128 / 2, 3, padding=1)
-        self.conv3_input = nn.Conv2d(128 / 2, 256 / 2, 3, padding=1)
-        self.conv3 = nn.Conv2d(256 / 2, 256 / 2, 3, padding=1)
-        self.conv4_input = nn.Conv2d(256 / 2, 512 / 2, 3, padding=1)
-        self.conv4 = nn.Conv2d(512 / 2, 512 / 2, 3, padding=1)
+        self.conv1_input = nn.Conv2d(n_channels, 64 // 2, 3, padding=1)
+        self.conv1 = nn.Conv2d(64 // 2, 64 // 2, 3, padding=1)
+        self.conv2_input = nn.Conv2d(64 // 2, 128 // 2, 3, padding=1)
+        self.conv2 = nn.Conv2d(128 // 2, 128 // 2, 3, padding=1)
+        self.conv3_input = nn.Conv2d(128 // 2, 256 // 2, 3, padding=1)
+        self.conv3 = nn.Conv2d(256 // 2, 256 // 2, 3, padding=1)
+        self.conv4_input = nn.Conv2d(256 // 2, 512 // 2, 3, padding=1)
+        self.conv4 = nn.Conv2d(512 // 2, 512 // 2, 3, padding=1)
 
-        self.conv7_up = nn.ConvTranspose2d(512 / 2, 256 / 2, 2, 2)
-        self.conv7_input = nn.Conv2d(512 / 2, 256 / 2, 3, padding=1)
-        self.conv7 = nn.Conv2d(256 / 2, 256 / 2, 3, padding=1)
-        self.conv8_up = nn.ConvTranspose2d(256 / 2, 128 / 2, 2, 2)
-        self.conv8_input = nn.Conv2d(256 / 2, 128 / 2, 3, padding=1)
-        self.conv8 = nn.Conv2d(128 / 2, 128 / 2, 3, padding=1)
-        self.conv9_up = nn.ConvTranspose2d(128 / 2, 64 / 2, 2, 2)
-        self.conv9_input = nn.Conv2d(128 / 2, 64 / 2, 3, padding=1)
-        self.conv9 = nn.Conv2d(64 / 2, 64 / 2, 3, padding=1)
-        self.conv9_output = nn.Conv2d(64 / 2, 2, 1)
+        self.conv7_up = nn.ConvTranspose2d(512 // 2, 256 // 2, 2, 2)
+        self.conv7_input = nn.Conv2d(512 // 2, 256 // 2, 3, padding=1)
+        self.conv7 = nn.Conv2d(256 // 2, 256 // 2, 3, padding=1)
+        self.conv8_up = nn.ConvTranspose2d(256 // 2, 128 // 2, 2, 2)
+        self.conv8_input = nn.Conv2d(256 // 2, 128 // 2, 3, padding=1)
+        self.conv8 = nn.Conv2d(128 // 2, 128 // 2, 3, padding=1)
+        self.conv9_up = nn.ConvTranspose2d(128 // 2, 64 // 2, 2, 2)
+        self.conv9_input = nn.Conv2d(128 // 2, 64 // 2, 3, padding=1)
+        self.conv9 = nn.Conv2d(64 // 2, 64 // 2, 3, padding=1)
+        self.conv9_output = nn.Conv2d(64 // 2, n_classes, 1)
 
         if dice:
             self.final = F.softmax
@@ -166,6 +166,6 @@ class UNetSmall(nn.Module):
         layer9 = torch.cat((layer1, layer9), 1)
         layer9 = F.relu(self.conv9_input(layer9))
         layer9 = F.relu(self.conv9(layer9))
-        layer9 = self.final(self.conv9_output(layer9))
+        layer9 = self.final(self.conv9_output(layer9), dim=1)
 
         return layer9

@@ -63,16 +63,29 @@ class Up(nn.Module):
 
 
 class OutConv(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, out_fn):
         super(OutConv, self).__init__()
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
+
+        conv_one_one = nn.Conv2d(in_channels, out_channels, kernel_size=1)
+
+        if out_fn == 'log_softmax':
+            self.final_layer = F.log_softmax
+        elif out_fn == 'softmax':
+            self.final_layer = F.softmax
+        else:
+            self.final_layer = None
+
+        self.out_conv = conv_one_one
+
 
     def forward(self, x):
-        return self.conv(x)
-
+        if self.final_layer is None:
+            return self.out_conv(x)
+        else:
+            return self.final_layer(self.out_conv(x), dim=1)
 
 class UNet(nn.Module):
-    def __init__(self, n_channels, n_classes, bilinear=True):
+    def __init__(self, n_channels, n_classes, out_fn = 'log_softmax', bilinear=True):
         super(UNet, self).__init__()
         self.n_channels = n_channels
         self.n_classes  = n_classes
@@ -87,14 +100,14 @@ class UNet(nn.Module):
         self.up2   = Up(512, 128, bilinear)
         self.up3   = Up(256, 64, bilinear)
         self.up4   = Up(128, 64, bilinear)
-        self.outc  = OutConv(64, n_classes)
+        self.outc  = OutConv(64, n_classes, out_fn)
 
     def forward(self, x):
         x1 = self.inc(x)
         x2 = self.down1(x1)
-        x3 = self.down1(x2)
-        x4 = self.down1(x3)
-        x5 = self.down1(x4)
+        x3 = self.down2(x2)
+        x4 = self.down3(x3)
+        x5 = self.down4(x4)
         x  = self.up1(x5, x4)
         x  = self.up2(x,  x3)
         x  = self.up3(x,  x2)

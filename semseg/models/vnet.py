@@ -11,12 +11,11 @@ from utils import use_multi_gpu_model
 
 class VNet(nn.Module):
 
-    def __init__(self, dice=False):
+    def __init__(self, dice=False, context=0, num_outs=2):
 
         super(VNet, self).__init__()
 
-        self.conv1 = nn.Conv2d(1, 16, 5, stride=1, padding=2)
-        self.conv1 = nn.Conv2d(1, 16, 5, stride=1, padding=2)
+        self.conv1 = nn.Conv2d(1 + context * 2, 16, 5, stride=1, padding=2)
         self.conv1_down = nn.Conv2d(16, 32, 2, stride=2, padding=0)
 
         self.conv2a = nn.Conv2d(32, 32, 5, stride=1, padding=2)
@@ -53,7 +52,7 @@ class VNet(nn.Module):
         self.conv8_up = nn.ConvTranspose2d(64, 16, 2, stride=2, padding=0)
 
         self.conv9 = nn.Conv2d(32, 32, 5, stride=1, padding=2)
-        self.conv9_1x1 = nn.Conv2d(32, 2, 1, stride=1, padding=0)
+        self.conv9_1x1 = nn.Conv2d(32, num_outs, 1, stride=1, padding=0)
 
         if dice:
             self.final = F.softmax
@@ -70,7 +69,7 @@ class VNet(nn.Module):
     def forward(self, x):
 
         layer1 = F.relu(self.conv1(x))
-        layer1 = torch.add(layer1, torch.cat([x] * 16, 1))
+        layer1 = torch.add(layer1, torch.cat([x[:, 0:1, :, :]] * 16, 1))
 
         conv1 = F.relu(self.conv1_down(layer1))
 
@@ -131,7 +130,7 @@ class VNet(nn.Module):
 
         layer9 = F.relu(self.conv9(cat9))
         layer9 = torch.add(layer9, cat9)
-        layer9 = self.final(self.conv9_1x1(layer9))
+        layer9 = self.final(self.conv9_1x1(layer9), dim=1)
 
         return layer9
 
@@ -309,7 +308,7 @@ class VNet_Xtra(nn.Module):
 
         layer9 = F.relu(self.bn9(self.conv9(cat9)))
         layer9 = torch.add(layer9, cat9)
-        layer9 = self.final(self.bn9_1x1(self.conv9_1x1(layer9)))
+        layer9 = self.final(self.bn9_1x1(self.conv9_1x1(layer9)), dim=1)
 
         return layer9
 

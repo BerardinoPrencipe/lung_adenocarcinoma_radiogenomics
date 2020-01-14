@@ -1,5 +1,5 @@
 import os
-import networks
+import semseg.models.vnet
 import numpy as np
 import torch
 
