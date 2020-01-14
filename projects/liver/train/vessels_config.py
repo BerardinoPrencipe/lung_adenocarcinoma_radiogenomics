@@ -5,7 +5,7 @@ import torch.nn as nn
 ### variables ###
 isWindows = 'Windows' in platform.system()
 num_workers = 0 if isWindows else 2
-use_multi_gpu = True
+use_multi_gpu = False
 # GPU enabled
 cuda = torch.cuda.is_available()
 print('CUDA is available = ', cuda)
