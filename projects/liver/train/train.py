@@ -13,7 +13,7 @@ import torch.optim as optim
 from utils import print_dict
 from projects.liver.data_util.data_load_util import train_data_loader, val_data_loader
 from projects.liver.train.util import train_model, get_model_name
-from projects.liver.train.config_network import config, dataset, \
+from projects.liver.train.config import config, dataset, \
                                                 get_logs_folder, get_train_val_folders, get_criterion
 
 def run(config, dataset):
@@ -27,7 +27,7 @@ def run(config, dataset):
     print('Config')
     print_dict(config)
 
-    # network and optimizer
+    # Network and optimizer
     print('Building Network...')
     net = semseg.models.vnet.build_VNet_Xtra_with_config(config)
     optimizer = optim.Adam(net.parameters(), lr=config['lr'])
@@ -43,7 +43,7 @@ def run(config, dataset):
     net = train_model(net, optimizer, train_data, config,
                       criterion=criterion, val_data_list=val_data_list, logs_folder=logs_folder)
 
-    # save weights
+    # Save weights
     final_model_name = get_model_name("model_" + str(config['model_name']))
     path_final_model = os.path.join(logs_folder, final_model_name)
     torch.save(net, path_final_model)

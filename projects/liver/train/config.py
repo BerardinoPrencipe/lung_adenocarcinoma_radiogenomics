@@ -11,6 +11,7 @@ dataset = "vessels"
 isWindows = 'Windows' in platform.system()
 num_workers = 0 if isWindows else 2
 use_multi_gpu = False
+dice = True
 # GPU enabled
 cuda = torch.cuda.is_available()
 print('CUDA is available = ', cuda)
@@ -21,7 +22,6 @@ if use_multi_gpu:
 else:
     batch_size = 4
 
-dice = True
 def get_criterion(dataset):
     if dice is False:
         # cross-entropy loss: weighting of negative vs positive pixels and NLL loss layer
