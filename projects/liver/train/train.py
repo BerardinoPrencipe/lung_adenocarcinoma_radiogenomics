@@ -29,7 +29,7 @@ def run(config, dataset):
 
     # Network and optimizer
     print('Building Network...')
-    net = semseg.models.vnet.build_VNet_Xtra_with_config(config)
+    net = semseg.models.vnet.build_VNet_Xtra_with_config(config, criterion)
     optimizer = optim.Adam(net.parameters(), lr=config['lr'])
     print('Network built!')
 
@@ -47,11 +47,6 @@ def run(config, dataset):
     final_model_name = get_model_name("model_" + str(config['model_name']))
     path_final_model = os.path.join(logs_folder, final_model_name)
     torch.save(net, path_final_model)
-
-    final_model_name_state_dict = get_model_name("model_state_dict_" + str(config['model_name']))
-    path_final_model_state_dict = os.path.join(logs_folder, final_model_name_state_dict)
-    torch.save(net.state_dict(), path_final_model_state_dict)
-
     print('Final Model saved!')
 
 

@@ -2,6 +2,7 @@ import numpy as np
 import nibabel as nib
 import os.path
 from utils import normalize_data, get_patient_id
+from projects.liver.util.vessels_config import window_hu
 
 ### variables ###
 
@@ -21,14 +22,25 @@ ARTERY_CLASS = (4,)
 
 # destination folder where the subfolders with npy files will go
 destination_folder = 'E:/Datasets/ircadb'
+destination_folder_hv = 'E:/Datasets/ircadb_hv/'
+destination_folder_pv = 'E:/Datasets/ircadb_pv/'
 
 # create destination folder and possible subfolders
 subfolders = ["train", "val"]
+
 if not os.path.isdir(destination_folder):
 	os.makedirs(destination_folder)
+if not os.path.isdir(destination_folder_hv):
+	os.makedirs(destination_folder_hv)
+if not os.path.isdir(destination_folder_pv):
+	os.makedirs(destination_folder_pv)
 for name in subfolders:
     if not os.path.isdir(os.path.join(destination_folder, name)):
         os.makedirs(os.path.join(destination_folder, name))
+    if not os.path.isdir(os.path.join(destination_folder_hv, name)):
+        os.makedirs(os.path.join(destination_folder_hv, name))
+    if not os.path.isdir(os.path.join(destination_folder_pv, name)):
+        os.makedirs(os.path.join(destination_folder_pv, name))
 
 for subfolder_source in os.listdir(source_folder):
 
@@ -55,6 +67,8 @@ for subfolder_source in os.listdir(source_folder):
 
     # convert to numpy
     image_data = image_data.get_data()
+    image_data = normalize_data(image_data, dmin=window_hu[0], dmax=window_hu[1])
+
     mask_data = mask_data.get_data()
 
     mask_data_hv = (mask_data == VESSELS_CLASS[0]).astype(np.uint8)
@@ -69,8 +83,12 @@ for subfolder_source in os.listdir(source_folder):
     for i, z_slice in enumerate(mask_data):
         # save at new location (train or val)
         np.save(os.path.join(destination_folder, sub, new_mask_filename + '_' + str(i)), z_slice)
+        np.save(os.path.join(destination_folder_hv, sub, new_mask_filename + '_' + str(i)), z_slice)
+        np.save(os.path.join(destination_folder_pv, sub, new_mask_filename + '_' + str(i)), z_slice)
 
     # loop through the scan slices
     for i, z_slice in enumerate(image_data):
         # save at new location (train or val)
         np.save(os.path.join(destination_folder, sub, new_image_filename + '_' + str(i)), z_slice)
+        np.save(os.path.join(destination_folder_hv, sub, new_image_filename + '_' + str(i)), z_slice)
+        np.save(os.path.join(destination_folder_pv, sub, new_image_filename + '_' + str(i)), z_slice)

@@ -4,7 +4,8 @@ import torch
 import torch.nn as nn
 
 # The dataset to use!
-dataset = "vessels"
+# dataset = "vessels"
+dataset = "hv"
 # dataset = "liver"
 
 # Hyperparams
@@ -28,6 +29,8 @@ def get_criterion(dataset):
         loss_weight = torch.FloatTensor([0.50, 0.50])
         if dataset == "vessels":
             loss_weight = torch.FloatTensor([0.04, 0.96])
+        elif dataset == "hv" or dataset == "pv":
+            loss_weight = torch.FloatTensor([0.02, 0.98])
         elif dataset == "liver":
             loss_weight = torch.FloatTensor([0.10, 0.90])
 
@@ -63,13 +66,19 @@ def get_logs_folder(dataset):
     return logs_folder
 
 def get_train_val_folders(dataset):
-    assert dataset in ["vessels", "liver"], "Dataset must be 'vessels' or 'liver'!"
+    assert dataset in ["vessels", "hv", "pv" "liver"], \
+        "Dataset must be in ['vessels', 'hv', 'pv' 'liver']!"
 
     if dataset == "vessels":
         # Vessels
         train_folder = 'E:/Datasets/ircadb/train'
         val_folder   = 'E:/Datasets/ircadb/val'
-
+    elif dataset == "hv":
+        train_folder = 'E:/Datasets/ircadb_hv/train'
+        val_folder = 'E:/Datasets/ircadb_hv/val'
+    elif dataset == "pv":
+        train_folder = 'E:/Datasets/ircadb_pv/train'
+        val_folder = 'E:/Datasets/ircadb_pv/val'
     elif dataset == "liver":
         # Liver LiTS
         train_folder = 'E:/Datasets/LiTS/train'

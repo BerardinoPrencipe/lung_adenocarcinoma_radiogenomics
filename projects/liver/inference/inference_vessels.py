@@ -3,8 +3,10 @@ import SimpleITK as sitk
 import nibabel as nib
 import numpy as np
 import torch
-from utils import normalize_data, perform_inference_volumetric_image
 import medpy.metric.binary as mmb
+
+from utils import normalize_data, perform_inference_volumetric_image
+from projects.liver.util.vessels_config import window_hu
 
 val_list = ["{:02d}".format(idx) for idx in range(1,3)]
 val_list.append("10")
@@ -32,7 +34,7 @@ for folder_patient_valid in folders_patients_valid:
     data = data.get_data()
 
     # normalize data
-    # data = normalize_data(data, dmin=-150, dmax=350)
+    # data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
 
     # transpose so the z-axis (slices) are the first dimension
     data = np.transpose(data, (2, 0, 1))

@@ -10,7 +10,6 @@ def pre_process_dicom(image_data, window_hu):
     return image_data_
 
 do_unzip = False
-window_hu = (-150,350)
 
 path_ircadb     = 'F:/Datasets/3Dircadb1'
 path_ircadb_out = 'datasets/ircadb'

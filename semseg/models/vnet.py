@@ -313,8 +313,9 @@ class VNet_Xtra(nn.Module):
         return layer9
 
 
-def build_VNet_Xtra_with_config(config):
-    net = VNet_Xtra(config['dice'], config['dropout'], config['context'], config['num_outs'])
+def build_VNet_Xtra_with_config(config, criterion):
+    dice = criterion is None
+    net = VNet_Xtra(dice, config['dropout'], config['context'], config['num_outs'])
     if config['cuda'] and not config['use_multi_gpu']: net = net.cuda()
     if config['cuda'] and config['use_multi_gpu']: net = use_multi_gpu_model(net)
     return net
