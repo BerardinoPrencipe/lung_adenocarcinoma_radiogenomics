@@ -11,11 +11,15 @@ def get_color_for_filename(name):
         color = (0.2,0.8,0.2)
     elif 'artery' in name:
         color = (0.8,0.2,0.2)
+    elif 'pred' in name:
+        color = (0.2, 0.8, 0.8)
     return color
 
 dir_image = 'datasets/ircadb/patient-01/mask'
 # path_image = os.path.join(dir_image, 'mask.nii')
 path_images = [os.path.join(dir_image, name) for name in os.listdir(dir_image) if name != 'mask.nii']
+
+# path_images = ('datasets/ircadb\\patient-10\\image\\pred.nii',)
 
 # n_iters = 5000
 n_iters = 100

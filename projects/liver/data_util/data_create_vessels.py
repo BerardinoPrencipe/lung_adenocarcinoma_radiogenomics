@@ -6,7 +6,7 @@ from utils import normalize_data, get_patient_id
 ### variables ###
 
 # validation list
-val_list = ["{:02d}".format(idx) for idx in range(3)]
+val_list = ["{:02d}".format(idx) for idx in range(1,3)]
 val_list.append("10")
 
 dataset_folder = 'datasets/ircadb'
