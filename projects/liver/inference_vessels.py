@@ -4,7 +4,7 @@ import nibabel as nib
 import numpy as np
 import torch
 from utils import normalize_data, perform_inference_volumetric_image
-
+import medpy.metric.binary as mmb
 
 val_list = ["{:02d}".format(idx) for idx in range(1,3)]
 val_list.append("10")
@@ -45,6 +45,29 @@ for folder_patient_valid in folders_patients_valid:
 
     output_nib_pre = nib.Nifti1Image(output, affine=input_aff)
     nib.save(output_nib_pre, path_test_pred)
+
+    gt_pv_path = os.path.join(folder_dataset, folder_patient_valid, 'mask', 'pv.nii')
+    gt_hv_path = os.path.join(folder_dataset, folder_patient_valid, 'mask', 'hv.nii')
+
+    gt_pv_mask = nib.load(gt_pv_path)
+    gt_pv_mask = gt_pv_mask.get_data()
+    gt_hv_mask = nib.load(gt_hv_path)
+    gt_hv_mask = gt_hv_mask.get_data()
+
+    gt_vessels_mask = gt_pv_mask + gt_hv_mask
+
+    iou = mmb.jc(output, gt_vessels_mask)
+    dice = mmb.dc(output, gt_vessels_mask)
+    prec = mmb.precision(output, gt_vessels_mask)
+    recall = mmb.recall(output, gt_vessels_mask)
+    rvd = mmb.ravd(output, gt_vessels_mask)
+
+    print('Patient   = ', folder_patient_valid)
+    print('IoU       = ', iou)
+    print('Dice      = ', dice)
+    print('Precision = ', prec)
+    print('Recall    = ', recall)
+    print('RVD       = ', rvd)
 
 # TODO: post processing
 # Connected components labeling
