@@ -5,7 +5,8 @@ import torch.nn as nn
 
 # The dataset to use!
 # dataset = "vessels"
-dataset = "hv"
+# dataset = "hv"
+dataset = "pv"
 # dataset = "liver"
 
 # Hyperparams
@@ -66,8 +67,8 @@ def get_logs_folder(dataset):
     return logs_folder
 
 def get_train_val_folders(dataset):
-    assert dataset in ["vessels", "hv", "pv" "liver"], \
-        "Dataset must be in ['vessels', 'hv', 'pv' 'liver']!"
+    assert dataset in ["vessels", "hv", "pv", "liver"], \
+        "Dataset must be in ['vessels', 'hv', 'pv', 'liver']!"
 
     if dataset == "vessels":
         # Vessels
