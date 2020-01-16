@@ -51,6 +51,8 @@ def run(config, dataset):
 
 
 # python projects/liver/train/train.py
+# python projects/liver/train/train.py --dataset=pv
+
 import argparse
 
 if __name__ == "__main__":
@@ -78,7 +80,7 @@ if __name__ == "__main__":
         "-d",
         "--dataset",
         default=dataset,
-        help="Specify the dataset on which train the net [liver | vessels]"
+        help="Specify the dataset on which train the net [liver | vessels | hv | pv]"
     )
 
     args = parser.parse_args()
