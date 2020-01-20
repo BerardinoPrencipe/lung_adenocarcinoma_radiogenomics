@@ -6,8 +6,8 @@ import torch.nn as nn
 # The dataset to use!
 # dataset = "vessels"
 # dataset = "hv"
-dataset = "pv"
-# dataset = "liver"
+# dataset = "pv"
+dataset = "liver"
 
 # Hyperparams
 isWindows = 'Windows' in platform.system()

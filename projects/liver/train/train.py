@@ -29,7 +29,10 @@ def run(config, dataset):
 
     # Network and optimizer
     print('Building Network...')
-    net = semseg.models.vnet.build_VNet_Xtra_with_config(config, criterion)
+    # net = semseg.models.vnet.build_VNet_Xtra_with_config(config, criterion)
+    from semseg.models.vnet_v2 import build_VXNet_with_config
+    net = build_VXNet_with_config(config)
+
     optimizer = optim.Adam(net.parameters(), lr=config['lr'])
     print('Network built!')
 
