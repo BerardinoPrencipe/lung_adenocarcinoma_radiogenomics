@@ -17,7 +17,7 @@ class InitialConv(nn.Module):
         super().__init__()
         self.out_channels = out_channels
 
-        self.conv = nn.Conv2d(in_channels=1 + context * 2, out_channels=out_channels, kernel_size=5)
+        self.conv = nn.Conv2d(in_channels=1 + context * 2, out_channels=out_channels, kernel_size=5, stride=1, padding=2)
         self.bn   = nn.BatchNorm2d(out_channels)
         self.conv_down = nn.Conv2d(in_channels=out_channels, out_channels=out_channels * 2, kernel_size=2, stride=2, padding=0)
         self.bn_down = nn.BatchNorm2d(out_channels * 2)
@@ -152,7 +152,7 @@ class VXNet(nn.Module):
 
         self.init_conv  = InitialConv(context=context, out_channels=channels)
 
-        self.down_block_1 = DownConvBlock3b(out_channels=channels * 2)
+        self.down_block_1 = DownConvBlock2b(out_channels=channels * 2)
         self.down_block_2 = DownConvBlock3b(out_channels=channels * 4)
         self.down_block_3 = DownConvBlock3b(out_channels=channels * 8)
 
@@ -162,7 +162,7 @@ class VXNet(nn.Module):
         self.cat_block_3  = CatBlock(dropout)
         self.up_block_2   = UpConvBlock3b(out_channels=channels * 8, undersampling_factor=4)
         self.cat_block_2  = CatBlock(dropout)
-        self.up_block_1   = UpConvBlock3b(out_channels=channels * 4, undersampling_factor=4)
+        self.up_block_1   = UpConvBlock2b(out_channels=channels * 4, undersampling_factor=4)
         self.cat_block_1  = CatBlock(dropout)
 
         self.out_conv     = FinalConv(num_outs=num_outs)

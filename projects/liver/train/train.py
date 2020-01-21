@@ -14,7 +14,7 @@ from utils import print_dict
 from projects.liver.data_util.data_load_util import train_data_loader, val_data_loader
 from projects.liver.train.util import train_model, get_model_name
 from projects.liver.train.config import config, dataset, \
-                                                get_logs_folder, get_train_val_folders, get_criterion
+                                        get_logs_folder, get_train_val_folders, get_criterion
 
 def run(config, dataset):
     logs_folder = get_logs_folder(dataset)

@@ -6,7 +6,7 @@ import nibabel as nib
 import itk
 import SimpleITK as sitk
 from utils import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model, \
-                  post_process_liver, get_dice, get_iou, get_patient_id
+    post_process_liver, get_dice, get_iou, get_patient_id
 import matplotlib.pyplot as plt
 import medpy.metric.binary as mmb
 
@@ -23,15 +23,19 @@ LIVER_CLASS = 1
 TUMOR_CLASS = 2
 
 inference_on_test_set = False
+use_sliver_as_valid = True
 
 # directory where to store nii.gz or numpy files
 result_folder = 'E:/Datasets/LiTS/results'
+if use_sliver_as_valid: result_folder = 'E:/Datasets/Sliver_Nifti/Results'
 if inference_on_test_set:
     result_folder = os.path.join(result_folder, 'test')
     test_folder = 'F:/Datasets/LiTS/test'
 else:
     result_folder = os.path.join(result_folder, 'train')
     test_folder = 'F:/Datasets/LiTS/train'
+if use_sliver_as_valid:
+    test_folder = 'E:/Datasets/Sliver_Nifti/Volumes'
 
 if not os.path.exists(result_folder):
     os.makedirs(result_folder)
@@ -52,8 +56,12 @@ if inference_on_test_set:
 else:
     files_test_volumes = [file for file in os.listdir(test_folder) if file[:6] == "volume"]
 
+if use_sliver_as_valid:
+    sliver_scans_folder = 'E:/Datasets/Sliver_Nifti/Volumes'
+    files_test_volumes = [file for file in os.listdir(sliver_scans_folder)]
+
 # load network
-logs_dir = 'logs'
+logs_dir = 'logs/liver'
 cuda = torch.cuda.is_available()
 use_multi_gpu = True
 if use_traced_model:
@@ -63,12 +71,11 @@ if use_traced_model:
         path_traced_model = os.path.join(logs_dir, "traced_model_" + model_name + ".pt")
     net = torch.jit.load(path_traced_model)
 else:
-    net = torch.load(os.path.join(logs_dir,"model_"+model_name+".pht"))
+    net = torch.load(os.path.join(logs_dir, "model_" + model_name + ".pht"))
     if cuda and use_multi_gpu: net = use_multi_gpu_model(net)
-    net.eval() # inference mode
+    net.eval()  # inference mode
 
 for file_name_prediction in files_test_volumes[:1]:
-
     # load file
     data = nib.load(os.path.join(test_folder, file_name_prediction))
 
@@ -112,16 +119,24 @@ if inference_on_test_set:
 else:
     val_list = [idx for idx in range(20)]
 
-ious_pre = np.zeros(len(val_list))
-ious_post = np.zeros(len(val_list))
-dices_pre = np.zeros(len(val_list))
+ious_pre   = np.zeros(len(val_list))
+ious_post  = np.zeros(len(val_list))
+dices_pre  = np.zeros(len(val_list))
 dices_post = np.zeros(len(val_list))
-rvds_pre = np.zeros(len(val_list))
-rvds_post = np.zeros(len(val_list))
+rvds_pre   = np.zeros(len(val_list))
+rvds_post  = np.zeros(len(val_list))
+assds_pre  = np.zeros(len(val_list))
+assds_post = np.zeros(len(val_list))
+hds_pre    = np.zeros(len(val_list))
+hds_post   = np.zeros(len(val_list))
 
 paths_predictions_pre  = [filename for filename in os.listdir(results_folder_pre) if filename.endswith(".nii")]
 paths_predictions_post = [filename for filename in os.listdir(results_folder_post) if filename.endswith(".nii")]
 paths_ground_truth     = [filename for filename in os.listdir(test_folder) if filename[:12] == "segmentation"]
+
+if use_sliver_as_valid:
+    sliver_masks_folder = 'E:/Datasets/Sliver_Nifti/GroundTruth'
+    paths_ground_truth = [file for file in os.listdir(sliver_masks_folder)]
 
 paths_predictions_pre.sort()
 paths_predictions_post.sort()
@@ -142,6 +157,7 @@ for idx, (path_prediction_pre, path_prediction_post, path_ground_truth) in \
     prediction_mask_post = nib.load(os.path.join(results_folder_post, path_prediction_post))
     prediction_mask_post = prediction_mask_post.get_data()
     ground_truth_mask    = nib.load(os.path.join(test_folder, path_ground_truth))
+    voxel_spacing        = ground_truth_mask.header.get_zooms()
     ground_truth_mask    = ground_truth_mask.get_data()
 
     ious_pre[p_id]   = mmb.jc(prediction_mask_pre, ground_truth_mask)
@@ -153,6 +169,14 @@ for idx, (path_prediction_pre, path_prediction_post, path_ground_truth) in \
     rvds_pre[p_id]   = mmb.ravd(prediction_mask_pre, ground_truth_mask)
     rvds_post[p_id]  = mmb.ravd(prediction_mask_post, ground_truth_mask)
 
+    # Average SSD
+    assds_pre[p_id]  = mmb.assd(prediction_mask_pre, ground_truth_mask, voxelspacing=voxel_spacing)
+    assds_post[p_id] = mmb.assd(prediction_mask_post, ground_truth_mask, voxelspacing=voxel_spacing)
+    # Maximum SSD
+    hds_pre[p_id]    = mmb.hd(prediction_mask_pre, ground_truth_mask, voxelspacing=voxel_spacing)
+    hds_post[p_id]   = mmb.hd(prediction_mask_post, ground_truth_mask, voxelspacing=voxel_spacing)
+
+
 avg_iou_pre  = np.mean(ious_pre)
 avg_iou_post = np.mean(ious_post)
 
@@ -162,9 +186,17 @@ avg_dice_post = np.mean(dices_post)
 avg_rvd_pre  = np.mean(rvds_pre)
 avg_rvd_post = np.mean(rvds_post)
 
+avg_assd_pre  = np.mean(assds_pre)
+avg_assd_post = np.mean(assds_post)
+
+avg_hd_pre  = np.mean(hds_pre)
+avg_hd_post = np.mean(hds_post)
+
 print("Average IoU  pre = {:.4f} post = {:.4f}".format(avg_iou_pre, avg_iou_post))
 print("Average Dice pre = {:.4f} post = {:.4f}".format(avg_dice_pre, avg_dice_post))
 print("Average RVD  pre = {:+.3f} post = {:+.3f}".format(avg_rvd_pre, avg_rvd_post))
+print("Average ASSD pre = {:.4f} post = {:.4f}".format(avg_assd_pre, avg_assd_post))
+print("Average HD   pre = {:.4f} post = {:.4f}".format(avg_hd_pre, avg_hd_post))
 
 # TODO: remove line below
 # cpp_out = nib.load("F:/cpp_projects/__cpp_repos/example_app/out/build/x64-Release/segmentation-0.nii")
