@@ -7,6 +7,8 @@ from semseg.loss import dice as dice_loss, tversky
 use_tversky = True
 alpha = 0.4
 beta  = 0.6
+print('Use Tversky: ', use_tversky)
+print('alpha = ', alpha, ' beta = ', beta)
 
 def get_loss(outputs, labels, criterion):
     if criterion is None:
