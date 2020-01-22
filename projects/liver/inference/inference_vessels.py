@@ -6,7 +6,7 @@ import torch
 import medpy.metric.binary as mmb
 
 from utils import normalize_data, perform_inference_volumetric_image
-from projects.liver.util.vessels_config import window_hu
+from projects.liver.train.config import window_hu
 
 val_list = ["{:02d}".format(idx) for idx in range(1,3)]
 val_list.append("10")

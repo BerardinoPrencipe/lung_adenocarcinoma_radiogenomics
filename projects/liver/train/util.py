@@ -2,13 +2,19 @@ import torch
 import time
 import os
 import numpy as np
-from semseg.loss import dice as dice_loss
+from semseg.loss import dice as dice_loss, tversky
 
+use_tversky = True
+alpha = 0.4
+beta  = 0.6
 
 def get_loss(outputs, labels, criterion):
     if criterion is None:
         outputs = outputs[:, 1, :, :].unsqueeze(dim=1)
-        loss = dice_loss(outputs, labels)
+        if use_tversky:
+            loss = tversky(outputs, labels, alpha=alpha, beta=beta)
+        else:
+            loss = dice_loss(outputs, labels)
     else:
         labels = labels.squeeze(dim=1)
         loss = criterion(outputs, labels)

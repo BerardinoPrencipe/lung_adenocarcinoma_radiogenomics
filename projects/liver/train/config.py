@@ -86,3 +86,6 @@ def get_train_val_folders(dataset):
         val_folder   = 'E:/Datasets/LiTS/val'
 
     return train_folder, val_folder
+
+
+window_hu = (-150,350)

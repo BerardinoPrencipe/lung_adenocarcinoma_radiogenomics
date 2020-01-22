@@ -12,31 +12,12 @@ import matplotlib.pyplot as plt
 import medpy.metric.binary as mmb
 
 ### variables ###
+test_folder = 'E:/Datasets/Sliver_Nifti/Volumes'
+result_folder = 'E:/Datasets/Sliver_Nifti/Results'
 
-# name of the model saved
-model_name = '25D'
-use_traced_model = True
-
-# the number of context slices before and after as defined as in train.py before training
-context = 2
-
-LIVER_CLASS = 1
-TUMOR_CLASS = 2
-
-inference_on_test_set = False
-use_sliver_as_valid = True
-
-# directory where to store nii.gz or numpy files
-result_folder = 'E:/Datasets/LiTS/results'
-if use_sliver_as_valid: result_folder = 'E:/Datasets/Sliver_Nifti/Results'
-if inference_on_test_set:
-    result_folder = os.path.join(result_folder, 'test')
-    test_folder = 'F:/Datasets/LiTS/test'
-else:
-    result_folder = os.path.join(result_folder, 'train')
-    test_folder = 'F:/Datasets/LiTS/train'
-if use_sliver_as_valid:
-    test_folder = 'E:/Datasets/Sliver_Nifti/Volumes'
+alpha_beta = 'a5_b5'
+method = 'CNN'
+result_folder = os.path.join(result_folder, method, alpha_beta)
 
 if not os.path.exists(result_folder):
     os.makedirs(result_folder)
@@ -51,31 +32,18 @@ if not os.path.exists(results_folder_post):
 
 #################
 
-if inference_on_test_set:
-    # filter files that don't start with test
-    files_test_volumes = [file for file in os.listdir(test_folder) if file[:4] == "test"]
-else:
-    files_test_volumes = [file for file in os.listdir(test_folder) if file[:6] == "volume"]
-
-if use_sliver_as_valid:
-    sliver_scans_folder = 'E:/Datasets/Sliver_Nifti/Volumes'
-    files_test_volumes = [file for file in os.listdir(sliver_scans_folder)]
+sliver_scans_folder = 'E:/Datasets/Sliver_Nifti/Volumes'
+files_test_volumes = [file for file in os.listdir(sliver_scans_folder)]
 
 # load network
 logs_dir = 'logs/liver'
 cuda = torch.cuda.is_available()
 use_multi_gpu = True
-if use_traced_model:
-    if use_multi_gpu:
-        path_traced_model = os.path.join(logs_dir, "traced_model_multi_" + model_name + ".pt")
-    else:
-        path_traced_model = os.path.join(logs_dir, "traced_model_" + model_name + ".pt")
-    net = torch.jit.load(path_traced_model)
-else:
-    net = torch.load(os.path.join(logs_dir, "model_" + model_name + ".pht"))
-    if cuda and use_multi_gpu: net = use_multi_gpu_model(net)
-    elif cuda: net = net.cuda()
-    net.eval()  # inference mode
+
+net_path = 'logs/liver/model_25D__2020-01-22__14_00_38.pht'
+net = torch.load(net_path)
+net = net.cuda()
+net.eval()
 
 
 for file_name_prediction in files_test_volumes:
@@ -89,7 +57,6 @@ for file_name_prediction in files_test_volumes:
     data = data.get_data()
 
     # normalize data
-    # data = normalize_data(data, dmin=-200, dmax=200)
     data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
 
     # transpose so the z-axis (slices) are the first dimension
@@ -105,10 +72,7 @@ for file_name_prediction in files_test_volumes:
     output_nib_pre = nib.Nifti1Image(output, affine=input_aff)
     output_nib_post = nib.Nifti1Image(output_post, affine=input_aff)
 
-    if inference_on_test_set:
-        new_file_name = "test-segmentation-" + file_name_prediction.split("-")[-1]
-    else:
-        new_file_name = "segmentation-" + file_name_prediction.split("-")[-1]
+    new_file_name = "segmentation-" + file_name_prediction.split("-")[-1]
 
     path_segmentation_pre = os.path.join(results_folder_pre, new_file_name)
     path_segmentation_post = os.path.join(results_folder_post, new_file_name)
@@ -118,11 +82,7 @@ for file_name_prediction in files_test_volumes:
     nib.save(output_nib_post, path_segmentation_post)
 
 
-if inference_on_test_set:
-    val_list = [idx for idx in range(len(files_test_volumes))]
-else:
-    val_list = [idx for idx in range(20)]
-if use_sliver_as_valid: val_list = [idx for idx in range(1,21)]
+val_list = [idx for idx in range(1, 21)]
 
 ious_pre   = np.zeros(len(val_list))
 ious_post  = np.zeros(len(val_list))
@@ -148,11 +108,9 @@ hds_rg     = np.zeros(len(val_list))
 
 paths_predictions_pre  = [filename for filename in os.listdir(results_folder_pre) if filename.endswith(".nii")]
 paths_predictions_post = [filename for filename in os.listdir(results_folder_post) if filename.endswith(".nii")]
-paths_ground_truth     = [filename for filename in os.listdir(test_folder) if filename[:12] == "segmentation"]
 
-if use_sliver_as_valid:
-    sliver_masks_folder = 'E:/Datasets/Sliver_Nifti/GroundTruth'
-    paths_ground_truth = [file for file in os.listdir(sliver_masks_folder)]
+sliver_masks_folder = 'E:/Datasets/Sliver_Nifti/GroundTruth'
+paths_ground_truth = [file for file in os.listdir(sliver_masks_folder)]
 
 region_growing_pred_folder = 'E:/Datasets/Sliver_Nifti/Results/RegionGrowing/D25'
 paths_predictions_rg = [filename for filename in os.listdir(region_growing_pred_folder)]
@@ -162,28 +120,20 @@ paths_predictions_post.sort()
 paths_ground_truth.sort()
 paths_predictions_rg.sort()
 
-eval_cnn = False
-eval_rg  = True
+eval_cnn = True
+eval_rg  = False
 
-for idx, (path_prediction_pre, path_prediction_post, path_prediction_rg, path_ground_truth) in \
+for p_id, (path_prediction_pre, path_prediction_post, path_prediction_rg, path_ground_truth) in \
         enumerate(zip(paths_predictions_pre, paths_predictions_post, paths_predictions_rg, paths_ground_truth)):
 
-    print("Index: ", idx)
-    if not use_sliver_as_valid:
-        p_id = get_patient_id(path_ground_truth)
-        if p_id not in val_list:
-            continue
-        else:
-            print("Patient ID = ", p_id)
-    else:
-        p_id = idx
+    print("Index: ", p_id)
 
     prediction_mask_pre  = nib.load(os.path.join(results_folder_pre, path_prediction_pre))
     prediction_mask_pre  = prediction_mask_pre.get_data()
     prediction_mask_post = nib.load(os.path.join(results_folder_post, path_prediction_post))
     prediction_mask_post = prediction_mask_post.get_data()
-    path_gt_mask = os.path.join(test_folder, path_ground_truth)
-    if use_sliver_as_valid: path_gt_mask = os.path.join(sliver_masks_folder, path_ground_truth)
+
+    path_gt_mask = os.path.join(sliver_masks_folder, path_ground_truth)
 
     prediction_mask_rg = nib.load(os.path.join(region_growing_pred_folder, path_prediction_rg))
     prediction_mask_rg =  prediction_mask_rg.get_data()
