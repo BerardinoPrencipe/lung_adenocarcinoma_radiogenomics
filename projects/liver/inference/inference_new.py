@@ -169,6 +169,14 @@ for p_id, (path_prediction_pre, path_prediction_post,
     prediction_mask_rg_30 = nib.load(os.path.join(region_growing_pred_folder_30, path_prediction_rg_30))
     prediction_mask_rg_30 = prediction_mask_rg_30.get_data()
 
+    prediction_mask_rg_20[prediction_mask_rg_20==prediction_mask_rg_20.min()] = 0
+    prediction_mask_rg_20[prediction_mask_rg_20==prediction_mask_rg_20.max()] = 1
+
+    prediction_mask_rg_25[prediction_mask_rg_25==prediction_mask_rg_25.min()] = 0
+    prediction_mask_rg_25[prediction_mask_rg_25==prediction_mask_rg_25.max()] = 1
+
+    prediction_mask_rg_30[prediction_mask_rg_30==prediction_mask_rg_30.min()] = 0
+    prediction_mask_rg_30[prediction_mask_rg_30==prediction_mask_rg_30.max()] = 1
 
     ground_truth_mask = nib.load(path_gt_mask)
     voxel_spacing        = ground_truth_mask.header.get_zooms()
