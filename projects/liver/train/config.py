@@ -22,7 +22,7 @@ print('Using multi-GPU   = ', use_multi_gpu)
 if use_multi_gpu:
     batch_size = 10
 else:
-    batch_size = 4
+    batch_size = 2
 
 def get_criterion(dataset):
     if dice is False:

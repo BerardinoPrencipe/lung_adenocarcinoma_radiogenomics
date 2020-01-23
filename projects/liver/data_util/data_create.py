@@ -2,6 +2,7 @@ import numpy as np
 import nibabel as nib
 import os.path
 from utils import normalize_data, get_patient_id
+from projects.liver.train.config import window_hu
 
 ### variables ###
 
@@ -46,7 +47,8 @@ for file_name in os.listdir(source_folder):
 
     # check if it is a volume file and clip and standardize if so
     if file_name[:3] == 'vol':
-        data = normalize_data(data, dmin=-200, dmax=200)
+        data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
+        # data = normalize_data(data, dmin=-200, dmax=200)
 
     # check if it is a segmentation file and select only the tumor (2) as positive label
     if file_name[:3] == 'seg': data = (data==LIVER_CLASS).astype(np.uint8)
