@@ -45,41 +45,43 @@ net = torch.load(net_path)
 net = net.cuda()
 net.eval()
 
+eval_net_volumes = False
 
-for file_name_prediction in files_test_volumes:
-    # load file
-    data = nib.load(os.path.join(test_folder, file_name_prediction))
+if eval_net_volumes:
+    for file_name_prediction in files_test_volumes:
+        # load file
+        data = nib.load(os.path.join(test_folder, file_name_prediction))
 
-    # save affine
-    input_aff = data.affine
+        # save affine
+        input_aff = data.affine
 
-    # convert to numpy
-    data = data.get_data()
+        # convert to numpy
+        data = data.get_data()
 
-    # normalize data
-    data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
+        # normalize data
+        data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
 
-    # transpose so the z-axis (slices) are the first dimension
-    data = np.transpose(data, (2, 0, 1))
+        # transpose so the z-axis (slices) are the first dimension
+        data = np.transpose(data, (2, 0, 1))
 
-    output = perform_inference_volumetric_image(net, data, context=2, do_round=True)
-    output = output.astype(np.uint8)
+        output = perform_inference_volumetric_image(net, data, context=2, do_round=True)
+        output = output.astype(np.uint8)
 
-    # transpose so z-axis is last axis again and transform into nifti file
-    output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
-    output_post = post_process_liver(output)
+        # transpose so z-axis is last axis again and transform into nifti file
+        output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
+        output_post = post_process_liver(output)
 
-    output_nib_pre = nib.Nifti1Image(output, affine=input_aff)
-    output_nib_post = nib.Nifti1Image(output_post, affine=input_aff)
+        output_nib_pre = nib.Nifti1Image(output, affine=input_aff)
+        output_nib_post = nib.Nifti1Image(output_post, affine=input_aff)
 
-    new_file_name = "segmentation-" + file_name_prediction.split("-")[-1]
+        new_file_name = "segmentation-" + file_name_prediction.split("-")[-1]
 
-    path_segmentation_pre = os.path.join(results_folder_pre, new_file_name)
-    path_segmentation_post = os.path.join(results_folder_post, new_file_name)
-    print("Path Pre  = ", path_segmentation_pre)
-    print("Path Post = ", path_segmentation_post)
-    nib.save(output_nib_pre, path_segmentation_pre)
-    nib.save(output_nib_post, path_segmentation_post)
+        path_segmentation_pre = os.path.join(results_folder_pre, new_file_name)
+        path_segmentation_post = os.path.join(results_folder_post, new_file_name)
+        print("Path Pre  = ", path_segmentation_pre)
+        print("Path Post = ", path_segmentation_post)
+        nib.save(output_nib_pre, path_segmentation_pre)
+        nib.save(output_nib_post, path_segmentation_post)
 
 
 val_list = [idx for idx in range(1, 21)]
@@ -100,11 +102,24 @@ assds_post = np.zeros(len(val_list))
 hds_pre    = np.zeros(len(val_list))
 hds_post   = np.zeros(len(val_list))
 
-ious_rg    = np.zeros(len(val_list))
-dices_rg   = np.zeros(len(val_list))
-rvds_rg    = np.zeros(len(val_list))
-assds_rg   = np.zeros(len(val_list))
-hds_rg     = np.zeros(len(val_list))
+ious_rg_20  = np.zeros(len(val_list))
+dices_rg_20 = np.zeros(len(val_list))
+rvds_rg_20  = np.zeros(len(val_list))
+assds_rg_20 = np.zeros(len(val_list))
+hds_rg_20   = np.zeros(len(val_list))
+
+ious_rg_25  = np.zeros(len(val_list))
+dices_rg_25 = np.zeros(len(val_list))
+rvds_rg_25  = np.zeros(len(val_list))
+assds_rg_25 = np.zeros(len(val_list))
+hds_rg_25   = np.zeros(len(val_list))
+
+ious_rg_30  = np.zeros(len(val_list))
+dices_rg_30 = np.zeros(len(val_list))
+rvds_rg_30  = np.zeros(len(val_list))
+assds_rg_30 = np.zeros(len(val_list))
+hds_rg_30   = np.zeros(len(val_list))
+
 
 paths_predictions_pre  = [filename for filename in os.listdir(results_folder_pre) if filename.endswith(".nii")]
 paths_predictions_post = [filename for filename in os.listdir(results_folder_post) if filename.endswith(".nii")]
@@ -112,19 +127,29 @@ paths_predictions_post = [filename for filename in os.listdir(results_folder_pos
 sliver_masks_folder = 'E:/Datasets/Sliver_Nifti/GroundTruth'
 paths_ground_truth = [file for file in os.listdir(sliver_masks_folder)]
 
-region_growing_pred_folder = 'E:/Datasets/Sliver_Nifti/Results/RegionGrowing/D25'
-paths_predictions_rg = [filename for filename in os.listdir(region_growing_pred_folder)]
+region_growing_pred_folder_20 = 'E:/Datasets/Sliver_Nifti/Results/RegionGrowing/D20'
+region_growing_pred_folder_25 = 'E:/Datasets/Sliver_Nifti/Results/RegionGrowing/D25'
+region_growing_pred_folder_30 = 'E:/Datasets/Sliver_Nifti/Results/RegionGrowing/D30'
+paths_predictions_rg_20 = [filename for filename in os.listdir(region_growing_pred_folder_20)]
+paths_predictions_rg_25 = [filename for filename in os.listdir(region_growing_pred_folder_25)]
+paths_predictions_rg_30 = [filename for filename in os.listdir(region_growing_pred_folder_30)]
 
 paths_predictions_pre.sort()
 paths_predictions_post.sort()
 paths_ground_truth.sort()
-paths_predictions_rg.sort()
+paths_predictions_rg_20.sort()
+paths_predictions_rg_25.sort()
+paths_predictions_rg_30.sort()
 
-eval_cnn = True
-eval_rg  = False
+eval_cnn = False
+eval_rg  = True
 
-for p_id, (path_prediction_pre, path_prediction_post, path_prediction_rg, path_ground_truth) in \
-        enumerate(zip(paths_predictions_pre, paths_predictions_post, paths_predictions_rg, paths_ground_truth)):
+for p_id, (path_prediction_pre, path_prediction_post,
+           path_prediction_rg_20, path_prediction_rg_25, path_prediction_rg_30,
+           path_ground_truth) in \
+        enumerate(zip(paths_predictions_pre, paths_predictions_post,
+                      paths_predictions_rg_20, paths_predictions_rg_25, paths_predictions_rg_30,
+                      paths_ground_truth)):
 
     print("Index: ", p_id)
 
@@ -135,10 +160,15 @@ for p_id, (path_prediction_pre, path_prediction_post, path_prediction_rg, path_g
 
     path_gt_mask = os.path.join(sliver_masks_folder, path_ground_truth)
 
-    prediction_mask_rg = nib.load(os.path.join(region_growing_pred_folder, path_prediction_rg))
-    prediction_mask_rg =  prediction_mask_rg.get_data()
-    prediction_mask_rg[prediction_mask_rg == prediction_mask_rg.min()] = 0
-    prediction_mask_rg[prediction_mask_rg == prediction_mask_rg.max()] = 1
+    prediction_mask_rg_20 = nib.load(os.path.join(region_growing_pred_folder_20, path_prediction_rg_20))
+    prediction_mask_rg_20 = prediction_mask_rg_20.get_data()
+
+    prediction_mask_rg_25 = nib.load(os.path.join(region_growing_pred_folder_25, path_prediction_rg_25))
+    prediction_mask_rg_25 = prediction_mask_rg_25.get_data()
+
+    prediction_mask_rg_30 = nib.load(os.path.join(region_growing_pred_folder_30, path_prediction_rg_30))
+    prediction_mask_rg_30 = prediction_mask_rg_30.get_data()
+
 
     ground_truth_mask = nib.load(path_gt_mask)
     voxel_spacing        = ground_truth_mask.header.get_zooms()
@@ -146,11 +176,23 @@ for p_id, (path_prediction_pre, path_prediction_post, path_prediction_rg, path_g
 
 
     if eval_rg:
-        ious_rg[p_id]  = mmb.jc(prediction_mask_rg, ground_truth_mask)
-        dices_rg[p_id] = mmb.dc(prediction_mask_rg, ground_truth_mask)
-        rvds_rg[p_id]  = mmb.ravd(prediction_mask_rg, ground_truth_mask)
-        assds_rg[p_id] = mmb.assd(prediction_mask_rg, ground_truth_mask)
-        hds_rg[p_id]   = mmb.hd(prediction_mask_rg, ground_truth_mask)
+        ious_rg_20[p_id]  = mmb.jc(prediction_mask_rg_20, ground_truth_mask)
+        dices_rg_20[p_id] = mmb.dc(prediction_mask_rg_20, ground_truth_mask)
+        rvds_rg_20[p_id]  = mmb.ravd(prediction_mask_rg_20, ground_truth_mask)
+        assds_rg_20[p_id] = mmb.assd(prediction_mask_rg_20, ground_truth_mask)
+        hds_rg_20[p_id]   = mmb.hd(prediction_mask_rg_20, ground_truth_mask)
+
+        ious_rg_25[p_id]  = mmb.jc(prediction_mask_rg_25, ground_truth_mask)
+        dices_rg_25[p_id] = mmb.dc(prediction_mask_rg_25, ground_truth_mask)
+        rvds_rg_25[p_id]  = mmb.ravd(prediction_mask_rg_25, ground_truth_mask)
+        assds_rg_25[p_id] = mmb.assd(prediction_mask_rg_25, ground_truth_mask)
+        hds_rg_25[p_id]   = mmb.hd(prediction_mask_rg_25, ground_truth_mask)
+
+        ious_rg_30[p_id]  = mmb.jc(prediction_mask_rg_30, ground_truth_mask)
+        dices_rg_30[p_id] = mmb.dc(prediction_mask_rg_30, ground_truth_mask)
+        rvds_rg_30[p_id]  = mmb.ravd(prediction_mask_rg_30, ground_truth_mask)
+        assds_rg_30[p_id] = mmb.assd(prediction_mask_rg_30, ground_truth_mask)
+        hds_rg_30[p_id]   = mmb.hd(prediction_mask_rg_30, ground_truth_mask)
 
     if eval_cnn:
         ious_pre[p_id]   = mmb.jc(prediction_mask_pre, ground_truth_mask)
@@ -172,29 +214,48 @@ for p_id, (path_prediction_pre, path_prediction_post, path_prediction_rg, path_g
 
 avg_iou_pre  = np.mean(ious_pre)
 avg_iou_post = np.mean(ious_post)
-avg_iou_rg   = np.mean(ious_rg)
+avg_iou_rg_20 = np.mean(ious_rg_20)
+avg_iou_rg_25 = np.mean(ious_rg_25)
+avg_iou_rg_30 = np.mean(ious_rg_30)
 
 avg_dice_pre  = np.mean(dices_pre)
 avg_dice_post = np.mean(dices_post)
-avg_dice_rg   = np.mean(dices_rg)
+avg_dice_rg_20 = np.mean(dices_rg_20)
+avg_dice_rg_25 = np.mean(dices_rg_25)
+avg_dice_rg_30 = np.mean(dices_rg_30)
 
 avg_rvd_pre  = np.mean(rvds_pre)
 avg_rvd_post = np.mean(rvds_post)
-avg_rvd_rg   = np.mean(rvds_rg)
+avg_rvd_rg_20 = np.mean(rvds_rg_20)
+avg_rvd_rg_25 = np.mean(rvds_rg_25)
+avg_rvd_rg_30 = np.mean(rvds_rg_30)
 
 avg_assd_pre  = np.mean(assds_pre)
 avg_assd_post = np.mean(assds_post)
-avg_assd_rg   = np.mean(assds_rg)
+avg_assd_rg_20   = np.mean(assds_rg_20)
+avg_assd_rg_25   = np.mean(assds_rg_25)
+avg_assd_rg_30   = np.mean(assds_rg_30)
 
 avg_hd_pre  = np.mean(hds_pre)
 avg_hd_post = np.mean(hds_post)
-avg_hd_rg   = np.mean(hds_rg)
+avg_hd_rg_20   = np.mean(hds_rg_20)
+avg_hd_rg_25   = np.mean(hds_rg_25)
+avg_hd_rg_30   = np.mean(hds_rg_30)
 
-print("Average IoU  pre = {:.4f} post = {:.4f} rg = {:.4f}".format(avg_iou_pre, avg_iou_post, avg_iou_rg))
-print("Average Dice pre = {:.4f} post = {:.4f} rg = {:.4f}".format(avg_dice_pre, avg_dice_post, avg_dice_rg))
-print("Average RVD  pre = {:+.3f} post = {:+.3f} rg = {:+.3f}".format(avg_rvd_pre, avg_rvd_post, avg_rvd_rg))
-print("Average ASSD pre = {:.4f} post = {:.4f} rg = {:.4f}".format(avg_assd_pre, avg_assd_post, avg_assd_rg))
-print("Average HD   pre = {:.4f} post = {:.4f} rg = {:.4f}".format(avg_hd_pre, avg_hd_post, avg_hd_rg))
+print("Average IoU  pre = {:.4f} post = {:.4f} ".format(avg_iou_pre, avg_iou_post))
+print("Average IoU  rg D20 = {:.4f} rg D25 = {:.4f} rg D30 = {:.4f}".format(avg_iou_rg_20,avg_iou_rg_25,avg_iou_rg_30))
+
+print("Average Dice pre = {:.4f} post = {:.4f}".format(avg_dice_pre, avg_dice_post))
+print("Average Dice rg D20 = {:.4f} rg D25 = {:.4f} rg D30 = {:.4f}".format( avg_dice_rg_20,  avg_dice_rg_25, avg_dice_rg_30))
+
+print("Average RVD  pre = {:+.3f} post = {:+.3f}".format(avg_rvd_pre, avg_rvd_post))
+print("Average RVD  rg D20 = {:+.3f} rg D25 = {:+.3f} rg D30 = {:+.3f}".format(avg_rvd_rg_20, avg_rvd_rg_25, avg_rvd_rg_30))
+
+print("Average ASSD pre = {:.4f} post = {:.4f}".format(avg_assd_pre, avg_assd_post))
+print("Average ASSD rg D20 = {:.4f} rg D25 = {:.4f} rg D30 = {:.4f}".format(avg_assd_rg_20, avg_assd_rg_25, avg_assd_rg_30))
+
+print("Average HD   pre = {:.4f} post = {:.4f}".format(avg_hd_pre, avg_hd_post))
+print("Average HD   rg D20 = {:.4f} rg D25 = {:.4f} rg D30 = {:.4f}".format(avg_hd_rg_20, avg_hd_rg_25, avg_hd_rg_30))
 
 # TODO: remove line below
 # cpp_out = nib.load("F:/cpp_projects/__cpp_repos/example_app/out/build/x64-Release/segmentation-0.nii")
