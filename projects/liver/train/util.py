@@ -5,8 +5,9 @@ import numpy as np
 from semseg.loss import dice as dice_loss, tversky
 
 use_tversky = True
-alpha = 0.4
-beta  = 0.6
+# alpha, beta = 0.4, 0.6
+alpha, beta = 0.3, 0.7
+
 print('Use Tversky: ', use_tversky)
 print('alpha = ', alpha, ' beta = ', beta)
 

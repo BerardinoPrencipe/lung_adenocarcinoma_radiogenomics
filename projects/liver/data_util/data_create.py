@@ -2,14 +2,18 @@ import numpy as np
 import nibabel as nib
 import os.path
 from utils import normalize_data, get_patient_id
-from projects.liver.train.config import window_hu
+from projects.liver.train.config import window_hu, use_local_path
 
 ### variables ###
 
 # validation list
 val_list = [idx for idx in range(20)]
 
-dataset_folder = 'F:/Datasets/LiTS/train'
+if use_local_path:
+    dataset_folder = 'datasets/LiTS/train'
+else:
+    dataset_folder = 'F:/Datasets/LiTS/train'
+
 # source folder where the .nii.gz files are located
 source_folder = dataset_folder
 
@@ -19,7 +23,11 @@ LIVER_CLASS = 1
 TUMOR_CLASS = 2
 
 # destination folder where the subfolders with npy files will go
-destination_folder = 'E:/Datasets/LiTS'
+if use_local_path:
+    destination_folder = 'datasets/LiTS/npy'
+else:
+    destination_folder = 'E:/Datasets/LiTS'
+
 
 # create destination folder and possible subfolders
 subfolders = ["train", "val"]

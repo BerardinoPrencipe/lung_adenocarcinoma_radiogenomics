@@ -3,6 +3,9 @@ import platform
 import torch
 import torch.nn as nn
 
+# Use local path or absolute
+use_local_path = True
+
 # The dataset to use!
 # dataset = "vessels"
 # dataset = "hv"
@@ -22,7 +25,10 @@ print('Using multi-GPU   = ', use_multi_gpu)
 if use_multi_gpu:
     batch_size = 10
 else:
-    batch_size = 2
+    if use_local_path:
+        batch_size = 8
+    else:
+        batch_size = 2
 
 def get_criterion(dataset):
     if dice is False:
@@ -82,8 +88,12 @@ def get_train_val_folders(dataset):
         val_folder = 'E:/Datasets/ircadb_pv/val'
     elif dataset == "liver":
         # Liver LiTS
-        train_folder = 'E:/Datasets/LiTS/train'
-        val_folder   = 'E:/Datasets/LiTS/val'
+        if use_local_path:
+            train_folder = 'datasets/LiTS/npy/train'
+            val_folder = 'datasets/LiTS/npy/train'
+        else:
+            train_folder = 'E:/Datasets/LiTS/train'
+            val_folder   = 'E:/Datasets/LiTS/val'
 
     return train_folder, val_folder
 
