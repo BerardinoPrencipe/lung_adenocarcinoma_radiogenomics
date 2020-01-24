@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 # Use local path or absolute
-use_local_path = True
+use_local_path = False
 
 # The dataset to use!
 # dataset = "vessels"

@@ -16,10 +16,15 @@ def print_dict(dict_to_print):
     for x in dict_to_print:
         print("{:15s} : {}".format(x, dict_to_print[x]))
 
-
-def normalize_data(data, dmin=-200, dmax=200):
+# TODO: deprecated function! Delete and replace with v2
+def normalize_data_old(data, dmin=-200, dmax=200):
     return np.clip(data, dmin, dmax) / (dmax-dmin) + 0.5
 
+def normalize_data(data, interval=(-150,350)):
+    dmin, dmax = interval
+    clipped_data = np.clip(data, dmin, dmax)
+    norm_data = (clipped_data - dmin) / (dmax-dmin)
+    return norm_data
 
 def perform_inference_volumetric_image(net, data, context=2, do_round=True):
     start_time = time.time()

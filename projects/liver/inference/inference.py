@@ -90,7 +90,8 @@ for file_name_prediction in files_test_volumes:
 
     # normalize data
     # data = normalize_data(data, dmin=-200, dmax=200)
-    data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
+    # data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
+    data = normalize_data(data, window_hu)
 
     # transpose so the z-axis (slices) are the first dimension
     data = np.transpose(data, (2, 0, 1))

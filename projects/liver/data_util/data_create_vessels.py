@@ -67,7 +67,8 @@ for subfolder_source in os.listdir(source_folder):
 
     # convert to numpy
     image_data = image_data.get_data()
-    image_data = normalize_data(image_data, dmin=window_hu[0], dmax=window_hu[1])
+    # image_data = normalize_data_old(image_data, dmin=window_hu[0], dmax=window_hu[1])
+    image_data = normalize_data(image_data, window_hu)
 
     mask_data = mask_data.get_data()
 

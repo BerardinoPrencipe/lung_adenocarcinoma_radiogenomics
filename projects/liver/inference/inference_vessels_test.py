@@ -41,7 +41,8 @@ for folder_patient_test in folders_patients_test:
     image_data = sitk.GetArrayFromImage(image)
 
     # normalize data
-    data = normalize_data(image_data, dmin=window_hu[0], dmax=window_hu[1])
+    # data = normalize_data(image_data, dmin=window_hu[0], dmax=window_hu[1])
+    data = normalize_data(image_data, window_hu)
     data = (data * 255).astype(np.uint8)
 
     # transpose so the z-axis (slices) are the first dimension

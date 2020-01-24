@@ -40,12 +40,13 @@ logs_dir = 'logs/liver'
 cuda = torch.cuda.is_available()
 use_multi_gpu = True
 
-net_path = 'logs/liver/model_25D__2020-01-22__14_00_38.pht'
+# net_path = 'logs/liver/model_25D__2020-01-22__14_00_38.pht'
+net_path = 'logs/liver/model_25D__2020-01-24__11_34_49.pht'
 net = torch.load(net_path)
 net = net.cuda()
 net.eval()
 
-eval_net_volumes = False
+eval_net_volumes = True
 
 if eval_net_volumes:
     for file_name_prediction in files_test_volumes:
@@ -59,7 +60,8 @@ if eval_net_volumes:
         data = data.get_data()
 
         # normalize data
-        data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
+        # data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
+        data = normalize_data(data, window_hu)
 
         # transpose so the z-axis (slices) are the first dimension
         data = np.transpose(data, (2, 0, 1))
@@ -141,8 +143,8 @@ paths_predictions_rg_20.sort()
 paths_predictions_rg_25.sort()
 paths_predictions_rg_30.sort()
 
-eval_cnn = False
-eval_rg  = True
+eval_cnn = True
+eval_rg  = False
 
 for p_id, (path_prediction_pre, path_prediction_post,
            path_prediction_rg_20, path_prediction_rg_25, path_prediction_rg_30,

@@ -5,7 +5,8 @@ import numpy as np
 from utils import normalize_data
 
 def pre_process_dicom(image_data, window_hu):
-    image_data = normalize_data(image_data, window_hu[0], window_hu[1])
+    # image_data = normalize_data(image_data, window_hu[0], window_hu[1])
+    image_data = normalize_data(image_data, window_hu)
     image_data_ = (image_data * 255).astype(np.uint8)
     return image_data_
 

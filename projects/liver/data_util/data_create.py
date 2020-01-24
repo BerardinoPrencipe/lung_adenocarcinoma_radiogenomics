@@ -55,8 +55,10 @@ for file_name in os.listdir(source_folder):
 
     # check if it is a volume file and clip and standardize if so
     if file_name[:3] == 'vol':
-        data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
-        # data = normalize_data(data, dmin=-200, dmax=200)
+        print('[Before Normalization] data.min() = {} data.max() = {}'.format(data.min(), data.max()))
+        # data = normalize_data_old(data, dmin=window_hu[0], dmax=window_hu[1])
+        data = normalize_data(data, window_hu)
+        print('[After  Normalization] data.min() = {} data.max() = {}'.format(data.min(),data.max()))
 
     # check if it is a segmentation file and select only the tumor (2) as positive label
     if file_name[:3] == 'seg': data = (data==LIVER_CLASS).astype(np.uint8)

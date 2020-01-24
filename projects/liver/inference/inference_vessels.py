@@ -40,7 +40,8 @@ for folder_patient_valid in folders_patients_valid:
     data = data.get_data()
 
     # normalize data
-    data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
+    # data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
+    data = normalize_data(data, window_hu)
 
     # transpose so the z-axis (slices) are the first dimension
     data = np.transpose(data, (2, 0, 1))
