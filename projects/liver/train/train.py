@@ -1,10 +1,4 @@
 import os
-import time
-import semseg.models.vnet
-import numpy as np
-from subprocess import call
-import platform
-import time
 import sys
 
 import torch
