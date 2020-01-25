@@ -1,8 +1,18 @@
 import numpy as np
 import nibabel as nib
-import os.path
+import os
+import platform
+import sys
+
+current_path_abs = os.path.abspath('.')
+sys.path.append(current_path_abs)
+print('{} appended to sys!'.format(current_path_abs))
+
 from utils import normalize_data, get_patient_id
 from projects.liver.train.config import window_hu, use_local_path
+
+if 'Ubuntu' in platform.version():
+    use_local_path = True
 
 ### variables ###
 
@@ -37,8 +47,9 @@ for name in subfolders:
     if not os.path.isdir(os.path.join(destination_folder, name)):
         os.makedirs(os.path.join(destination_folder, name))
 
-for file_name in os.listdir(source_folder):
+for idx, file_name in enumerate(os.listdir(source_folder)):
 
+    print('Iter {} on {}'.format(idx, len(os.listdir(source_folder))))
     print(file_name)
 
     # create new file name by stripping .nii and adding .npy
