@@ -23,7 +23,7 @@ dataset = "liver"
 # Hyperparams
 isWindows = 'Windows' in platform.system()
 if use_local_path and not isWindows:
-    num_workers = 8
+    num_workers = 16
 if isWindows:
     num_workers = 0
 use_multi_gpu = False
