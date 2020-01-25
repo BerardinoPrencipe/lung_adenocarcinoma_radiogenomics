@@ -22,7 +22,10 @@ dataset = "liver"
 
 # Hyperparams
 isWindows = 'Windows' in platform.system()
-num_workers = 0 if isWindows else 2
+if use_local_path and not isWindows:
+    num_workers = 8
+if isWindows:
+    num_workers = 0
 use_multi_gpu = False
 dice = True
 # GPU enabled
