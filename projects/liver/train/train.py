@@ -5,10 +5,16 @@ import numpy as np
 from subprocess import call
 import platform
 import time
+import sys
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
+
+
+current_path_abs = os.path.abspath('.')
+sys.path.append(current_path_abs)
+print('{} appended to sys!'.format(current_path_abs))
 
 from utils import print_dict
 from projects.liver.data_util.data_load_util import train_data_loader, val_data_loader
@@ -20,6 +26,8 @@ def run(config, dataset):
     logs_folder = get_logs_folder(dataset)
     train_folder, val_folder = get_train_val_folders(dataset)
     criterion = get_criterion(dataset)
+    
+    print('Train Folder = {}\nValidation Folder = {}\nLogs Folder = {}'.format(train_folder, val_folder, logs_folder))
 
     if not os.path.exists(logs_folder):
         os.makedirs(logs_folder)

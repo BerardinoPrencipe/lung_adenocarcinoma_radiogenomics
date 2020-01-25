@@ -1,3 +1,5 @@
+#python3 projects/liver/data_util/data_create.py
+
 import numpy as np
 import nibabel as nib
 import os
@@ -10,9 +12,6 @@ print('{} appended to sys!'.format(current_path_abs))
 
 from utils import normalize_data, get_patient_id
 from projects.liver.train.config import window_hu, use_local_path
-
-if 'Ubuntu' in platform.version():
-    use_local_path = True
 
 ### variables ###
 
@@ -49,7 +48,7 @@ for name in subfolders:
 
 for idx, file_name in enumerate(os.listdir(source_folder)):
 
-    print('Iter {} on {}'.format(idx, len(os.listdir(source_folder))))
+    print('Iter {} on {}'.format(idx, len(os.listdir(source_folder))-1))
     print(file_name)
 
     # create new file name by stripping .nii and adding .npy
