@@ -26,7 +26,7 @@ def run(config, dataset):
     logs_folder = get_logs_folder(dataset)
     train_folder, val_folder = get_train_val_folders(dataset)
     criterion = get_criterion(dataset)
-    
+
     print('Train Folder = {}\nValidation Folder = {}\nLogs Folder = {}'.format(train_folder, val_folder, logs_folder))
 
     if not os.path.exists(logs_folder):
