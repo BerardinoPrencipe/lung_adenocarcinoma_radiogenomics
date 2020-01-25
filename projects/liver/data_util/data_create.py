@@ -20,7 +20,7 @@ if 'Ubuntu' in platform.version():
 val_list = [idx for idx in range(20)]
 
 if use_local_path:
-    dataset_folder = 'datasets/LiTS/train'
+    dataset_folder = os.path.join(current_path_abs, 'datasets/LiTS/train')
 else:
     dataset_folder = 'F:/Datasets/LiTS/train'
 
@@ -34,7 +34,7 @@ TUMOR_CLASS = 2
 
 # destination folder where the subfolders with npy files will go
 if use_local_path:
-    destination_folder = 'datasets/LiTS/npy'
+    destination_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy')
 else:
     destination_folder = 'E:/Datasets/LiTS'
 
