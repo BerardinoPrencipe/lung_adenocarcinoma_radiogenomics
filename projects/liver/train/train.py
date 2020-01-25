@@ -66,31 +66,31 @@ if __name__ == "__main__":
     parser.add_argument(
         "-e",
         "--epochs",
-        default=config['epochs'],
+        default=config['epochs'], type=int,
         help="Specify the number of epochs required for training"
     )
     parser.add_argument(
         "-n",
         "--num_samples",
-        default=config['num_samples'],
+        default=config['num_samples'], type=int,
         help="Specify the number of samples per each epoch during training"
     )
     parser.add_argument(
         "-b",
         "--batch_size",
-        default=config['batch_size'],
+        default=config['batch_size'], type=int,
         help="Specify the batch size"
     )
     parser.add_argument(
         "-v",
         "--val_epochs",
-        default=config['val_epochs'],
+        default=config['val_epochs'], type=int,
         help="Specify the number of validation epochs during training"
     )
     parser.add_argument(
         "-w",
         "--num_workers",
-        default=config['num_workers'],
+        default=config['num_workers'], type=int,
         help="Specify the number of workers"
     )
     parser.add_argument(
