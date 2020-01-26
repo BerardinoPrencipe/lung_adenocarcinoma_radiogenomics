@@ -23,7 +23,7 @@ from semseg.models.vnet_v2 import VXNet
 if use_local_path:
     test_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Volumes')
     result_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Results')
-    gt_mask_folder = os.path.join(current_path_abs, 'datasets/Sliver/GroundTruth')
+    gt_mask_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/GroundTruth')
 else:
     test_folder = 'E:/Datasets/Sliver_Nifti/Volumes'
     result_folder = 'E:/Datasets/Sliver_Nifti/Results'
