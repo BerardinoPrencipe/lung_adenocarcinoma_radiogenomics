@@ -17,7 +17,7 @@ from projects.liver.train.config import use_local_path
 from utils import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model, \
     post_process_liver, get_dice, get_iou, get_patient_id
 from projects.liver.train.config import window_hu
-
+from semseg.models.vnet_v2 import VXNet
 
 ### variables ###
 if use_local_path:
@@ -65,7 +65,13 @@ else:
     cuda_dev = torch.device('cuda')
 print('Device Count = {}, using CUDA Device = {}'.format(torch.cuda.device_count(), cuda_dev))
 
-net = torch.load(net_path)
+use_state_dict = True
+
+if use_state_dict:
+    net = VXNet(dropout=True,context=2,num_outs=2)
+    net.load_state_dict(torch.load(net_path))
+else:
+    net = torch.load(net_path)
 net = net.cuda(cuda_dev)
 net.eval()
 
