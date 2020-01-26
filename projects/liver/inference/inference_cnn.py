@@ -77,7 +77,7 @@ else:
 net = net.cuda(cuda_dev)
 net.eval()
 
-eval_net_volumes = False
+eval_net_volumes = True
 
 if eval_net_volumes:
     for idx, file_name_prediction in enumerate(files_test_volumes):
