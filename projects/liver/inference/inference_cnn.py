@@ -73,7 +73,9 @@ net.eval()
 eval_net_volumes = True
 
 if eval_net_volumes:
-    for file_name_prediction in files_test_volumes:
+    for idx, file_name_prediction in enumerate(files_test_volumes):
+        print("Iter {} on {}".format(idx, len(files_test_volumes)-1))
+
         # load file
         data = nib.load(os.path.join(test_folder, file_name_prediction))
 
@@ -145,7 +147,7 @@ for p_id, (path_prediction_pre, path_prediction_post,
         enumerate(zip(paths_predictions_pre, paths_predictions_post,
                       paths_ground_truth)):
 
-    print("Index: ", p_id)
+    print("Index {} on {}".format(p_id, len(path_ground_truth)-1))
 
     prediction_mask_pre  = nib.load(os.path.join(results_folder_pre, path_prediction_pre))
     prediction_mask_pre  = prediction_mask_pre.get_data()
@@ -157,7 +159,6 @@ for p_id, (path_prediction_pre, path_prediction_post,
     ground_truth_mask = nib.load(path_gt_mask)
     voxel_spacing        = ground_truth_mask.header.get_zooms()
     ground_truth_mask    = ground_truth_mask.get_data()
-
 
     if eval_cnn:
         ious_pre[p_id]   = mmb.jc(prediction_mask_pre, ground_truth_mask)
