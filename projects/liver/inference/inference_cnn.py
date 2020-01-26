@@ -1,5 +1,4 @@
 import os
-import semseg.models.vnet
 import numpy as np
 import torch
 import nibabel as nib
