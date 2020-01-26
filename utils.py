@@ -26,7 +26,7 @@ def normalize_data(data, interval=(-150,350)):
     norm_data = (clipped_data - dmin) / (dmax-dmin)
     return norm_data
 
-def perform_inference_volumetric_image(net, data, context=2, do_round=True):
+def perform_inference_volumetric_image(net, data, context=2, do_round=True, cuda_dev=torch.device('cuda')):
     start_time = time.time()
 
     # save output here
@@ -63,7 +63,7 @@ def perform_inference_volumetric_image(net, data, context=2, do_round=True):
         with torch.no_grad():
             # run slices through the network and save the predictions
             inputs = torch.from_numpy(inputs).float()
-            if cuda: inputs = inputs.cuda()
+            if cuda: inputs = inputs.cuda(cuda_dev)
 
             # inference
             outputs = net(inputs)
