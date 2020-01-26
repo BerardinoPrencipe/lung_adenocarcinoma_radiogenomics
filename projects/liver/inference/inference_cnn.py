@@ -152,7 +152,7 @@ for p_id, (path_prediction_pre, path_prediction_post,
         enumerate(zip(paths_predictions_pre, paths_predictions_post,
                       paths_ground_truth)):
 
-    print("Index {} on {}".format(p_id, len(path_ground_truth)-1))
+    print("Index {} on {}".format(p_id, len(paths_ground_truth)-1))
 
     prediction_mask_pre  = nib.load(os.path.join(results_folder_pre, path_prediction_pre))
     prediction_mask_pre  = prediction_mask_pre.get_data()
