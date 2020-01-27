@@ -2,7 +2,8 @@ import torch
 import numpy as np
 import os
 import cv2
-from utils import imresizeNoStretch, normalize
+from utils import imresizeNoStretch
+from utils_calc import normalize
 
 
 class DataGen(torch.utils.data.Dataset):

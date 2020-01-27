@@ -5,8 +5,8 @@ import torch
 import nibabel as nib
 import itk
 import SimpleITK as sitk
-from utils import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model, \
-    post_process_liver, get_dice, get_iou, get_patient_id
+from utils_calc import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model, post_process_liver, \
+    get_patient_id, get_dice, get_iou
 from projects.liver.train.config import window_hu
 import matplotlib.pyplot as plt
 import medpy.metric.binary as mmb
