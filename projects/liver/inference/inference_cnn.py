@@ -67,7 +67,7 @@ else:
     cuda_dev = torch.device('cuda')
 print('Device Count = {}, using CUDA Device = {}'.format(torch.cuda.device_count(), cuda_dev))
 
-use_state_dict = True
+use_state_dict = False
 
 if use_state_dict:
     net = VXNet(dropout=True,context=2,num_outs=2)
