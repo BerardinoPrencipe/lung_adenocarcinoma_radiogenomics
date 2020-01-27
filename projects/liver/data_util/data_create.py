@@ -10,7 +10,7 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from utils import normalize_data, get_patient_id
+from utils_calc import normalize_data, get_patient_id
 from projects.liver.train.config import window_hu, use_local_path
 
 ### variables ###

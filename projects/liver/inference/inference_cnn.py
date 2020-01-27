@@ -14,8 +14,8 @@ sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
 from projects.liver.train.config import use_local_path
-from utils import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model, \
-    post_process_liver, get_dice, get_iou, get_patient_id
+from utils_calc import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model, post_process_liver, \
+    get_patient_id, get_dice, get_iou
 from projects.liver.train.config import window_hu
 from semseg.models.vnet_v2 import VXNet
 
