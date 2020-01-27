@@ -57,8 +57,9 @@ use_multi_gpu = True
 # net_path = 'logs/liver/model_25D__2020-01-22__14_00_38.pht'
 net_path = os.path.join(logs_dir, 'model_25D__2020-01-24__11_34_49.pht')
 if use_local_path:
-    # net_path = os.path.join(current_path_abs, logs_dir, 'model_epoch_0400.pht')
-    net_path = os.path.join(logs_dir, max(os.listdir(logs_dir)))
+    # net_path = os.path.join(logs_dir, 'model_epoch_0400.pht')
+    net_path = os.path.join(logs_dir, 'model_25D__2020-01-27__18_50_10.pht')
+    # net_path = os.path.join(logs_dir, max(os.listdir(logs_dir)))
 print('Net Path = {}'.format(net_path))
 
 if torch.cuda.device_count() > 1:
