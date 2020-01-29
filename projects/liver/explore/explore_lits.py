@@ -33,12 +33,12 @@ def main():
         pos_voxels_tot += pos_voxels
         neg_voxels_tot += neg_voxels
 
-        print('Pos voxels = {}'.format(pos_voxels))
-        print('Neg voxels = {}'.format(neg_voxels))
+        print('Pos voxels = {}'.format(pos_voxels), flush=True)
+        print('Neg voxels = {}'.format(neg_voxels), flush=True)
 
-    print('\n\n')
-    print('Positive voxels tot = {}'.format(pos_voxels_tot))
-    print('Negative voxels tot = {}'.format(neg_voxels_tot))
+    print('\n\n', flush=True)
+    print('Positive voxels tot = {}'.format(pos_voxels_tot), flush=True)
+    print('Negative voxels tot = {}'.format(neg_voxels_tot), flush=True)
 
 
 # python3 projects/liver/explore/explore_lits.py
