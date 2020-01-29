@@ -23,7 +23,8 @@ def main():
 
     for idx, mask_path in enumerate(mask_paths):
         print('Index: {} on {}'.format(idx, len(mask_paths)-1))
-        mask = nib.load(mask_path)
+        full_mask_path = os.path.join(lits_dataset_path, mask_path)
+        mask = nib.load(full_mask_path)
         mask = mask.get_data()
 
         pos_voxels = (mask>0).sum()
