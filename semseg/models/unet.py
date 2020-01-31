@@ -2,6 +2,7 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
+from utils_calc import use_multi_gpu_model
 
 # implementation of U-Net as described in the paper
 # & padding to keep input and output sizes the same
@@ -169,3 +170,10 @@ class UNetSmall(nn.Module):
         layer9 = self.final(self.conv9_output(layer9), dim=1)
 
         return layer9
+
+
+def build_UNet_with_config(config):
+    net = UNet(config['context']*2+1, config['num_outs'], dice=True)
+    if config['cuda'] and not config['use_multi_gpu']: net = net.cuda()
+    if config['cuda'] and config['use_multi_gpu']: net = use_multi_gpu_model(net)
+    return net

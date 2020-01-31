@@ -4,20 +4,21 @@ import os
 import numpy as np
 from semseg.loss import dice as dice_loss, tversky
 
-use_tversky = True
-# alpha, beta = 0.4, 0.6
+use_tversky = False
 alpha, beta = 0.3, 0.7
 
 print('Use Tversky: ', use_tversky)
 print('alpha = ', alpha, ' beta = ', beta)
 
+def get_tversky_loss(outputs, labels):
+    outputs = outputs[:, 1, :, :].unsqueeze(dim=1)
+    loss = tversky(outputs, labels, alpha=alpha, beta=beta)
+    return loss
+
 def get_loss(outputs, labels, criterion):
     if criterion is None:
         outputs = outputs[:, 1, :, :].unsqueeze(dim=1)
-        if use_tversky:
-            loss = tversky(outputs, labels, alpha=alpha, beta=beta)
-        else:
-            loss = dice_loss(outputs, labels)
+        loss = dice_loss(outputs, labels)
     else:
         labels = labels.squeeze(dim=1)
         loss = criterion(outputs, labels)

@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import medpy.metric.binary as mmb
 
-from utils_calc import normalize_data, perform_inference_volumetric_image
+from utils_calc import normalize_data, normalize_data_old, perform_inference_volumetric_image
 from projects.liver.train.config import window_hu
 
 val_list = ["{:02d}".format(idx) for idx in range(1,3)]
@@ -38,8 +38,11 @@ for idx, folder_patient_valid in enumerate(folders_patients_valid):
     data = data.get_data()
 
     # normalize data
-    # data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
-    data = normalize_data(data, window_hu)
+    # HEALTHY VERSION
+    # data = normalize_data(data, window_hu)
+
+    # WRONG AND UGLY VERSION
+    data = normalize_data_old(data, dmin=window_hu[0], dmax=window_hu[1])
     data = (data * 255).astype(np.uint8)
 
     # transpose so the z-axis (slices) are the first dimension

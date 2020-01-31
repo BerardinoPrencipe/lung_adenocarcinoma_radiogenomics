@@ -6,6 +6,9 @@ import nibabel as nib
 import os
 cuda = torch.cuda.is_available()
 
+# TODO: deprecated function! Delete and replace with v2
+def normalize_data_old(data, dmin=-200, dmax=200):
+    return np.clip(data, dmin, dmax) / (dmax-dmin) + 0.5
 
 def normalize_data(data, interval=(-150,350)):
     dmin, dmax = interval

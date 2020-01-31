@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+net_to_use = 'unet'
+# net_to_use = 'vnet'
 
 current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
@@ -31,9 +33,17 @@ def run(config, dataset):
 
     # Network and optimizer
     print('Building Network...')
-    # net = semseg.models.vnet.build_VNet_Xtra_with_config(config, criterion)
-    from semseg.models.vnet_v2 import build_VXNet_with_config
-    net = build_VXNet_with_config(config)
+
+    if net_to_use == 'vnet':
+        # net = semseg.models.vnet.build_VNet_Xtra_with_config(config, criterion)
+        from semseg.models.vnet_v2 import build_VXNet_with_config
+        net = build_VXNet_with_config(config)
+    elif net_to_use == 'unet':
+        from semseg.models.unet import build_UNet_with_config
+        net = build_UNet_with_config(config)
+    else:
+        net = None
+
 
     optimizer = optim.Adam(net.parameters(), lr=config['lr'])
     print('Network built!')
