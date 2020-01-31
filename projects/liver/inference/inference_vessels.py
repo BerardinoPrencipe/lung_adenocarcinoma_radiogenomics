@@ -16,8 +16,6 @@ folders_patients = os.listdir(folder_dataset)
 folders_patients_train = [folder for folder in folders_patients if not any(val_el in folder for val_el in val_list)]
 folders_patients_valid = [folder for folder in folders_patients if any(val_el in folder for val_el in val_list)]
 
-path_net_hv = 'logs/hv/model_25D__2020-01-16__16_42_37.pht'
-path_net_pv = 'logs/pv/model_25D__2020-01-17__16_42_59.pht'
 path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
 
 # Load net
@@ -42,6 +40,7 @@ for idx, folder_patient_valid in enumerate(folders_patients_valid):
     # normalize data
     # data = normalize_data(data, dmin=window_hu[0], dmax=window_hu[1])
     data = normalize_data(data, window_hu)
+    data = (data * 255).astype(np.uint8)
 
     # transpose so the z-axis (slices) are the first dimension
     data = np.transpose(data, (2, 0, 1))
@@ -50,9 +49,12 @@ for idx, folder_patient_valid in enumerate(folders_patients_valid):
     output = perform_inference_volumetric_image(net, data, context=2, do_round=True)
     output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
 
+    non_zero_elements = np.count_nonzero(output)
+    print("Non-Zero elements = {}".format(non_zero_elements))
+
     output_nib = nib.Nifti1Image(output, affine=input_aff)
     nib.save(output_nib, path_test_pred)
-    print("Index {} on {}.\nImage saved in {}".format(idx, len(folders_patients_valid), path_test_pred))
+    print("Index {} on {}.\nImage saved in {}".format(idx, len(folders_patients_valid)-1, path_test_pred))
 
 ious       = np.zeros(len(val_list))
 precisions = np.zeros(len(val_list))
@@ -69,16 +71,16 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
     gt_hv_path = os.path.join(folder_dataset, folder_patient_valid, 'mask', 'hv.nii')
 
     gt_pv_mask = nib.load(gt_pv_path)
+    voxel_spacing = gt_pv_mask.header.get_zooms()
     gt_pv_mask = gt_pv_mask.get_data()
     gt_hv_mask = nib.load(gt_hv_path)
     gt_hv_mask = gt_hv_mask.get_data()
 
     gt_vessels_mask = gt_pv_mask + gt_hv_mask
 
-    voxel_spacing = gt_vessels_mask.header.get_zooms()
-
     # Output
     output = nib.load(path_test_pred)
+    output = output.get_data()
 
     iou = mmb.jc(output, gt_vessels_mask)
     dice = mmb.dc(output, gt_vessels_mask)
