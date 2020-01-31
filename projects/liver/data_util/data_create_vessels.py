@@ -1,14 +1,15 @@
 import numpy as np
 import nibabel as nib
 import os
-from utils_calc import normalize_data, get_patient_id
-from projects.liver.train.config import window_hu
 import sys
 import platform
 
 current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
+
+from utils_calc import normalize_data, get_patient_id
+from projects.liver.train.config import window_hu
 
 # Use local path or absolute
 if 'Ubuntu' in platform.system():
