@@ -109,6 +109,16 @@ if __name__ == "__main__":
         default=dataset,
         help="Specify the dataset on which train the net [liver | vessels | hv | pv]"
     )
+    parser.add_argument(
+        "--net",
+        default=net_to_use,
+        help="Specify the network to use [unet | vnet]"
+    )
+    parser.add_argument(
+        "--lr",
+        default=1e-2, type=float,
+        help="Learning Rate"
+    )
 
     args = parser.parse_args()
     dict_args = vars(args)
@@ -116,7 +126,13 @@ if __name__ == "__main__":
         if key == "dataset":
             dataset = dict_args[key]
             print("Dataset = {}".format(dataset))
+        elif key == "net":
+            net_to_use = dict_args[key]
+            print("Net to use = {}".format(net_to_use))
         else:
             config[key] = dict_args[key]
+
+    config['low_lr_epoch'] = config['epochs'] // 5
+    config['val_epochs']   = config['epochs'] // 5
 
     run(config, dataset)
