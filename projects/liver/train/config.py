@@ -91,8 +91,12 @@ def get_train_val_folders(dataset):
 
     if dataset == "vessels":
         # Vessels
-        train_folder = 'E:/Datasets/ircadb/train'
-        val_folder   = 'E:/Datasets/ircadb/val'
+        if use_local_path:
+            train_folder = os.path.join(current_path_abs, 'datasets/ircadb_npy/train')
+            val_folder   = os.path.join(current_path_abs, 'datasets/ircadb_npy/val')
+        else:
+            train_folder = 'E:/Datasets/ircadb/train'
+            val_folder   = 'E:/Datasets/ircadb/val'
     elif dataset == "hv":
         train_folder = 'E:/Datasets/ircadb_hv/train'
         val_folder = 'E:/Datasets/ircadb_hv/val'
