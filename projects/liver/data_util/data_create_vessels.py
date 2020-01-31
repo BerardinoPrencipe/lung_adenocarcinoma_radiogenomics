@@ -85,6 +85,9 @@ for idx, subfolder_source in enumerate(os.listdir(source_folder)):
     image_data = image_data.get_data()
     image_data = normalize_data(image_data, window_hu)
     mask_data = mask_data.get_data()
+    mask_data_hv = (mask_data == VESSELS_CLASS[0]).astype(np.uint8)
+    mask_data_pv = (mask_data == VESSELS_CLASS[1]).astype(np.uint8)
+    mask_data = np.logical_or(mask_data_hv, mask_data_pv)
 
     # transpose so the z-axis (slices) are the first dimension
     image_data = np.transpose(image_data, (2,0,1))
