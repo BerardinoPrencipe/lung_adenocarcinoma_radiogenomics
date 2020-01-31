@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from utils import use_multi_gpu_model
+from utils_calc import use_multi_gpu_model
 
 ### variables ###
 isWindows = 'Windows' in platform.system()

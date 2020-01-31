@@ -1,7 +1,7 @@
 import numpy as np
 import nibabel as nib
 import os.path
-from utils import normalize_data, get_patient_id
+from utils_calc import normalize_data, get_patient_id
 from projects.liver.train.config import window_hu
 
 ### variables ###

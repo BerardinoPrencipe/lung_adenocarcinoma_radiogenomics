@@ -11,7 +11,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from utils import imresizeNoStretch, normalize, montage, labeloverlay
+from utils import imresizeNoStretch, montage, labeloverlay
+from utils_calc import normalize
 from projects.ecodom.data_load import DataGen, get_balancing_weights
 from networks import VNet_Xtra
 from loss import dice as dice_loss

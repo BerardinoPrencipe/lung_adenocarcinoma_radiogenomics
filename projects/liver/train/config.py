@@ -1,10 +1,18 @@
 import os
 import platform
+import sys
 import torch
 import torch.nn as nn
 
+current_path_abs = os.path.abspath('.')
+sys.path.append(current_path_abs)
+print('{} appended to sys!'.format(current_path_abs))
+
 # Use local path or absolute
-use_local_path = False
+if 'Ubuntu' in platform.system():
+    use_local_path = False
+else:
+    use_local_path = True
 
 # The dataset to use!
 # dataset = "vessels"
@@ -14,7 +22,10 @@ dataset = "liver"
 
 # Hyperparams
 isWindows = 'Windows' in platform.system()
-num_workers = 0 if isWindows else 2
+if use_local_path and not isWindows:
+    num_workers = 4
+if isWindows:
+    num_workers = 0
 use_multi_gpu = False
 dice = True
 # GPU enabled
@@ -26,7 +37,7 @@ if use_multi_gpu:
     batch_size = 10
 else:
     if use_local_path:
-        batch_size = 8
+        batch_size = 4
     else:
         batch_size = 2
 
@@ -70,6 +81,8 @@ def get_logs_folder(dataset):
         logs_folder = os.path.join('logs', dataset, 'multi_gpu')
     else:
         logs_folder = os.path.join('logs', dataset)
+    if use_local_path:
+        logs_folder = os.path.join(current_path_abs, logs_folder)
     return logs_folder
 
 def get_train_val_folders(dataset):
@@ -89,8 +102,8 @@ def get_train_val_folders(dataset):
     elif dataset == "liver":
         # Liver LiTS
         if use_local_path:
-            train_folder = 'datasets/LiTS/npy/train'
-            val_folder = 'datasets/LiTS/npy/train'
+            train_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy/train')
+            val_folder   = os.path.join(current_path_abs, 'datasets/LiTS/npy/val')
         else:
             train_folder = 'E:/Datasets/LiTS/train'
             val_folder   = 'E:/Datasets/LiTS/val'

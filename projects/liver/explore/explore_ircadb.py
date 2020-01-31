@@ -2,7 +2,8 @@ import os
 import zipfile
 import SimpleITK as sitk
 import numpy as np
-from utils import normalize_data
+from utils_calc import normalize_data
+
 
 def pre_process_dicom(image_data, window_hu):
     # image_data = normalize_data(image_data, window_hu[0], window_hu[1])

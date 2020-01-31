@@ -1,7 +1,16 @@
+#python3 projects/liver/data_util/data_create.py
+
 import numpy as np
 import nibabel as nib
-import os.path
-from utils import normalize_data, get_patient_id
+import os
+import platform
+import sys
+
+current_path_abs = os.path.abspath('.')
+sys.path.append(current_path_abs)
+print('{} appended to sys!'.format(current_path_abs))
+
+from utils_calc import normalize_data, get_patient_id
 from projects.liver.train.config import window_hu, use_local_path
 
 ### variables ###
@@ -10,7 +19,7 @@ from projects.liver.train.config import window_hu, use_local_path
 val_list = [idx for idx in range(20)]
 
 if use_local_path:
-    dataset_folder = 'datasets/LiTS/train'
+    dataset_folder = os.path.join(current_path_abs, 'datasets/LiTS/train')
 else:
     dataset_folder = 'F:/Datasets/LiTS/train'
 
@@ -24,7 +33,7 @@ TUMOR_CLASS = 2
 
 # destination folder where the subfolders with npy files will go
 if use_local_path:
-    destination_folder = 'datasets/LiTS/npy'
+    destination_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy')
 else:
     destination_folder = 'E:/Datasets/LiTS'
 
@@ -37,8 +46,9 @@ for name in subfolders:
     if not os.path.isdir(os.path.join(destination_folder, name)):
         os.makedirs(os.path.join(destination_folder, name))
 
-for file_name in os.listdir(source_folder):
+for idx, file_name in enumerate(os.listdir(source_folder)):
 
+    print('Iter {} on {}'.format(idx, len(os.listdir(source_folder))-1))
     print(file_name)
 
     # create new file name by stripping .nii and adding .npy

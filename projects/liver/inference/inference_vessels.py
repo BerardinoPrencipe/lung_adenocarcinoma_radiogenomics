@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import medpy.metric.binary as mmb
 
-from utils import normalize_data, perform_inference_volumetric_image
+from utils_calc import normalize_data, perform_inference_volumetric_image
 from projects.liver.train.config import window_hu
 
 val_list = ["{:02d}".format(idx) for idx in range(1,3)]

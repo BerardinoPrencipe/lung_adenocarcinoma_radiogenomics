@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utils import use_multi_gpu_model
+from utils_calc import use_multi_gpu_model
+
 
 # 2D variation of VNet - similar to UNet
 # added residual functions to each block
