@@ -57,9 +57,9 @@ config = {
     'lr'            : 1e-2,                 # learning rate
     'batch_size'    : batch_size,
     'num_samples'   : 500,                  # samples per epoch
-    'low_lr_epoch'  : 200,                   # epoch where to lower learning rate
-    'epochs'        : 1000,                   # total number of epochs
-    'val_epochs'    : 200,
+    'low_lr_epoch'  : 400,                   # epoch where to lower learning rate
+    'epochs'        : 2000,                   # total number of epochs
+    'val_epochs'    : 400,
     'num_outs'      : 2,
     'num_workers'   : num_workers
 }

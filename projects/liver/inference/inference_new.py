@@ -97,7 +97,6 @@ dices_post = np.zeros(len(val_list))
 rvds_pre   = np.zeros(len(val_list))
 rvds_post  = np.zeros(len(val_list))
 
-
 assds_pre  = np.zeros(len(val_list))
 assds_post = np.zeros(len(val_list))
 
