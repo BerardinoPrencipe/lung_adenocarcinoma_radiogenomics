@@ -13,14 +13,14 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from projects.liver.train.config import use_local_path
+from projects.liver.train.config import isLinux
 from utils_calc import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model, post_process_liver, \
     get_patient_id, get_dice, get_iou
 from projects.liver.train.config import window_hu
 from semseg.models.vnet_v2 import VXNet
 
 ### variables ###
-if use_local_path:
+if isLinux:
     test_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Volumes')
     result_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Results')
     gt_mask_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/GroundTruth')
@@ -56,7 +56,7 @@ use_multi_gpu = True
 
 # net_path = 'logs/liver/model_25D__2020-01-22__14_00_38.pht'
 net_path = os.path.join(logs_dir, 'model_25D__2020-01-24__11_34_49.pht')
-if use_local_path:
+if isLinux:
     net_path = os.path.join(logs_dir, 'model_25D__2020-01-27__18_50_10.pht')
     # net_path = os.path.join(logs_dir, max(os.listdir(logs_dir)))
 print('Net Path = {}'.format(net_path))

@@ -11,14 +11,14 @@ sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
 from utils_calc import normalize_data, get_patient_id
-from projects.liver.train.config import window_hu, use_local_path
+from projects.liver.train.config import window_hu, isLinux
 
 ### variables ###
 
 # validation list
 val_list = [idx for idx in range(20)]
 
-if use_local_path:
+if isLinux:
     dataset_folder = os.path.join(current_path_abs, 'datasets/LiTS/train')
 else:
     dataset_folder = 'F:/Datasets/LiTS/train'
@@ -32,7 +32,7 @@ LIVER_CLASS = 1
 TUMOR_CLASS = 2
 
 # destination folder where the subfolders with npy files will go
-if use_local_path:
+if isLinux:
     destination_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy')
 else:
     destination_folder = 'E:/Datasets/LiTS'

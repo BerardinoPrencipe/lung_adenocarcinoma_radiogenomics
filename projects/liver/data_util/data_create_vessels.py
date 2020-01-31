@@ -12,10 +12,10 @@ from utils_calc import normalize_data, get_patient_id
 from projects.liver.train.config import window_hu
 
 # Use local path or absolute
-if 'Ubuntu' in platform.system():
-    use_local_path = False
+if 'Ubuntu' in platform.system() or 'Linux' in platform.system():
+    isLinux = True
 else:
-    use_local_path = True
+    isLinux = False
 
 ### variables ###
 
@@ -34,7 +34,7 @@ VESSELS_CLASS = (2, 3)
 ARTERY_CLASS = (4,)
 
 # destination folder where the subfolders with npy files will go
-if use_local_path:
+if isLinux:
     destination_folder = os.path.join(current_path_abs, 'datasets/ircadb_npy')
 else:
     destination_folder = 'E:/Datasets/ircadb'

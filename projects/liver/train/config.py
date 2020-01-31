@@ -7,12 +7,13 @@ import torch.nn as nn
 current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
+print('Platform System = {}'.format(platform.system()))
 
 # Use local path or absolute
-if 'Ubuntu' in platform.system():
-    use_local_path = False
+if 'Ubuntu' in platform.system() or 'Linux' in platform.system():
+    isLinux = True
 else:
-    use_local_path = True
+    isLinux = False
 
 # The dataset to use!
 # dataset = "vessels"
@@ -22,7 +23,7 @@ dataset = "liver"
 
 # Hyperparams
 isWindows = 'Windows' in platform.system()
-if use_local_path and not isWindows:
+if isLinux and not isWindows:
     num_workers = 4
 if isWindows:
     num_workers = 0
@@ -36,7 +37,7 @@ print('Using multi-GPU   = ', use_multi_gpu)
 if use_multi_gpu:
     batch_size = 10
 else:
-    if use_local_path:
+    if isLinux:
         batch_size = 4
     else:
         batch_size = 2
@@ -81,7 +82,7 @@ def get_logs_folder(dataset):
         logs_folder = os.path.join('logs', dataset, 'multi_gpu')
     else:
         logs_folder = os.path.join('logs', dataset)
-    if use_local_path:
+    if isLinux:
         logs_folder = os.path.join(current_path_abs, logs_folder)
     return logs_folder
 
@@ -91,7 +92,7 @@ def get_train_val_folders(dataset):
 
     if dataset == "vessels":
         # Vessels
-        if use_local_path:
+        if isLinux:
             train_folder = os.path.join(current_path_abs, 'datasets/ircadb_npy/train')
             val_folder   = os.path.join(current_path_abs, 'datasets/ircadb_npy/val')
         else:
@@ -105,7 +106,7 @@ def get_train_val_folders(dataset):
         val_folder = 'E:/Datasets/ircadb_pv/val'
     elif dataset == "liver":
         # Liver LiTS
-        if use_local_path:
+        if isLinux:
             train_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy/train')
             val_folder   = os.path.join(current_path_abs, 'datasets/LiTS/npy/val')
         else:

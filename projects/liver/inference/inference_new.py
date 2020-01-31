@@ -14,14 +14,14 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from projects.liver.train.config import use_local_path
+from projects.liver.train.config import isLinux
 from utils_calc import normalize_data, perform_inference_volumetric_image, use_multi_gpu_model, post_process_liver, \
     get_patient_id, get_dice, get_iou
 from projects.liver.train.config import window_hu
 
 
 ### variables ###
-if use_local_path:
+if isLinux:
     test_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Volumes')
     result_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Results')
 else:
@@ -55,7 +55,7 @@ use_multi_gpu = True
 
 # net_path = 'logs/liver/model_25D__2020-01-22__14_00_38.pht'
 net_path = os.path.join(logs_dir, 'model_25D__2020-01-24__11_34_49.pht')
-if use_local_path:
+if isLinux:
     net_path = os.path.join(current_path_abs, logs_dir, 'model_epoch_0400.pht')
 
 if torch.cuda.device_count() > 1:
