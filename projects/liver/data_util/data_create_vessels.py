@@ -35,7 +35,7 @@ ARTERY_CLASS = (4,)
 
 # destination folder where the subfolders with npy files will go
 if use_local_path:
-    destination_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy')
+    destination_folder = os.path.join(current_path_abs, 'datasets/ircadb_npy')
 else:
     destination_folder = 'E:/Datasets/ircadb'
 
@@ -50,6 +50,11 @@ for name in subfolders:
     if not os.path.isdir(os.path.join(destination_folder, name)):
         os.makedirs(os.path.join(destination_folder, name))
         print('Created subdir: {}'.format(name))
+
+
+source_subolders = os.listdir(source_folder).sort()
+print('Source Folder  = {}'.format(source_folder))
+print('Source SubDirs = {}'.format(source_subolders))
 
 for idx, subfolder_source in enumerate(os.listdir(source_folder)):
 
