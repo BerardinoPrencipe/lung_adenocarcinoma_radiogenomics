@@ -27,6 +27,7 @@ print('Dataset Folder = {}'.format(folder_dataset))
 folders_patients = os.listdir(folder_dataset)
 folders_patients_train = [folder for folder in folders_patients if not any(val_el in folder for val_el in val_list)]
 folders_patients_valid = [folder for folder in folders_patients if any(val_el in folder for val_el in val_list)]
+folders_patients_valid.sort()
 
 # OLD VERSION
 # path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-01-15__08_28_39.pht')
@@ -134,6 +135,14 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
     print('RVD       = ', rvd)
     print('ASSD      = ', assd)
     print('HD        = ', hd)
+
+    ious[idx] = iou
+    precisions[idx] = prec
+    recalls[idx] = recall
+    dices[idx] = dice
+    rvds[idx] = rvd
+    assds[idx] = assd
+    hds[idx] = hd
 
 avg_iou  = np.mean(ious)
 avg_prec = np.mean(precisions)
