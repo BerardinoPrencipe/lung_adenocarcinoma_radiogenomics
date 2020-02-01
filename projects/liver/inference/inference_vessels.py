@@ -43,17 +43,16 @@ else:
     path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-02-01__16_42_49.pht')
     net = torch.load(path_net)
 
-net = net.cuda()
-net.eval()
-
-print('Network Path = {}'.format(path_net))
-
 if torch.cuda.device_count() > 1:
     cuda_dev = torch.device('cuda:1')
 else:
     cuda_dev = torch.device('cuda')
 print('Device Count = {}, using CUDA Device = {}'.format(torch.cuda.device_count(), cuda_dev))
 
+net = net.cuda(cuda_dev)
+net.eval()
+
+print('Network Path = {}'.format(path_net))
 
 path_test_preds = list()
 
