@@ -3,7 +3,7 @@ import os
 
 do_interact = False
 do_smoothing = True
-do_from_home = False
+do_from_home = True
 n_iters = 1500
 
 r,g,b = tuple(i/255 for i in (171,23,65))
@@ -70,7 +70,7 @@ for idx in idxs:
 
         renderer.SetBackground(0.1,0.1,0.1)
         renderWindow.AddRenderer(renderer)
-        renderWindow.Render()
+        # renderWindow.Render()
 
         exporter = vtk.vtkVRMLExporter()
         exporter.SetRenderWindow(renderWindow)
@@ -78,9 +78,10 @@ for idx in idxs:
         exporter.Write()
         exporter.Update()
 
-        renderWindowInteractor = vtk.vtkRenderWindowInteractor()
-        renderWindowInteractor.SetRenderWindow(renderWindow)
-        renderWindowInteractor.Start()
+        if do_interact:
+            renderWindowInteractor = vtk.vtkRenderWindowInteractor()
+            renderWindowInteractor.SetRenderWindow(renderWindow)
+            renderWindowInteractor.Start()
 
 
 ''' 
