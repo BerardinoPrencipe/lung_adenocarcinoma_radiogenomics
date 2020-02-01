@@ -1,32 +1,30 @@
 import vtk
 import os
 
+do_interact = False
 do_smoothing = True
+do_from_home = False
 n_iters = 1500
 
 r,g,b = tuple(i/255 for i in (171,23,65))
 
-''' 
-path_image_pred_rg  = 'E:/Datasets/Sliver_Nifti/Results/RegionGrowing/D25/liver-seg020.nii'
-path_image_pred_cnn = 'E:/Datasets/Sliver_Nifti/Results/CNN/a5_b5/post/segmentation-orig020.nii'
-path_image_gt       = 'E:/Datasets/Sliver_Nifti/GroundTruth/liver-seg020.nii.gz'
+if do_from_home:
+    dataset_path = 'H:\\Datasets\\Liver\\3Dircadb1_nifti'
+else:
+    dataset_path = 'dataset/ircadb/'
 
-path_mesh_pred_rg  = 'datasets/Sliver07/liver_rg_20.wrl'
-path_mesh_pred_cnn = 'datasets/Sliver07/liver_cnn_20.wrl'
-path_mesh_gt       = 'datasets/Sliver07/liver_gt_20.wrl' 
-'''
-
+print('Dataset path = {}'.format(dataset_path))
 idxs = range(1,5)
 
 for idx in idxs:
 
     print('Index {} on {}'.format(idx, len(idxs)))
 
-    path_image_pred  = 'datasets/ircadb/patient-{:02d}/image/pred.nii'.format(idx)
-    path_image_hv_gt = 'datasets/ircadb/patient-{:02d}/mask/hv.nii'.format(idx)
-    path_image_pv_gt = 'datasets/ircadb/patient-{:02d}/mask/pv.nii'.format(idx)
+    path_image_pred  = os.path.join(dataset_path, 'patient-{:02d}/image/pred.nii'.format(idx))
+    path_image_hv_gt = os.path.join(dataset_path, 'patient-{:02d}/mask/hv.nii'.format(idx))
+    path_image_pv_gt = os.path.join(dataset_path, 'patient-{:02d}/mask/pv.nii'.format(idx))
 
-    mesh_dir = 'datasets/ircadb/patient-{:02d}/mesh/'.format(idx)
+    mesh_dir = os.path.join(dataset_path, 'patient-{:02d}/mesh/'.format(idx))
     if not os.path.exists(mesh_dir):
         os.makedirs(mesh_dir)
         print('Created mesh dir = {}'.format(mesh_dir))
@@ -83,3 +81,14 @@ for idx in idxs:
         renderWindowInteractor = vtk.vtkRenderWindowInteractor()
         renderWindowInteractor.SetRenderWindow(renderWindow)
         renderWindowInteractor.Start()
+
+
+''' 
+path_image_pred_rg  = 'E:/Datasets/Sliver_Nifti/Results/RegionGrowing/D25/liver-seg020.nii'
+path_image_pred_cnn = 'E:/Datasets/Sliver_Nifti/Results/CNN/a5_b5/post/segmentation-orig020.nii'
+path_image_gt       = 'E:/Datasets/Sliver_Nifti/GroundTruth/liver-seg020.nii.gz'
+
+path_mesh_pred_rg  = 'datasets/Sliver07/liver_rg_20.wrl'
+path_mesh_pred_cnn = 'datasets/Sliver07/liver_cnn_20.wrl'
+path_mesh_gt       = 'datasets/Sliver07/liver_gt_20.wrl' 
+'''
