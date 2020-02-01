@@ -5,8 +5,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-net_to_use = 'unet'
-# net_to_use = 'vnet'
+# net_to_use = 'unet'
+net_to_use = 'vnet'
 
 current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
