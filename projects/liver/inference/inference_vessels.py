@@ -95,7 +95,7 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
     gt_hv_mask = nib.load(gt_hv_path)
     gt_hv_mask = gt_hv_mask.get_data()
 
-    gt_vessels_mask = gt_pv_mask + gt_hv_mask
+    gt_vessels_mask = np.logical_or(gt_pv_mask, gt_hv_mask)
 
     # Output
     output = nib.load(path_test_pred)
