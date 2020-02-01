@@ -28,7 +28,10 @@ folders_patients_train = [folder for folder in folders_patients if not any(val_e
 folders_patients_valid = [folder for folder in folders_patients if any(val_el in folder for val_el in val_list)]
 
 # OLD VERSION
-path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-01-15__08_28_39.pht')
+# path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-01-15__08_28_39.pht')
+
+# NEW VERSION
+path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-02-01__16_42_49.pht')
 print('Network Path = {}'.format(path_net))
 
 # Load net
