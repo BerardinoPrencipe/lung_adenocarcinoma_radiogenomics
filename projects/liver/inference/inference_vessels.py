@@ -12,6 +12,7 @@ print('{} appended to sys!'.format(current_path_abs))
 
 from utils_calc import normalize_data, normalize_data_old, perform_inference_volumetric_image
 from projects.liver.train.config import window_hu
+from semseg.models.vnet_v2 import VXNet
 
 # NEW VERSION
 val_list = ["{:02d}".format(idx) for idx in range(1,5)]
@@ -31,11 +32,28 @@ folders_patients_valid = [folder for folder in folders_patients if any(val_el in
 # path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-01-15__08_28_39.pht')
 
 # NEW VERSION
-path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-02-01__16_42_49.pht')
-print('Network Path = {}'.format(path_net))
+use_state_dict = True
 
 # Load net
-net = torch.load(path_net)
+if use_state_dict:
+    path_net = os.path.join(current_path_abs, 'logs/vessels/model_epoch_0400.pht')
+    net = VXNet(dropout=True,context=2,num_outs=2)
+    net.load_state_dict(torch.load(path_net))
+else:
+    path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-02-01__16_42_49.pht')
+    net = torch.load(path_net)
+
+net = net.cuda()
+net.eval()
+
+print('Network Path = {}'.format(path_net))
+
+if torch.cuda.device_count() > 1:
+    cuda_dev = torch.device('cuda:1')
+else:
+    cuda_dev = torch.device('cuda')
+print('Device Count = {}, using CUDA Device = {}'.format(torch.cuda.device_count(), cuda_dev))
+
 
 path_test_preds = list()
 
@@ -65,7 +83,7 @@ for idx, folder_patient_valid in enumerate(folders_patients_valid):
     data = np.transpose(data, (2, 0, 1))
 
     # CNN
-    output = perform_inference_volumetric_image(net, data, context=2, do_round=True)
+    output = perform_inference_volumetric_image(net, data, context=2, do_round=True, cuda_dev=cuda_dev)
     output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
 
     non_zero_elements = np.count_nonzero(output)
