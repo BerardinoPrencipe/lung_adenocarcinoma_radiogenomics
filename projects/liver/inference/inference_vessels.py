@@ -172,7 +172,7 @@ data = {
     'MSSD'      : avg_hd,
 }
 
-json_path = os.path.join(current_path_abs, 'datasets/ircadb/metrics.json')
+json_path = os.path.join(current_path_abs, 'datasets/ircadb_metrics.json')
 print('JSON Path = {}'.format(json_path))
 
 with open(json_path, 'w') as f:
