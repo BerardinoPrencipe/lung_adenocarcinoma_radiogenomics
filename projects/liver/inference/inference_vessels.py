@@ -33,7 +33,7 @@ folders_patients_valid.sort()
 # path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-01-15__08_28_39.pht')
 
 # NEW VERSION
-use_state_dict = True
+use_state_dict = False
 
 # Load net
 if use_state_dict:
@@ -41,7 +41,10 @@ if use_state_dict:
     net = VXNet(dropout=True,context=2,num_outs=2)
     net.load_state_dict(torch.load(path_net))
 else:
-    path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-02-01__16_42_49.pht')
+    # LAB
+    # path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-02-02__18_15_53.pht')
+    # TESLA
+    path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-02-02__18_18_06.pht')
     net = torch.load(path_net)
 
 if torch.cuda.device_count() > 1:
