@@ -1,5 +1,10 @@
 import vtk
 import os
+import sys
+
+current_path_abs = os.path.abspath('.')
+sys.path.append(current_path_abs)
+print('{} appended to sys!'.format(current_path_abs))
 
 do_interact = False
 do_smoothing = True
@@ -11,7 +16,7 @@ r,g,b = tuple(i/255 for i in (171,23,65))
 if do_from_home:
     dataset_path = 'H:\\Datasets\\Liver\\3Dircadb1_nifti'
 else:
-    dataset_path = 'dataset/ircadb/'
+    dataset_path = os.path.join(current_path_abs, 'datasets/ircadb/')
 
 print('Dataset path = {}'.format(dataset_path))
 idxs = range(1,5)
