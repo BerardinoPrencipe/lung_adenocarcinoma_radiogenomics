@@ -130,6 +130,13 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
         gt_liver_path = os.path.join(folder_dataset, folder_patient_valid, 'mask', 'liver.nii')
         gt_liver_mask = nib.load(gt_liver_path)
         gt_liver_mask = gt_liver_mask.get_data()
+        hole_fill_filter = sitk.BinaryFillholeImageFilter()
+        sitk_input = sitk.GetImageFromArray(gt_liver_mask)
+        gt_liver_mask_filled = hole_fill_filter.Execute(sitk_input)
+        print('Liver non-zero elements before filling: {}'.format(gt_liver_mask.sum()))
+        gt_liver_mask = sitk.GetArrayFromImage(gt_liver_mask_filled)
+        print('Liver non-zero elements after  filling: {}'.format(gt_liver_mask.sum()))
+
         # Filtering
         print("Output non-zero elements before: {}".format(output.sum()))
         print("GT     non-zero elements before: {}".format(gt_vessels_mask.sum()))
