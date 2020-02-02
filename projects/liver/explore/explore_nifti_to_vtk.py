@@ -3,7 +3,7 @@ import os
 
 do_interact = False
 do_smoothing = True
-do_from_home = True
+do_from_home = False
 n_iters = 1500
 
 r,g,b = tuple(i/255 for i in (171,23,65))
