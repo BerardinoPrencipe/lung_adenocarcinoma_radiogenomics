@@ -60,41 +60,45 @@ print('Network Path = {}'.format(path_net))
 
 path_test_preds = list()
 
-# Start iteration over val set
-for idx, folder_patient_valid in enumerate(folders_patients_valid):
+calculate_cnn_out = True
+print('Calculate CNN Output = {}'.format(calculate_cnn_out))
 
-    path_test_image = os.path.join(folder_dataset, folder_patient_valid, 'image', 'image.nii')
-    path_test_pred  = os.path.join(folder_dataset, folder_patient_valid, 'image', 'pred.nii')
-    path_test_preds.append(path_test_pred)
+if calculate_cnn_out:
+    # Start iteration over val set
+    for idx, folder_patient_valid in enumerate(folders_patients_valid):
 
-    # load file
-    data = nib.load(path_test_image)
-    # save affine
-    input_aff = data.affine
-    # convert to numpy
-    data = data.get_data()
+        path_test_image = os.path.join(folder_dataset, folder_patient_valid, 'image', 'image.nii')
+        path_test_pred  = os.path.join(folder_dataset, folder_patient_valid, 'image', 'pred.nii')
+        path_test_preds.append(path_test_pred)
 
-    # normalize data
-    # RIGHT AND HEALTHY VERSION
-    data = normalize_data(data, window_hu)
+        # load file
+        data = nib.load(path_test_image)
+        # save affine
+        input_aff = data.affine
+        # convert to numpy
+        data = data.get_data()
 
-    # WRONG AND UGLY VERSION
-    # data = normalize_data_old(data, dmin=window_hu[0], dmax=window_hu[1])
-    # data = (data * 255).astype(np.uint8)
+        # normalize data
+        # RIGHT AND HEALTHY VERSION
+        data = normalize_data(data, window_hu)
 
-    # transpose so the z-axis (slices) are the first dimension
-    data = np.transpose(data, (2, 0, 1))
+        # WRONG AND UGLY VERSION
+        # data = normalize_data_old(data, dmin=window_hu[0], dmax=window_hu[1])
+        # data = (data * 255).astype(np.uint8)
 
-    # CNN
-    output = perform_inference_volumetric_image(net, data, context=2, do_round=True, cuda_dev=cuda_dev)
-    output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
+        # transpose so the z-axis (slices) are the first dimension
+        data = np.transpose(data, (2, 0, 1))
 
-    non_zero_elements = np.count_nonzero(output)
-    print("Non-Zero elements = {}".format(non_zero_elements))
+        # CNN
+        output = perform_inference_volumetric_image(net, data, context=2, do_round=True, cuda_dev=cuda_dev)
+        output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
 
-    output_nib = nib.Nifti1Image(output, affine=input_aff)
-    nib.save(output_nib, path_test_pred)
-    print("Index {} on {}.\nImage saved in {}".format(idx, len(folders_patients_valid)-1, path_test_pred))
+        non_zero_elements = np.count_nonzero(output)
+        print("Non-Zero elements = {}".format(non_zero_elements))
+
+        output_nib = nib.Nifti1Image(output, affine=input_aff)
+        nib.save(output_nib, path_test_pred)
+        print("Index {} on {}.\nImage saved in {}".format(idx, len(folders_patients_valid)-1, path_test_pred))
 
 ious       = np.zeros(len(val_list))
 precisions = np.zeros(len(val_list))
@@ -104,8 +108,8 @@ rvds       = np.zeros(len(val_list))
 assds      = np.zeros(len(val_list))
 hds        = np.zeros(len(val_list))
 
-do_apply_liver_mask = True
-print('Applying Liver Mask!')
+do_apply_liver_mask = False
+print('Apply Liver Mask = {}'.format(do_apply_liver_mask))
 
 for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patients_valid, path_test_preds)):
 
@@ -130,12 +134,9 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
         gt_liver_path = os.path.join(folder_dataset, folder_patient_valid, 'mask', 'liver.nii')
         gt_liver_mask = nib.load(gt_liver_path)
         gt_liver_mask = gt_liver_mask.get_data()
-        # hole_fill_filter = sitk.BinaryFillholeImageFilter()
-        # closing_filter = sitk.BinaryMorphologicalClosingImageFilter()
         sitk_input = sitk.GetImageFromArray(gt_liver_mask)
         vector_radius = (25, 25, 25) 
         kernel = sitk.sitkBall
-        # gt_liver_mask_filled = closing_filter.Execute(sitk_input)
         gt_liver_mask_filled = sitk.BinaryMorphologicalClosing(sitk_input, vector_radius, kernel)
         print('Liver non-zero elements before filling: {}'.format(gt_liver_mask.sum()))
         gt_liver_mask = sitk.GetArrayFromImage(gt_liver_mask_filled)
