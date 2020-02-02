@@ -104,6 +104,9 @@ rvds       = np.zeros(len(val_list))
 assds      = np.zeros(len(val_list))
 hds        = np.zeros(len(val_list))
 
+do_apply_liver_mask = True
+print('Applying Liver Mask!')
+
 for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patients_valid, path_test_preds)):
 
     # Ground Truth
@@ -121,6 +124,19 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
     # Output
     output = nib.load(path_test_pred)
     output = output.get_data()
+
+    if do_apply_liver_mask:
+        # Liver GT
+        gt_liver_path = os.path.join(folder_dataset, folder_patient_valid, 'mask', 'liver.nii')
+        gt_liver_mask = nib.load(gt_liver_path)
+        gt_liver_mask = gt_liver_mask.get_data()
+        # Filtering
+        print("Output non-zero elements before: {}".format(output.sum()))
+        print("GT     non-zero elements before: {}".format(gt_vessels_mask.sum()))
+        output[gt_liver_mask==0] = 0
+        gt_vessels_mask[gt_liver_mask==0] = 0
+        print("Output non-zero elements after : {}".format(output.sum()))
+        print("GT     non-zero elements after : {}".format(gt_vessels_mask.sum()))
 
     iou = mmb.jc(output, gt_vessels_mask)
     dice = mmb.dc(output, gt_vessels_mask)
