@@ -61,7 +61,7 @@ print('Network Path = {}'.format(path_net))
 
 path_test_preds = list()
 
-calculate_cnn_out = False
+calculate_cnn_out = True
 print('Calculate CNN Output = {}'.format(calculate_cnn_out))
 
 if calculate_cnn_out:
