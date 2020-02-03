@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import medpy.metric.binary as mmb
 import sys
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, matthews_corrcoef
 
 current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
@@ -190,7 +190,8 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
     acc  = (tp+tn) / (tp+tn+fp+fn)
     sens = tp / (tp+fn) # recall
     spec = tn / (tn+fp)
-    mcc = get_mcc(tp=tp, tn=tn, fp=fp, fn=fn)
+    # mcc = get_mcc(tp=tp, tn=tn, fp=fp, fn=fn)
+    mcc = matthews_corrcoef(y_true=gt_vessels_mask.flatten(), y_pred=output.flatten())
 
     tps += tp
     fps += fp
