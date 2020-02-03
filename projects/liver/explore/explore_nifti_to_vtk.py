@@ -28,7 +28,7 @@ for idx in idxs:
     path_image_pred  = os.path.join(dataset_path, 'patient-{:02d}/image/pred.nii'.format(idx))
     path_image_hv_gt = os.path.join(dataset_path, 'patient-{:02d}/mask/hv.nii'.format(idx))
     path_image_pv_gt = os.path.join(dataset_path, 'patient-{:02d}/mask/pv.nii'.format(idx))
-    path_image_liver_gt = os.path.join(dataset_path, 'patient-{:02d}/mask/liver.nii'.format(idx))
+    path_image_liver_gt = os.path.join(dataset_path, 'patient-{:02d}/mask/liver_closed.nii'.format(idx))
 
     mesh_dir = os.path.join(dataset_path, 'patient-{:02d}/mesh/'.format(idx))
     if not os.path.exists(mesh_dir):
@@ -50,18 +50,8 @@ for idx in idxs:
         imageReader = vtk.vtkNIFTIImageReader()
         imageReader.SetFileName(path_image)
 
-        if 'liver' in path_image:
-            mcf = vtk.vtkImageOpenClose3D()
-            mcf.SetCloseValue(1)
-            mcf.SetKernelSize(25,25,15)
-            mcf.Update()
-            output_port = mcf.GetOutputPort()
-        else:
-            output_port = imageReader.GetOutputPort()
-
         dmc = vtk.vtkDiscreteMarchingCubes()
-        # dmc = vtk.vtkMarchingCubes()
-        dmc.SetInputConnection(output_port)
+        dmc.SetInputConnection(imageReader.GetOutputPort())
         dmc.GenerateValues(1,1,1)
         dmc.Update()
 
