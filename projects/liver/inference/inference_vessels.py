@@ -201,7 +201,7 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
     accs [idx] = acc
     senss[idx] = sens
     specs[idx] = spec
-    mccs [idx] = int(mcc)
+    mccs [idx] = mcc
 
     print('\nConfusion Matrix Metrics')
     print('Accuracy  = {}'.format(acc))
@@ -254,10 +254,10 @@ data = {
 
     'Mcc'       : avg_mcc,
 
-    'TP'        : tps,
-    'FP'        : fps,
-    'FN'        : fns,
-    'TN'        : tns
+    'TP'        : int(tps),
+    'FP'        : int(fps),
+    'FN'        : int(fns),
+    'TN'        : int(tns),
 }
 
 json_path = os.path.join(current_path_abs, 'datasets/ircadb_metrics.json')
