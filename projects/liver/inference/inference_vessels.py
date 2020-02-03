@@ -197,10 +197,10 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
     fns += fn
     tns += tn
 
-    accs[idx] = acc
+    accs [idx] = acc
     senss[idx] = sens
     specs[idx] = spec
-    mccs[idx] = mcc
+    mccs [idx] = mcc
 
     print('\nConfusion Matrix Metrics')
     print('Accuracy  = {}'.format(acc))

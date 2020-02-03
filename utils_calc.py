@@ -137,12 +137,20 @@ def get_acc(tp,tn,fp,fn):
     return acc
 
 def get_mcc(tp, tn, fp, fn):
-    mcc = ((tp * tn) - (fp * fn)) / (np.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn)))
+    if tp+fp == 0 or tp+fn==0 or tn+fp==0 or tn+fn==0:
+        den = 1
+    else:
+        den = (np.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn)))
+    mcc = ((tp * tn) - (fp * fn)) / den
     return mcc
 
 def get_dsc(tp, fp, fn):
     dsc = 2*tp / (fp+fn+2*tp)
     return dsc
+
+def get_jac(tp, fp, fn):
+    iou = tp / (tp+fp+fn)
+    return iou
 
 def get_sens(tp, fn):
     sens = tp / (tp + fn)  # recall
