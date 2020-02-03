@@ -43,16 +43,25 @@ for idx in idxs:
     path_images = list((path_image_pred, path_image_hv_gt, path_image_pv_gt, path_image_liver_gt))
     path_meshes = list((path_mesh_pred, path_mesh_hv_gt, path_mesh_pv_gt, path_mesh_liver_gt))
 
-    for idx, (path_image, path_mesh) in enumerate(zip(path_images, path_meshes)):
+    for idx_im_mesh, (path_image, path_mesh) in enumerate(zip(path_images, path_meshes)):
 
         print('Path Image = {}\nPath Mesh = {}'.format(path_image, path_mesh))
 
         imageReader = vtk.vtkNIFTIImageReader()
         imageReader.SetFileName(path_image)
 
+        if 'liver' in path_image:
+            mcf = vtk.vtkImageOpenClose3D()
+            mcf.SetCloseValue(1)
+            mcf.SetKernelSize(25,25,15)
+            mcf.Update()
+            output_port = mcf.GetOutputPort()
+        else:
+            output_port = imageReader.GetOutputPort()
+
         dmc = vtk.vtkDiscreteMarchingCubes()
         # dmc = vtk.vtkMarchingCubes()
-        dmc.SetInputConnection(imageReader.GetOutputPort())
+        dmc.SetInputConnection(output_port)
         dmc.GenerateValues(1,1,1)
         dmc.Update()
 
