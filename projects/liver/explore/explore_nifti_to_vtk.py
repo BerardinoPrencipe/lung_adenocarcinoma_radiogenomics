@@ -28,6 +28,7 @@ for idx in idxs:
     path_image_pred  = os.path.join(dataset_path, 'patient-{:02d}/image/pred.nii'.format(idx))
     path_image_hv_gt = os.path.join(dataset_path, 'patient-{:02d}/mask/hv.nii'.format(idx))
     path_image_pv_gt = os.path.join(dataset_path, 'patient-{:02d}/mask/pv.nii'.format(idx))
+    path_image_liver_gt = os.path.join(dataset_path, 'patient-{:02d}/mask/liver.nii'.format(idx))
 
     mesh_dir = os.path.join(dataset_path, 'patient-{:02d}/mesh/'.format(idx))
     if not os.path.exists(mesh_dir):
@@ -37,11 +38,12 @@ for idx in idxs:
     path_mesh_pred   = os.path.join(mesh_dir, 'pred.wrl')
     path_mesh_hv_gt  = os.path.join(mesh_dir, 'mask_gt_hv.wrl')
     path_mesh_pv_gt  = os.path.join(mesh_dir, 'mask_gt_pv.wrl')
+    path_mesh_liver_gt = os.path.join(mesh_dir, 'mask_gt_liver.wrl')
 
-    path_images = list((path_image_pred, path_image_hv_gt, path_image_pv_gt))
-    path_meshes = list((path_mesh_pred, path_mesh_hv_gt, path_mesh_pv_gt))
+    path_images = list((path_image_pred, path_image_hv_gt, path_image_pv_gt, path_image_liver_gt))
+    path_meshes = list((path_mesh_pred, path_mesh_hv_gt, path_mesh_pv_gt, path_mesh_liver_gt))
 
-    for path_image, path_mesh in zip(path_images, path_meshes):
+    for idx, (path_image, path_mesh) in enumerate(zip(path_images, path_meshes)):
 
         print('Path Image = {}\nPath Mesh = {}'.format(path_image, path_mesh))
 
@@ -54,12 +56,11 @@ for idx in idxs:
         dmc.GenerateValues(1,1,1)
         dmc.Update()
 
-        spdf = vtk.vtkSmoothPolyDataFilter()
-        spdf.SetInputConnection(dmc.GetOutputPort())
-        spdf.SetNumberOfIterations(n_iters)
-
         mapper = vtk.vtkPolyDataMapper()
         if do_smoothing:
+            spdf = vtk.vtkSmoothPolyDataFilter()
+            spdf.SetInputConnection(dmc.GetOutputPort())
+            spdf.SetNumberOfIterations(n_iters)
             mapper.SetInputConnection(spdf.GetOutputPort())
         else:
             mapper.SetInputConnection(dmc.GetOutputPort())
