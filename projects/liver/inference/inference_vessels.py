@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import medpy.metric.binary as mmb
 import sys
+from sklearn.metrics import confusion_matrix
 
 current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
@@ -60,7 +61,7 @@ print('Network Path = {}'.format(path_net))
 
 path_test_preds = list()
 
-calculate_cnn_out = True
+calculate_cnn_out = False
 print('Calculate CNN Output = {}'.format(calculate_cnn_out))
 
 if calculate_cnn_out:
@@ -107,6 +108,10 @@ dices      = np.zeros(len(val_list))
 rvds       = np.zeros(len(val_list))
 assds      = np.zeros(len(val_list))
 hds        = np.zeros(len(val_list))
+
+accs       = np.zeros(len(val_list))
+senss      = np.zeros(len(val_list))
+specs      = np.zeros(len(val_list))
 
 do_apply_liver_mask = False
 print('Apply Liver Mask = {}'.format(do_apply_liver_mask))
@@ -159,6 +164,7 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
     hd = mmb.hd(output, gt_vessels_mask, voxelspacing=voxel_spacing)
 
     print('Patient   = ', folder_patient_valid)
+    print('\nVolumetric Overlap Metrics')
     print('IoU       = ', iou)
     print('Dice      = ', dice)
     print('Precision = ', prec)
@@ -175,6 +181,21 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
     assds[idx] = assd
     hds[idx] = hd
 
+    # CONFUSION MATRIX
+    tn, fp, fn, tp = confusion_matrix(y_true=gt_vessels_mask.flatten(), y_pred=output.flatten()).ravel()
+    acc  = (tp+tn) / (tp+tn+fp+fn)
+    sens = tp / (tp+fn) # recall
+    spec = tn / (tn+fp)
+
+    accs[idx] = acc
+    senss[idx] = sens
+    specs[idx] = spec
+
+    print('\nConfusion Matrix Metrics')
+    print('Accuracy  = {}'.format(acc))
+    print('Sens (Re) = {}'.format(sens))
+    print('Specif    = {}'.format(spec))
+
 avg_iou  = np.mean(ious)
 avg_prec = np.mean(precisions)
 avg_reca = np.mean(recalls)
@@ -183,6 +204,11 @@ avg_rvd  = np.mean(rvds)
 avg_assd = np.mean(assds)
 avg_hd   = np.mean(hds)
 
+avg_acc  = np.mean(accs)
+avg_sens = np.mean(senss)
+avg_spec = np.mean(specs)
+
+print('\nVolumetric Overlap Metrics')
 print('Average IoU       = {}'.format(avg_iou))
 print('Average Precision = {}'.format(avg_prec))
 print('Average Recall    = {}'.format(avg_reca))
@@ -190,6 +216,11 @@ print('Average Dice      = {}'.format(avg_dice))
 print('Average RVD       = {}'.format(avg_rvd))
 print('Average ASSD      = {}'.format(avg_assd))
 print('Average MSSD      = {}'.format(avg_hd))
+
+print('\nConfusion Matrix Metrics')
+print('Average Accuracy  = {}'.format(avg_acc))
+print('Average Sens (Re) = {}'.format(avg_sens))
+print('Average Specif    = {}'.format(avg_spec))
 
 import json
 
@@ -201,6 +232,10 @@ data = {
     'RVD'       : avg_rvd,
     'ASSD'      : avg_assd,
     'MSSD'      : avg_hd,
+
+    'Acc'       : avg_acc,
+    'Sens'      : avg_sens,
+    'Spec'      : avg_spec,
 }
 
 json_path = os.path.join(current_path_abs, 'datasets/ircadb_metrics.json')
