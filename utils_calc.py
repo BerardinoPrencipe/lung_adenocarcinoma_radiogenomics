@@ -131,3 +131,33 @@ def normalize(arr, max_value=None):
         arr_min = np.min(arr)
         arr_max = np.max(arr) if max_value is None else max_value
         return (arr-arr_min)/(arr_max-arr_min)
+
+def get_acc(tp,tn,fp,fn):
+    acc = (tp+tn) / (tp+tn+fp+fn)
+    return acc
+
+def get_mcc(tp, tn, fp, fn):
+    mcc = ((tp * tn) - (fp * fn)) / (np.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn)))
+    return mcc
+
+def get_dsc(tp, fp, fn):
+    dsc = 2*tp / (fp+fn+2*tp)
+    return dsc
+
+def get_sens(tp, fn):
+    sens = tp / (tp + fn)  # recall
+    return sens
+
+def get_spec(tn, fp):
+    spec = tn / (tn + fp)
+    return spec
+
+def get_confusion_matrix_metrics(tp, tn, fp, fn):
+    metrics = {
+        'acc' : get_acc(tp=tp, tn=tn, fp=fp, fn=fn),
+        'mcc' : get_mcc(tp=tp, tn=tn, fp=fp, fn=fn),
+        'dsc' : get_dsc(tp=tp, fp=fp, fn=fn),
+        'sens': get_sens(tp=tp, fn=fn),
+        'spec': get_spec(tn=tn, fp=fp)
+    }
+    return metrics

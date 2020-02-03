@@ -11,7 +11,7 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from utils_calc import normalize_data, normalize_data_old, perform_inference_volumetric_image
+from utils_calc import normalize_data, normalize_data_old, perform_inference_volumetric_image, get_mcc
 from projects.liver.train.config import window_hu
 from semseg.models.vnet_v2 import VXNet
 
@@ -113,8 +113,12 @@ accs       = np.zeros(len(val_list))
 senss      = np.zeros(len(val_list))
 specs      = np.zeros(len(val_list))
 
+mccs       = np.zeros(len(val_list))
+
 do_apply_liver_mask = False
 print('Apply Liver Mask = {}'.format(do_apply_liver_mask))
+
+tps, tns, fps, fns = 0,0,0,0
 
 for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patients_valid, path_test_preds)):
 
@@ -186,15 +190,23 @@ for idx, (folder_patient_valid, path_test_pred) in enumerate(zip(folders_patient
     acc  = (tp+tn) / (tp+tn+fp+fn)
     sens = tp / (tp+fn) # recall
     spec = tn / (tn+fp)
+    mcc = get_mcc(tp=tp, tn=tn, fp=fp, fn=fn)
+
+    tps += tp
+    fps += fp
+    fns += fn
+    tns += tn
 
     accs[idx] = acc
     senss[idx] = sens
     specs[idx] = spec
+    mccs[idx] = mcc
 
     print('\nConfusion Matrix Metrics')
     print('Accuracy  = {}'.format(acc))
     print('Sens (Re) = {}'.format(sens))
     print('Specif    = {}'.format(spec))
+    print('MCC       = {}'.format(mcc))
 
 avg_iou  = np.mean(ious)
 avg_prec = np.mean(precisions)
@@ -207,6 +219,7 @@ avg_hd   = np.mean(hds)
 avg_acc  = np.mean(accs)
 avg_sens = np.mean(senss)
 avg_spec = np.mean(specs)
+avg_mcc  = np.mean(mccs)
 
 print('\nVolumetric Overlap Metrics')
 print('Average IoU       = {}'.format(avg_iou))
@@ -221,6 +234,7 @@ print('\nConfusion Matrix Metrics')
 print('Average Accuracy  = {}'.format(avg_acc))
 print('Average Sens (Re) = {}'.format(avg_sens))
 print('Average Specif    = {}'.format(avg_spec))
+print('Average MCC       = {}'.format(avg_mcc))
 
 import json
 
@@ -236,6 +250,13 @@ data = {
     'Acc'       : avg_acc,
     'Sens'      : avg_sens,
     'Spec'      : avg_spec,
+
+    'Mcc'       : avg_mcc,
+
+    'TP'        : tps,
+    'FP'        : fps,
+    'FN'        : fns,
+    'TN'        : tns
 }
 
 json_path = os.path.join(current_path_abs, 'datasets/ircadb_metrics.json')
