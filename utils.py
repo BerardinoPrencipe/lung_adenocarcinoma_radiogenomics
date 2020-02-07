@@ -10,7 +10,7 @@ import matplotlib
 
 from utils_calc import normalize_data, normalize
 
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 cuda = torch.cuda.is_available()
@@ -143,6 +143,19 @@ def apply_mask(image, mask_2d, transparency=0.25, color=None, show_results=False
         plt.show()
 
     return out_image
+
+
+def imshow_components(labels):
+    # Map component labels to hue value
+    label_hue = np.uint8(179*labels/np.max(labels))
+    blank_ch = 255*np.ones_like(label_hue)
+    labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
+
+    # set bg label to black
+    labeled_img[label_hue==0] = 0
+
+    plt.imshow(labeled_img)
+    plt.show()
 
 
 def create_gif(image_path, mask_path, path_out):
