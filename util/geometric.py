@@ -26,13 +26,17 @@ def get_zmin_zmax(mask):
     zmin, zmax = np.where(z)[0][[0, -1]]
     return zmin, zmax
 
-def get_centroid(mask):
-    count = mask.sum()
-    x_center, y_center = np.argwhere(mask==1).sum(0)/count
-    return x_center, y_center
 
 def getCentroid(cnt):
     M = cv2.moments(cnt)
     cX = int(M['m10'] / M['m00'])
     cY = int(M['m01'] / M['m00'])
     return (cX, cY)
+
+
+def getEuclidanDistance(x,y):
+    if isinstance(x, tuple):
+        x = np.array([xi for xi in x])
+    if isinstance(y, tuple):
+        y = np.array([yi for yi in y])
+    return np.linalg.norm(x-y)
