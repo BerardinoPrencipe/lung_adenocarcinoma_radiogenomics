@@ -2,12 +2,18 @@ import numpy as np
 from util.geometric import getEuclidanDistance
 
 class TreeNode(object):
-    "Tree node"
+    """
+    Tree node Class
+    """
+
+    branches = []
+
     def __init__(self, name='root', children=None, information_struct=None, label='root'):
         self.name = name
         self.information_struct = information_struct
         self.children = []
         self.label = label
+        self.depth = 0
         if children is not None:
             for child in children:
                 self.add_child(child)
@@ -25,10 +31,18 @@ class TreeNode(object):
         assert isinstance(node, TreeNode)
         self.children.append(node)
 
-    def __str__(self, level=0):
+    def __str__(self, level=0, limit=None):
         ret = "  "*level+self.name+"\n"
         for child in self.children:
-            ret += child.__str__(level+1)
+            if limit is None or level+1 <= limit:
+                ret += child.__str__(level+1, limit=limit)
+        return ret
+
+    def get_string_label(self, level=0, limit=None):
+        ret = "  " * level + self.label + "\n"
+        for child in self.children:
+            if limit is None or level + 1 <= limit:
+                ret += child.get_string_label(level + 1, limit=limit)
         return ret
 
     def get_n_children(self):
@@ -40,27 +54,105 @@ class TreeNode(object):
             n_children += child.get_recursively_n_children()
         return n_children
 
+    def set_recursively_depth(self):
+        for child in self.children:
+            child.depth = self.depth+1
+            child.set_recursively_depth()
+
+    def get_max_depth(self):
+        max_depth = self.depth
+        for child in self.children:
+            new_depth = child.get_max_depth()
+            if new_depth > max_depth:
+                max_depth = new_depth
+        return max_depth
+
+    def label_tree_from_branches(self):
+        for child in self.children:
+            child.recursively_assign_label(child.name)
+
     def recursively_assign_label(self, label):
         self.label = label
         for child in self.children:
-            child.label = label
             child.recursively_assign_label(label)
 
-    # TODO: give a label to each node of the tree
-    def recursively_label_tree(self, threshold_new_branch=6):
-        branches = list()
-        branches.append(self)
-        for child in self.children:
-            if len(self.children) > 2:
-                n_tot_children = child.get_recursively_n_children()
-                if n_tot_children > threshold_new_branch:
-                    child.recursively_assign_label(child.name)
-                    print('Branch {} created!'.format(child.name))
-                    branches.append(child)
-            child.recursively_label_tree(threshold_new_branch=threshold_new_branch)
-        return branches
+    # TODO
+    def recursively_find_branches_tree(self, threshold_new_branch=6, do_init=False):
+        if do_init:
+            self.init_recursive_label()
 
-class TreeVesselContainer(object):
+        if self.label != 'main_branch':
+            print('It is not main branch! {}'.format(self.label))
+            return
+
+        if len(self.children) >= 2:
+            depth_max_childrens = []
+            for child in self.children:
+                depth_max_children = child.get_max_depth()
+                depth_max_childrens.append(depth_max_children)
+
+            amax_depth = np.argmax(depth_max_childrens)
+
+            for idx, child in enumerate(self.children):
+                n_tot_children = child.get_recursively_n_children()
+                depth_children = child.get_max_depth()
+                if idx == amax_depth:
+                    # MAIN BRANCH
+                    child.recursively_find_branches_tree(threshold_new_branch=threshold_new_branch)
+                else:
+                    if n_tot_children > threshold_new_branch:
+                        print('Branch {} created!'.format(child.name))
+                        print('Depth Children = {:3d}\tN Tot Children = {}'.format(depth_children, n_tot_children))
+                        TreeNode.branches.append(child)
+                        child.recursively_assign_label(child.name)
+                        child.recursively_find_branches_tree(threshold_new_branch=threshold_new_branch)
+                    else:
+                        child.recursively_find_branches_tree(threshold_new_branch=threshold_new_branch)
+        elif len(self.children) == 1:
+            child = self.children[0]
+            child.recursively_find_branches_tree(threshold_new_branch=threshold_new_branch)
+        else:
+            pass
+        return TreeNode.branches
+
+    ''' 
+    def recursively_find_branches_tree(self, threshold_new_branch=6, do_init=False):
+        if do_init:
+            self.init_recursive_label()
+
+        if len(self.children) >= 2:
+            depth_max_childrens = []
+            for child in self.children:
+                depth_max_children = child.get_max_depth()
+                depth_max_childrens.append(depth_max_children)
+
+            amax_depth = np.argmax(depth_max_childrens)
+
+            for idx, child in enumerate(self.children):
+                n_tot_children = child.get_recursively_n_children()
+                depth_children = child.get_max_depth()
+                if idx != amax_depth and n_tot_children > threshold_new_branch:
+                    print('Branch {} created!'.format(child.name))
+                    print('Depth Children = {:3d}\tN Tot Children = {}'.format(depth_children, n_tot_children))
+                    TreeNode.branches.append(child)
+                    child.recursively_find_branches_tree(threshold_new_branch=threshold_new_branch)
+                else:
+                    child.recursively_find_branches_tree(threshold_new_branch=threshold_new_branch)
+        elif len(self.children) == 1:
+            child = self.children[0]
+            child.recursively_find_branches_tree(threshold_new_branch=threshold_new_branch)
+        else:
+            pass
+        return TreeNode.branches
+    '''
+
+    def init_recursive_label(self):
+        TreeNode.branches = []
+        TreeNode.branches.append(self)
+        # self.recursively_assign_label(self.name)
+        self.recursively_assign_label('main_branch')
+
+class TreeNodesContainer(object):
     def __init__(self, nodes=None):
         self.nodes = []
         if nodes is not None:
@@ -123,3 +215,54 @@ class TreeVesselContainer(object):
         child_node  = self.get_node_from_name(child_node_name)
         if parent_node is not None and child_node is not None:
             parent_node.add_child(child_node)
+
+
+def label_tree_from_branches(branches):
+    for branch in branches:
+        branch.recursively_assign_label(branch.name)
+
+
+''' 
+ # TODO: give a label to each node of the tree
+    def recursively_find_branches_tree_OLD(self, threshold_new_branch=6, do_init=False):
+        if do_init:
+            self.init_recursive_label()
+
+        # TreeNode.branches.append(self)
+        if len(self.children) >= 2:
+            n_tot_childrens = []
+            depth_max_childrens = []
+            for child in self.children:
+                n_tot_children = child.get_recursively_n_children()
+                n_tot_childrens.append(n_tot_children)
+
+                depth_max_children = child.get_max_depth()
+                depth_max_childrens.append(depth_max_children)
+
+            amax = np.argmax(n_tot_childrens)
+            max_children = np.max(n_tot_childrens)
+
+            amax_depth = np.argmax(depth_max_childrens)
+            max_children_depth = np.max(depth_max_childrens)
+
+            for child in self.children:
+                depth_children = child.get_max_depth()
+                n_tot_children = child.get_recursively_n_children()
+                # if n_tot_children > threshold_new_branch and n_tot_children != max_children:
+                # if depth_children > threshold_new_branch and depth_children != max_children_depth:
+                if n_tot_children > threshold_new_branch and depth_children != max_children_depth:
+                    print('Branch {} created!'.format(child.name))
+                    print('Depth Children = {:3d}\tN Tot Children = {}'.format(depth_children, n_tot_children))
+                    # child.recursively_assign_label(child.name)
+                    TreeNode.branches.append(child)
+                    child.recursively_find_branches_tree(threshold_new_branch=threshold_new_branch)
+                else:
+                    child.recursively_find_branches_tree(threshold_new_branch=threshold_new_branch)
+        elif len(self.children) == 1:
+            child = self.children[0]
+            child.recursively_find_branches_tree(threshold_new_branch=threshold_new_branch)
+        else:
+            pass
+            # print('No children for {} node'.format(self.name))
+        return TreeNode.branches
+'''
