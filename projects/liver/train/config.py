@@ -38,11 +38,13 @@ if use_multi_gpu:
     batch_size = 10
 else:
     if isLinux:
-        batch_size = 4
+        batch_size = 8
     else:
-        batch_size = 2
+        batch_size = 4
 
 def get_criterion(dataset):
+    if dataset == 'segments':
+        return nn.CrossEntropyLoss().cuda()
     if dice is False:
         # cross-entropy loss: weighting of negative vs positive pixels and NLL loss layer
         loss_weight = torch.FloatTensor([0.50, 0.50])
@@ -70,11 +72,12 @@ config = {
     'lr'            : 1e-2,                 # learning rate
     'batch_size'    : batch_size,
     'num_samples'   : 500,                  # samples per epoch
-    'low_lr_epoch'  : 200,            # epoch where to lower learning rate
-    'epochs'        : 1000,               # total number of epochs
+    'low_lr_epoch'  : 200,                  # epoch where to lower learning rate
+    'epochs'        : 1000,                 # total number of epochs
     'val_epochs'    : 200,
     'num_outs'      : 2,
-    'num_workers'   : num_workers
+    'num_workers'   : num_workers,
+    'no_softmax'    : True,                 # Set True for Softmax, False for Dice
 }
 #################
 
@@ -88,8 +91,8 @@ def get_logs_folder(dataset):
     return logs_folder
 
 def get_train_val_folders(dataset):
-    assert dataset in ["vessels", "hv", "pv", "liver"], \
-        "Dataset must be in ['vessels', 'hv', 'pv', 'liver']!"
+    assert dataset in ["vessels", "hv", "pv", "liver", "segments"], \
+        "Dataset must be in ['vessels', 'hv', 'pv', 'liver', 'segments']!"
 
     if dataset == "vessels":
         # Vessels
@@ -113,7 +116,9 @@ def get_train_val_folders(dataset):
         else:
             train_folder = 'E:/Datasets/LiTS/train'
             val_folder   = 'E:/Datasets/LiTS/val'
-
+    elif dataset == "segments":
+        train_folder = 'E:/Datasets/LiverDecathlon/npy/train'
+        val_folder   = 'E:/Datasets/LiverDecathlon/npy/val'
     return train_folder, val_folder
 
 

@@ -67,6 +67,7 @@ def run(config, dataset):
 
 # python projects/liver/train/train.py
 # python projects/liver/train/train.py --dataset=pv
+# python projects/liver/train/train.py --dataset=segments
 
 import argparse
 
@@ -134,5 +135,8 @@ if __name__ == "__main__":
 
     config['low_lr_epoch'] = config['epochs'] // 5
     config['val_epochs']   = config['epochs'] // 5
+
+    if dataset == "segments":
+        config['num_outs'] = 9
 
     run(config, dataset)

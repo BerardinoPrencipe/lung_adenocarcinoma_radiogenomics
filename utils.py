@@ -180,3 +180,9 @@ def print_matrix(matrix):
             str+="{:9.3f}\t".format(el)
         str+="\n"
     print(str)
+
+
+def get_num_from_path(path):
+    num = str.split(path, '_')[1]
+    num = str.split(num, '.')[0]
+    return num

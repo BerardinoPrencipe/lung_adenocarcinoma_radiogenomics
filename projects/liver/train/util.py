@@ -7,8 +7,9 @@ from semseg.loss import dice as dice_loss, tversky
 use_tversky = False
 alpha, beta = 0.3, 0.7
 
-print('Use Tversky: ', use_tversky)
-print('alpha = ', alpha, ' beta = ', beta)
+if use_tversky:
+    print('Use Tversky: ', use_tversky)
+    print('alpha = ', alpha, ' beta = ', beta)
 
 def get_tversky_loss(outputs, labels):
     outputs = outputs[:, 1, :, :].unsqueeze(dim=1)
@@ -27,6 +28,9 @@ def get_loss(outputs, labels, criterion):
 
 def train_model(net, optimizer, train_data, config,
                 criterion=None, val_data_list=None, logs_folder=None):
+    multi_class =  config['num_outs'] > 2
+    print('Multi Class = {}'.format(multi_class))
+
     print('Start training...')
     # train loop
     for epoch in range(config['epochs']):
@@ -92,8 +96,9 @@ def train_model(net, optimizer, train_data, config,
         for val_data in val_data_list:
 
             accuracy = 0.0
-            intersect = 0.0
-            union = 0.0
+            if not multi_class:
+                intersect = 0.0
+                union = 0.0
 
             with torch.no_grad():
                 for i, data in enumerate(val_data):
@@ -115,16 +120,22 @@ def train_model(net, optimizer, train_data, config,
                     outputs, labels = outputs.data.cpu().numpy(), labels.data.cpu().numpy()
                     accuracy += (outputs == labels).sum() / float(outputs.size)
 
-                    # dice
-                    intersect += (outputs + labels == 2).sum()
-                    union += np.sum(outputs) + np.sum(labels)
+                    if not multi_class:
+                        # dice
+                        intersect += (outputs + labels == 2).sum()
+                        union += np.sum(outputs) + np.sum(labels)
 
             all_accuracy.append(accuracy / float(i + 1))
-            all_dice.append(1 - (2 * intersect + 1e-5) / (union + 1e-5))
+            if not multi_class:
+                all_dice.append(1 - (2 * intersect + 1e-5) / (union + 1e-5))
         eval_end_time = time.time()
         eval_elapsed_time = eval_end_time - eval_start_time
-        print('    val dice loss: {:.4f} - val accuracy: {:.4f} - time: {:.1f}'
-              .format(np.mean(all_dice), np.mean(all_accuracy), eval_elapsed_time))
+        if multi_class:
+            print('    val accuracy: {:.4f} - time: {:.1f}'
+                  .format(np.mean(all_accuracy), eval_elapsed_time))
+        else:
+            print('    val dice loss: {:.4f} - val accuracy: {:.4f} - time: {:.1f}'
+                  .format(np.mean(all_dice), np.mean(all_accuracy), eval_elapsed_time))
     print('Training ended!')
     return net
 

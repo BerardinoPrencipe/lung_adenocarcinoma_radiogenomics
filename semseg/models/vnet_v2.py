@@ -120,8 +120,9 @@ class UpConvBlock3b(nn.Module):
 
 
 class FinalConv(nn.Module):
-    def __init__(self, num_outs=2, out_channels=32):
+    def __init__(self, num_outs=2, out_channels=32, no_softmax=True):
         super().__init__()
+        self.no_softmax = no_softmax
         self.conv = nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=5, stride=1, padding=2)
         self.bn = nn.BatchNorm2d(out_channels)
         self.conv_1x1 = nn.Conv2d(in_channels=out_channels, out_channels=num_outs, kernel_size=1, stride=1, padding=0)
@@ -130,7 +131,9 @@ class FinalConv(nn.Module):
     def forward(self, x):
         layer = F.relu(self.bn(self.conv(x)))
         layer = torch.add(layer, x)
-        layer = self.final(self.bn_1x1(self.conv_1x1(layer)), dim=1)
+        layer = self.bn_1x1(self.conv_1x1(layer))
+        if self.no_softmax:
+            layer = self.final(layer, dim=1)
         return layer
 
 class CatBlock(nn.Module):
@@ -147,7 +150,7 @@ class CatBlock(nn.Module):
 
 class VXNet(nn.Module):
 
-    def __init__(self, dropout=False, context=0, num_outs=2, channels=16):
+    def __init__(self, dropout=False, context=0, num_outs=2, channels=16, no_softmax=False):
 
         super(VXNet, self).__init__()
 
@@ -166,7 +169,7 @@ class VXNet(nn.Module):
         self.up_block_1   = UpConvBlock2b(out_channels=channels * 4, undersampling_factor=4)
         self.cat_block_1  = CatBlock(dropout)
 
-        self.out_conv     = FinalConv(num_outs=num_outs)
+        self.out_conv     = FinalConv(num_outs=num_outs, no_softmax=no_softmax)
 
 
     def forward(self, x):
@@ -192,7 +195,8 @@ class VXNet(nn.Module):
         return layer_out
 
 def build_VXNet_with_config(config):
-    net = VXNet(config['dropout'], config['context'], config['num_outs'])
+    net = VXNet(dropout=config['dropout'], context=config['context'],
+                num_outs=config['num_outs'], no_softmax=config['no_softmax'])
     if config['cuda'] and not config['use_multi_gpu']: net = net.cuda()
     if config['cuda'] and config['use_multi_gpu']: net = use_multi_gpu_model(net)
     return net

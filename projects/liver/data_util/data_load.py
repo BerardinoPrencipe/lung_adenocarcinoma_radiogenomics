@@ -141,6 +141,7 @@ def load_file_context(data_files, idx, context, directory, augment):
     # middle sice first, because the network that one for the residual connection
     inputs = [inputs_b] + inputs_a + inputs_c
     labels = labels_b
+    labels = labels.astype(np.uint8)
 
     inputs = np.concatenate(inputs, 0)
 
