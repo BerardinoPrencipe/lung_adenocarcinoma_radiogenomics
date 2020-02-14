@@ -171,3 +171,12 @@ def create_gif(image_path, mask_path, path_out):
         image_montage = image_montage.astype(np.uint8)
         images.append(image_montage)
     imageio.mimsave(path_out, images, format='GIF')
+
+
+def print_matrix(matrix):
+    str = ""
+    for row in matrix:
+        for el in row:
+            str+="{:9.3f}\t".format(el)
+        str+="\n"
+    print(str)
