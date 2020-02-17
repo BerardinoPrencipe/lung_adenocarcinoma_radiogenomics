@@ -55,7 +55,8 @@ def run(config, dataset):
     val_data_list = val_data_loader(val_folder, config)
 
     # Training
-    net = train_model(net, optimizer, train_data, config,
+    device = torch.cuda.current_device()
+    net = train_model(net, optimizer, train_data, config, device=device,
                       criterion=criterion, val_data_list=val_data_list, logs_folder=logs_folder)
 
     # Save weights

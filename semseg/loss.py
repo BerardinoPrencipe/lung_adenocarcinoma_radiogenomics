@@ -27,45 +27,47 @@ def tversky(outputs, labels, alpha=0.5, beta=0.5):
     tversky_loss = 1 - tverksy_coeff
     return tversky_loss
 
-# Debug only
-''' 
-gt = torch.ones([1,16,16])
-pred = torch.ones([1,16,16]) * 0.95
 
-d = dice(pred, gt)
-t = tversky(pred, gt)
-print('Dice    Loss = {}'.format(d))
-print('Tversky Loss = {}'.format(t))
-'''
 
-class CrossEntropy2d(nn.Module):
+def one_hot_encode(label, num_classes):
+    """
 
-    def __init__(self, size_average=True, ignore_label=255):
-        super(CrossEntropy2d, self).__init__()
-        self.size_average = size_average
-        self.ignore_label = ignore_label
+    :param label: Tensor of shape BxHxW
+    :param num_classes: K classes
+    :return: label_ohe, Tensor of shape BxKxHxW
+    """
+    label_ohe = torch.zeros((label.shape[0], num_classes, label.shape[1], label.shape[2]))
+    for batch_idx, batch_el_label in enumerate(label):
+        for cls in range(num_classes):
+            label_ohe[batch_idx, cls] = (batch_el_label == cls)
+    label_ohe = label_ohe.long()
+    return label_ohe
 
-    def forward(self, predict, target, weight=None):
-        """
-        :param predict: (n, c, h, w)
-        :param target:  (n, h, w)
-        :param weight:  (Tensor, optional): a manual rescaling weight given to each class.
-                                            If given, has to be a Tensor of size "nclasses"
-        :return:
-        """
+def dice_n_classes(outputs, labels, do_one_hot=False, get_list=False, device=None):
+    """
+    Computes the Multi-class classification Dice Coefficient.
+    It is computed as the average Dice for all classes, each time
+    considering a class versus all the others.
+    Class 0 (background) is not considered in the average.
+    :param outputs: probabilities outputs of the CNN. Shape: [BxKxHxW]
+    :param labels:  ground truth                      Shape: [BxKxHxW]
+    :param do_one_hot: set to True if ground truth has shape [BxHxW]
+    :param get_list:   set to True if you want the list of dices per class instead of average
+    :param device: CUDA device on which compute the dice
+    :return: Multiclass classification Dice Loss
+    """
+    num_classes = outputs.shape[1]
+    if do_one_hot:
+        labels = one_hot_encode(labels, num_classes)
+        labels = labels.cuda(device=device)
 
-        assert not target.requires_grad
-        assert predict.dim() == 4
-        assert target.dim() == 3
-        assert predict.size(0) == target.size(0), "{} vs {}".format(predict.size(0), target.size(0))
-        assert predict.size(2) == target.size(1), "{} vs {}".format(predict.size(2), target.size(1))
-        assert predict.size(3) == target.size(2), "{} vs {}".format(predict.size(3), target.size(2))
-        n, c, h, w = predict.size()
-        target_mask = (target >= 0) * (target != self.ignore_label)
-        target = target[target_mask]
-        if not target.data.dim():
-            return Variable(torch.zeros(1))
-        predict = predict.transpose(1,2).transpose(2,3).contiguous()
-        predict = predict[target_mask.view(n, h, w, 1).repeat(1, 1, 1, c)].view(-1, c)
-        loss = F.cross_entropy(predict, target, weight=weight, size_average=self.size_average)
-        return loss
+    dices = list()
+    for cls in range(1, num_classes):
+        outputs_ = outputs[:, cls, :, :].unsqueeze(dim=1)
+        labels_  = labels[:, cls, :, :].unsqueeze(dim=1)
+        dice_ = dice(outputs_, labels_)
+        dices.append(dice_)
+    if get_list:
+        return dices
+    else:
+        return sum(dices) / num_classes

@@ -17,7 +17,10 @@ def normalize_data(data, interval=(-150,350)):
     return norm_data
 
 
-def perform_inference_volumetric_image(net, data, context=2, do_round=True, cuda_dev=torch.device('cuda')):
+def perform_inference_volumetric_image(net, data, context=2, do_round=True,
+                                       cuda_dev=torch.device('cuda'), do_argmax=False):
+    assert do_round is False or do_argmax is False, "do_round={} do_argmax={}".format(do_round, do_argmax)
+
     start_time = time.time()
 
     # save output here
@@ -58,9 +61,13 @@ def perform_inference_volumetric_image(net, data, context=2, do_round=True, cuda
 
             # inference
             outputs = net(inputs)
-            outputs = outputs[0, 1, :, :]
-            if do_round:
+            if do_argmax:
+                outputs = torch.argmax(outputs, dim=1)
+                outputs = outputs[0,:,:]
+            elif do_round:
                 outputs = outputs.round()
+                outputs = outputs[0, 1, :, :]
+
             outputs = outputs.data.cpu().numpy()
 
             output[i, :, :] = outputs

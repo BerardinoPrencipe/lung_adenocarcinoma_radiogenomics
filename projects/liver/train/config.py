@@ -19,7 +19,8 @@ else:
 # dataset = "vessels"
 # dataset = "hv"
 # dataset = "pv"
-dataset = "liver"
+# dataset = "liver"
+dataset = "segments"
 
 # Hyperparams
 isWindows = 'Windows' in platform.system()
@@ -40,11 +41,14 @@ else:
     if isLinux:
         batch_size = 8
     else:
-        batch_size = 4
+        batch_size = 2
 
 def get_criterion(dataset):
     if dataset == 'segments':
-        return nn.CrossEntropyLoss().cuda()
+        if dice is False:
+            return nn.CrossEntropyLoss().cuda()
+        else:
+            return None
     if dice is False:
         # cross-entropy loss: weighting of negative vs positive pixels and NLL loss layer
         loss_weight = torch.FloatTensor([0.50, 0.50])
@@ -71,13 +75,13 @@ config = {
     'context'       : 2,                    # how many slices of context (2.5D)
     'lr'            : 1e-2,                 # learning rate
     'batch_size'    : batch_size,
-    'num_samples'   : 500,                  # samples per epoch
-    'low_lr_epoch'  : 200,                  # epoch where to lower learning rate
-    'epochs'        : 1000,                 # total number of epochs
-    'val_epochs'    : 200,
+    'num_samples'   : 100,                  # samples per epoch
+    'low_lr_epoch'  : 100,                  # epoch where to lower learning rate
+    'epochs'        : epochs,                 # total number of epochs
+    'val_epochs'    : 100,
     'num_outs'      : 2,
     'num_workers'   : num_workers,
-    'no_softmax'    : True,                 # Set True for Softmax, False for Dice
+    'no_softmax'    : False,                 # Set True for Softmax, False for Dice
 }
 #################
 

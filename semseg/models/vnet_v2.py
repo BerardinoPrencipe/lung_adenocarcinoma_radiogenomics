@@ -132,7 +132,7 @@ class FinalConv(nn.Module):
         layer = F.relu(self.bn(self.conv(x)))
         layer = torch.add(layer, x)
         layer = self.bn_1x1(self.conv_1x1(layer))
-        if self.no_softmax:
+        if not self.no_softmax:
             layer = self.final(layer, dim=1)
         return layer
 
