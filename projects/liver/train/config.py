@@ -66,9 +66,10 @@ def get_criterion(dataset):
         return None
 
 epochs = 1000
+augment = False
 config = {
     'model_name'    : '25D',
-    'augment'       : True,
+    'augment'       : augment,
     'dropout'       : True,
     'cuda'          : cuda,
     'use_multi_gpu' : use_multi_gpu,
