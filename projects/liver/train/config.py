@@ -65,7 +65,7 @@ def get_criterion(dataset):
     else:
         return None
 
-epochs = 1000
+epochs = 1100
 augment = False
 config = {
     'model_name'    : '25D',
@@ -76,9 +76,9 @@ config = {
     'context'       : 2,                    # how many slices of context (2.5D)
     'lr'            : 1e-2,                 # learning rate
     'batch_size'    : batch_size,
-    'num_samples'   : 100,                  # samples per epoch
+    'num_samples'   : 200,                  # samples per epoch
     'low_lr_epoch'  : 100,                  # epoch where to lower learning rate
-    'epochs'        : epochs,                 # total number of epochs
+    'epochs'        : epochs,               # total number of epochs
     'val_epochs'    : 100,
     'num_outs'      : 2,
     'num_workers'   : num_workers,
@@ -122,8 +122,13 @@ def get_train_val_folders(dataset):
             train_folder = 'E:/Datasets/LiTS/train'
             val_folder   = 'E:/Datasets/LiTS/val'
     elif dataset == "segments":
-        train_folder = 'E:/Datasets/LiverDecathlon/npy/train'
-        val_folder   = 'E:/Datasets/LiverDecathlon/npy/val'
+        use_masked_dataset = False
+        if not use_masked_dataset:
+            train_folder = 'E:/Datasets/LiverDecathlon/npy/train'
+            val_folder = 'E:/Datasets/LiverDecathlon/npy/val'
+        else:
+            train_folder = 'E:/Datasets/LiverDecathlon/npy_masked/train'
+            val_folder   = 'E:/Datasets/LiverDecathlon/npy_masked/val'
     return train_folder, val_folder
 
 

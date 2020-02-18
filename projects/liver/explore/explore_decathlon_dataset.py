@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import SimpleITK as sitk
 
 from utils import get_num_from_path
@@ -75,9 +76,32 @@ images_filtered_by_segments = [image_path for image_path in images_list_paths
 print('Len Images(Segments) = {}'.format(len(images_filtered_by_segments)))
 
 
-# for image_filt_path in images_filtered_by_segments:
-image_filt_path = images_filtered_by_segments[0]
-image_filt_full_path = os.path.join(images_folder, image_filt_path)
-image_filt_sitk = sitk.ReadImage(image_filt_full_path)
-image_filt_np = sitk.GetArrayFromImage(image_filt_sitk)
-print('Shape = {}'.format(image_filt_np.shape))
+num_classes = 9
+cnt_cls = np.zeros(num_classes, dtype=np.uint64)
+
+# image_filt_path = images_filtered_by_segments[0]
+for idx, image_filt_path in enumerate(images_filtered_by_segments):
+    image_filt_full_path = os.path.join(labels_segments_folder, image_filt_path)
+    image_filt_sitk = sitk.ReadImage(image_filt_full_path)
+    image_filt_np = sitk.GetArrayFromImage(image_filt_sitk)
+    print('Index {} on {}'.format(idx, len(images_filtered_by_segments)-1))
+    print('Path  = {}'.format(image_filt_full_path))
+    print('Shape = {}'.format(image_filt_np.shape))
+    for cls in range(num_classes):
+        cnt_cls[cls] += (image_filt_np == cls).sum()
+
+sum_cls = sum(cnt_cls)
+ratio_cnt_cls = [cnt_cls_cls/sum_cls for cnt_cls_cls in cnt_cls]
+inverse_ratio_cnt_cls = [1/ratio_cnt_cl for ratio_cnt_cl in ratio_cnt_cls]
+log_i_r_cnt_cls = [np.log(i_r_cnt_cl) for i_r_cnt_cl in inverse_ratio_cnt_cls]
+for cls in range(num_classes):
+    print("Class [{:02d}] - Voxels: {:12d} - Ratio: {:.4f} - Inverse: {:9.4f} - Log: {:9.4f}".
+          format(cls, cnt_cls[cls], ratio_cnt_cls[cls], inverse_ratio_cnt_cls[cls], log_i_r_cnt_cls[cls]))
+
+import torch
+weights_balancing_path = 'logs/segments/weights.pt'
+torch_weights = torch.from_numpy(np.array(log_i_r_cnt_cls))
+torch.save(torch_weights, weights_balancing_path)
+
+# torch_weights = torch.from_numpy(np.array([0.0479, 6.1610, 5.1883, 5.6979, 5.2562, 5.0977, 5.1252, 4.7284, 4.6433]))
+torch_weights_load = torch.load(weights_balancing_path)

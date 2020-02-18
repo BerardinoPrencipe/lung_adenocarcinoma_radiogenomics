@@ -2,12 +2,26 @@ import torch
 import time
 import os
 import numpy as np
-from semseg.loss import dice as dice_loss, tversky, dice_n_classes
+from semseg.loss import dice as dice_loss, tversky, dice_n_classes, focal_dice_n_classes
 
 eps = 1e-5
+
+#######################
+### MULTI DICE LOSS ###
+#######################
 use_multi_dice = True
+weights_balancing_path = 'logs/segments/weights.pt'
+torch_balancing_weights = torch.load(weights_balancing_path)
+print('Torch Balancing Weights = {}'.format(torch_balancing_weights))
+# gamma = 2.
+gamma = 1.5
+
+###############
+### TVERSKY ###
+###############
 use_tversky = False
 alpha, beta = 0.3, 0.7
+
 
 if use_tversky:
     print('Use Tversky: ', use_tversky)
@@ -20,7 +34,9 @@ def get_tversky_loss(outputs, labels):
 
 def get_multi_dice_loss(outputs, labels, device=None):
     labels = labels[:, 0, :, :]
-    loss = dice_n_classes(outputs, labels, do_one_hot=True, get_list=False, device=device)
+    # loss = dice_n_classes(outputs, labels, do_one_hot=True, get_list=False, device=device)
+    loss = focal_dice_n_classes(outputs, labels, gamma=gamma, weights=torch_balancing_weights,
+                                do_one_hot=True, get_list=False, device=device)
     return loss
 
 def get_loss(outputs, labels, criterion):
@@ -81,10 +97,10 @@ def train_model(net, optimizer, train_data, config, device=None,
         epoch_elapsed_time = epoch_end_time - epoch_start_time
         # print statistics
         if criterion is None:
-            print('  [epoch {:04d}] - train dice loss: {:.4f} - time: {:.1f}'
+            print('  [Epoch {:04d}] - Train dice loss: {:.4f} - Time: {:.1f}'
                   .format(epoch + 1, running_loss / (i + 1), epoch_elapsed_time))
         else:
-            print('  [epoch {:04d}] - train cross-entropy loss: {:.4f} - time: {:.1f}'
+            print('  [Epoch {:04d}] - Train cross-entropy loss: {:.4f} - Time: {:.1f}'
                   .format(epoch + 1, running_loss / (i + 1), epoch_elapsed_time))
 
         # switch to eval mode
@@ -131,6 +147,7 @@ def train_model(net, optimizer, train_data, config, device=None,
                         outputs = outputs[:, 1, :, :].unsqueeze(dim=1).round()
                     else:
                         outputs = torch.argmax(outputs, dim=1)
+                        outputs = outputs.unsqueeze(dim=1)
 
                     # accuracy
                     outputs, labels = outputs.cpu().numpy(), labels.cpu().numpy()
@@ -142,10 +159,14 @@ def train_model(net, optimizer, train_data, config, device=None,
                         union += np.sum(outputs) + np.sum(labels)
                     else:
                         for cls in range(0, config['num_outs']):
-                            outputs_cls = (outputs==cls)
-                            labels_cls  = (labels==cls)
-                            intersect[cls] += ( np.logical_and(outputs_cls, labels_cls)).sum()
-                            union[cls]     += np.sum(outputs_cls) + np.sum(labels_cls)
+                            outputs_cls   = (outputs==cls)
+                            labels_cls    = (labels==cls)
+                            intersect_cls = (np.logical_and(outputs_cls, labels_cls)).sum()
+                            union_cls     = np.sum(outputs_cls) + np.sum(labels_cls)
+                            if intersect_cls > union_cls:
+                                print('Class [{:02d}] - Intersect = {} - Union = {}'.format(cls, intersect_cls, union_cls))
+                            intersect[cls] += intersect_cls
+                            union[cls]     += union_cls
 
             all_accuracy.append(accuracy / float(i + 1))
             if not multi_class:
