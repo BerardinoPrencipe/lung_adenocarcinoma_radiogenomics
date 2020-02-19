@@ -65,7 +65,7 @@ def get_criterion(dataset):
     else:
         return None
 
-epochs = 1400
+epochs = 1401
 augment = False
 config = {
     'model_name'    : '25D',
