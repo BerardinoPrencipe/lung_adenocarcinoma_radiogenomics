@@ -104,8 +104,8 @@ def get_logs_folder(dataset):
     return logs_folder
 
 def get_train_val_folders(dataset):
-    assert dataset in ["vessels", "hv", "pv", "liver", "segments"], \
-        "Dataset must be in ['vessels', 'hv', 'pv', 'liver', 'segments']!"
+    assert dataset in ["vessels", "hv", "pv", "liver", "segments", "vessels_tumors"], \
+        "Dataset must be in ['vessels', 'hv', 'pv', 'liver', 'segments', 'vessels_tumors']!"
 
     if dataset == "vessels":
         # Vessels
