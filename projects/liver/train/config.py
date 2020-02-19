@@ -17,10 +17,10 @@ else:
 
 # The dataset to use!
 # dataset = "vessels"
-# dataset = "hv"
-# dataset = "pv"
 # dataset = "liver"
-dataset = "segments"
+# dataset = "segments"
+dataset = "vessels_tumors"
+use_masked_dataset = False
 
 # Hyperparams
 isWindows = 'Windows' in platform.system()
@@ -65,7 +65,7 @@ def get_criterion(dataset):
     else:
         return None
 
-epochs = 1100
+epochs = 1400
 augment = False
 config = {
     'model_name'    : '25D',
@@ -85,6 +85,14 @@ config = {
     'no_softmax'    : False,                 # Set True for Softmax, False for Dice
 }
 #################
+
+def get_num_outs(dataset):
+    num_outs = 2
+    if dataset == 'vessels_tumors':
+        num_outs = 3
+    elif dataset == 'segments':
+        num_outs = 9
+    return num_outs
 
 def get_logs_folder(dataset):
     if use_multi_gpu:
@@ -122,13 +130,20 @@ def get_train_val_folders(dataset):
             train_folder = 'E:/Datasets/LiTS/train'
             val_folder   = 'E:/Datasets/LiTS/val'
     elif dataset == "segments":
-        use_masked_dataset = False
         if not use_masked_dataset:
             train_folder = 'E:/Datasets/LiverDecathlon/npy/train'
-            val_folder = 'E:/Datasets/LiverDecathlon/npy/val'
+            val_folder   = 'E:/Datasets/LiverDecathlon/npy/val'
         else:
             train_folder = 'E:/Datasets/LiverDecathlon/npy_masked/train'
             val_folder   = 'E:/Datasets/LiverDecathlon/npy_masked/val'
+    elif dataset == "vessels_tumors":
+        if not use_masked_dataset:
+            train_folder = 'E:/Datasets/LiverDecathlon/npy_vessels/train'
+            val_folder   = 'E:/Datasets/LiverDecathlon/npy_vessels/val'
+        else:
+            train_folder = 'E:/Datasets/LiverDecathlon/npy_vessels_masked/train'
+            val_folder   = 'E:/Datasets/LiverDecathlon/npy_vessels_masked/val'
+
     return train_folder, val_folder
 
 

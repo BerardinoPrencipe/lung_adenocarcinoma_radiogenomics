@@ -16,12 +16,13 @@ from utils import print_dict
 from projects.liver.data_util.data_load_util import train_data_loader, val_data_loader
 from projects.liver.train.util import train_model, get_model_name
 from projects.liver.train.config import config, dataset, \
-                                        get_logs_folder, get_train_val_folders, get_criterion
+                                        get_logs_folder, get_train_val_folders, get_criterion, get_num_outs
 
 def run(config, dataset):
     logs_folder = get_logs_folder(dataset)
     train_folder, val_folder = get_train_val_folders(dataset)
     criterion = get_criterion(dataset)
+    config['num_outs'] = get_num_outs(dataset)
 
     print('Train Folder = {}\nValidation Folder = {}\nLogs Folder = {}'.format(train_folder, val_folder, logs_folder))
 
@@ -69,6 +70,7 @@ def run(config, dataset):
 # python projects/liver/train/train.py
 # python projects/liver/train/train.py --dataset=pv
 # python projects/liver/train/train.py --dataset=segments
+# python projects/liver/train/train.py --dataset=vessels_tumors
 
 import argparse
 
@@ -134,10 +136,8 @@ if __name__ == "__main__":
         else:
             config[key] = dict_args[key]
 
-    config['low_lr_epoch'] = config['epochs'] // 5
-    config['val_epochs']   = config['epochs'] // 5
+    config['low_lr_epoch'] = config['epochs'] // 6
+    config['val_epochs']   = config['epochs'] // 6
 
-    if dataset == "segments":
-        config['num_outs'] = 9
 
     run(config, dataset)

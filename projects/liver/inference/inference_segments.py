@@ -24,11 +24,7 @@ if use_state_dict:
     net = VXNet(dropout=True,context=2,num_outs=9,no_softmax=False)
     net.load_state_dict(torch.load(path_net))
 else:
-    # path_net = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-17__14_28_37.pht')
-    # path_net = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-17__16_40_34.pht')
-    # path_net = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-17__23_53_26.pht')
-    # path_net = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-18__13_11_43.pht')
-    path_net = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-18__15_32_47.pht')
+    path_net = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-19__07_13_36.pht')
     net = torch.load(path_net)
 
 if torch.cuda.device_count() > 1:
@@ -55,6 +51,9 @@ image_paths = []
 for idx in range(1,6):
     image_path = 'hepaticvessel_{:03d}.nii.gz'.format(idx)
     image_paths.append(image_path)
+idxs_train = [70, 80]
+train_image_paths = ['hepaticvessel_{:03d}.nii.gz'.format(idx_train) for idx_train in idxs_train]
+image_paths += train_image_paths
 
 # Start iteration over val set
 for idx, image_path in enumerate(image_paths):

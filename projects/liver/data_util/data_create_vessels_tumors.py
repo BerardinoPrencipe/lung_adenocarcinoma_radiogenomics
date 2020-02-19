@@ -24,7 +24,6 @@ else:
 dataset_path_base = 'E:/Datasets/LiverDecathlon'
 dataset_path_nii = os.path.join(dataset_path_base, 'nii')
 source_images_folder = os.path.join(dataset_path_nii, 'images')
-source_labels_segments_folder = os.path.join(dataset_path_nii, 'labels_segments')
 source_labels_vessels_tumors_folder = os.path.join(dataset_path_nii, 'labels_vessels_tumors')
 source_labels_liver_folder = os.path.join(dataset_path_nii, 'labels_liver')
 
@@ -34,8 +33,8 @@ VAL_INT_NUM = 50
 ### DESTINATION DATASET (npy) ###
 #################################
 # create destination folder and possible subfolders
-destination_folder = dataset_path_npy = os.path.join(dataset_path_base, 'npy')
-destination_folder_masked = os.path.join(dataset_path_base, 'npy_masked')
+destination_folder = dataset_path_npy = os.path.join(dataset_path_base, 'npy_vessels')
+destination_folder_masked = os.path.join(dataset_path_base, 'npy_vessels_masked')
 subfolders = ["train", "val"]
 
 if not os.path.isdir(destination_folder):
@@ -57,10 +56,9 @@ for name in subfolders:
 
 print('Source Image           Folder = {}'.format(source_images_folder))
 print('Source Liver Labels    Folder = {}'.format(source_labels_liver_folder))
-print('Source Segments Labels Folder = {}'.format(source_labels_segments_folder))
 print('Source Vessels Tumors  Folder = {}'.format(source_labels_vessels_tumors_folder))
 
-label_paths = os.listdir(source_labels_segments_folder)
+label_paths = os.listdir(source_labels_vessels_tumors_folder)
 label_paths.sort()
 
 for idx, label_path in enumerate(label_paths):
@@ -68,7 +66,7 @@ for idx, label_path in enumerate(label_paths):
     print('Index {} on {}'.format(idx, len(label_paths)-1))
 
     image_filename = os.path.join(source_images_folder, label_path)
-    label_filename = os.path.join(source_labels_segments_folder, label_path)
+    label_filename = os.path.join(source_labels_vessels_tumors_folder, label_path)
     liver_filename = os.path.join(source_labels_liver_folder, label_path)
 
     print("Image: ", image_filename)

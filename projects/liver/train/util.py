@@ -5,12 +5,14 @@ import numpy as np
 from semseg.loss import dice as dice_loss, tversky, dice_n_classes, focal_dice_n_classes
 
 eps = 1e-5
+LEARNING_RATE_REDUCTION_FACTOR = 10
 
 #######################
 ### MULTI DICE LOSS ###
 #######################
 use_multi_dice = True
-weights_balancing_path = 'logs/segments/weights.pt'
+# weights_balancing_path = 'logs/segments/weights.pt'
+weights_balancing_path = 'logs/vessels_tumors/weights.pt'
 torch_balancing_weights = torch.load(weights_balancing_path)
 print('Torch Balancing Weights = {}'.format(torch_balancing_weights))
 # gamma = 2.
@@ -64,7 +66,7 @@ def train_model(net, optimizer, train_data, config, device=None,
         # lower learning rate
         if epoch == config['low_lr_epoch']:
             for param_group in optimizer.param_groups:
-                config['lr'] = config['lr'] / 10
+                config['lr'] = config['lr'] / LEARNING_RATE_REDUCTION_FACTOR
                 param_group['lr'] = config['lr']
 
         # switch to train mode
