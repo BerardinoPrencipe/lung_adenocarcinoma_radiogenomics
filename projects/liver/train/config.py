@@ -16,10 +16,8 @@ else:
     isLinux = False
 
 # The dataset to use!
-# dataset = "vessels"
-# dataset = "liver"
-# dataset = "segments"
-dataset = "vessels_tumors"
+datasets = ["liver", "vessels", "segments", "vessels_tumors"]
+dataset = datasets[-1]
 use_masked_dataset = False
 
 # Hyperparams
@@ -44,26 +42,7 @@ else:
         batch_size = 2
 
 def get_criterion(dataset):
-    if dataset == 'segments':
-        if dice is False:
-            return nn.CrossEntropyLoss().cuda()
-        else:
-            return None
-    if dice is False:
-        # cross-entropy loss: weighting of negative vs positive pixels and NLL loss layer
-        loss_weight = torch.FloatTensor([0.50, 0.50])
-        if dataset == "vessels":
-            loss_weight = torch.FloatTensor([0.04, 0.96])
-        elif dataset == "hv" or dataset == "pv":
-            loss_weight = torch.FloatTensor([0.02, 0.98])
-        elif dataset == "liver":
-            loss_weight = torch.FloatTensor([0.10, 0.90])
-
-        if cuda: loss_weight = loss_weight.cuda()
-        criterion = nn.NLLLoss(weight=loss_weight)
-        return criterion
-    else:
-        return None
+    return None
 
 epochs = 1401
 augment = False
@@ -104,47 +83,59 @@ def get_logs_folder(dataset):
     return logs_folder
 
 def get_train_val_folders(dataset):
-    assert dataset in ["vessels", "hv", "pv", "liver", "segments", "vessels_tumors"], \
-        "Dataset must be in ['vessels', 'hv', 'pv', 'liver', 'segments', 'vessels_tumors']!"
+    assert dataset in datasets, \
+        "Dataset must be in {}!".format(datasets)
 
     if dataset == "vessels":
         # Vessels
-        if isLinux:
-            train_folder = os.path.join(current_path_abs, 'datasets/ircadb_npy/train')
-            val_folder   = os.path.join(current_path_abs, 'datasets/ircadb_npy/val')
-        else:
-            train_folder = 'E:/Datasets/ircadb/train'
-            val_folder   = 'E:/Datasets/ircadb/val'
+        train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy/train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/ircadb/npy/val')
+    elif dataset == "liver":
+        train_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy/train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/LiTS/npy/val')
+    elif dataset == "segments":
+        npy_folder = "npy" if not use_masked_dataset else "npy_masked"
+        train_folder = os.path.join(current_path_abs, 'datasets/LiverDecathlon', npy_folder,'train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/LiverDecathlon', npy_folder,'val')
+    elif dataset == "vessels_tumors":
+        npy_folder = "npy_vessels" if not use_masked_dataset else "npy_vessels_masked"
+        train_folder = os.path.join(current_path_abs, 'datasets/LiverDecathlon', npy_folder, 'train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/LiverDecathlon', npy_folder, 'val')
+
+    return train_folder, val_folder
+
+
+window_hu = (-150,350)
+
+'''
     elif dataset == "hv":
         train_folder = 'E:/Datasets/ircadb_hv/train'
         val_folder = 'E:/Datasets/ircadb_hv/val'
     elif dataset == "pv":
         train_folder = 'E:/Datasets/ircadb_pv/train'
         val_folder = 'E:/Datasets/ircadb_pv/val'
-    elif dataset == "liver":
-        # Liver LiTS
-        if isLinux:
-            train_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy/train')
-            val_folder   = os.path.join(current_path_abs, 'datasets/LiTS/npy/val')
-        else:
-            train_folder = 'E:/Datasets/LiTS/train'
-            val_folder   = 'E:/Datasets/LiTS/val'
-    elif dataset == "segments":
-        if not use_masked_dataset:
-            train_folder = 'E:/Datasets/LiverDecathlon/npy/train'
-            val_folder   = 'E:/Datasets/LiverDecathlon/npy/val'
-        else:
-            train_folder = 'E:/Datasets/LiverDecathlon/npy_masked/train'
-            val_folder   = 'E:/Datasets/LiverDecathlon/npy_masked/val'
-    elif dataset == "vessels_tumors":
-        if not use_masked_dataset:
-            train_folder = 'E:/Datasets/LiverDecathlon/npy_vessels/train'
-            val_folder   = 'E:/Datasets/LiverDecathlon/npy_vessels/val'
-        else:
-            train_folder = 'E:/Datasets/LiverDecathlon/npy_vessels_masked/train'
-            val_folder   = 'E:/Datasets/LiverDecathlon/npy_vessels_masked/val'
+'''
 
-    return train_folder, val_folder
+''' 
+def get_criterion(dataset):
+    if dataset == 'segments':
+        if dice is False:
+            return nn.CrossEntropyLoss().cuda()
+        else:
+            return None
+    if dice is False:
+        # cross-entropy loss: weighting of negative vs positive pixels and NLL loss layer
+        loss_weight = torch.FloatTensor([0.50, 0.50])
+        if dataset == "vessels":
+            loss_weight = torch.FloatTensor([0.04, 0.96])
+        elif dataset == "hv" or dataset == "pv":
+            loss_weight = torch.FloatTensor([0.02, 0.98])
+        elif dataset == "liver":
+            loss_weight = torch.FloatTensor([0.10, 0.90])
 
-
-window_hu = (-150,350)
+        if cuda: loss_weight = loss_weight.cuda()
+        criterion = nn.NLLLoss(weight=loss_weight)
+        return criterion
+    else:
+        return None
+'''
