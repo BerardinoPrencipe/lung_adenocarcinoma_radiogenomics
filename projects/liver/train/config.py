@@ -87,7 +87,6 @@ def get_train_val_folders(dataset):
         "Dataset must be in {}!".format(datasets)
 
     if dataset == "vessels":
-        # Vessels
         train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy/train')
         val_folder   = os.path.join(current_path_abs, 'datasets/ircadb/npy/val')
     elif dataset == "liver":

@@ -24,7 +24,7 @@ def tversky(outputs, labels, alpha=0.5, beta=0.5):
     tverksy_coeff = (torch.dot(prob_0, gt_0.float()) + eps) \
                      / (torch.dot(prob_0, gt_0.float()) +
                         alpha * torch.dot(prob_0, gt_1.float()) + beta * torch.dot(prob_1, gt_0.float()) + eps)
-    tversky_loss = 1 - tverksy_coeff
+    tversky_loss = - tverksy_coeff + 1
     return tversky_loss
 
 
