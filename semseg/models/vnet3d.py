@@ -148,11 +148,11 @@ class CatBlock(nn.Module):
         if self.dropout: cat = self.do(cat)
         return cat
 
-class VXNet(nn.Module):
+class VXNet3D(nn.Module):
 
     def __init__(self, dropout=False, num_outs=2, channels=16, no_softmax=False):
 
-        super(VXNet, self).__init__()
+        super(VXNet3D, self).__init__()
 
         self.init_conv  = InitialConv(out_channels=channels)
 
@@ -194,9 +194,9 @@ class VXNet(nn.Module):
         layer_out = self.out_conv(cat1)
         return layer_out
 
-def build_VXNet_with_config(config):
-    net = VXNet(dropout=config['dropout'],
-                num_outs=config['num_outs'], no_softmax=config['no_softmax'])
+def build_VXNet3D_with_config(config):
+    net = VXNet3D(dropout=config['dropout'],
+                  num_outs=config['num_outs'], no_softmax=config['no_softmax'])
     if config['cuda'] and not config['use_multi_gpu']: net = net.cuda()
     if config['cuda'] and config['use_multi_gpu']: net = use_multi_gpu_model(net)
     return net
