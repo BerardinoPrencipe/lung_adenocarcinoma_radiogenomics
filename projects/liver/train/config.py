@@ -62,6 +62,8 @@ config = {
     'num_outs'      : 2,
     'num_workers'   : num_workers,
     'no_softmax'    : False,                 # Set True for Softmax, False for Dice
+    'image_size'    : (512, 512),
+    'sample_xy_size': (384, 384),
 }
 #################
 
