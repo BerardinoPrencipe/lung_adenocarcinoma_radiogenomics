@@ -30,7 +30,7 @@ def val_data_loader(val_folder, config):
 
 def train_data_loader3d(train_folder, config):
     print('Building Training Set Loader...')
-    train = DataLoader3D(directory=train_folder, augment=config['augment'], context=config['context'],
+    train = DataLoader3D(directory=train_folder, augment=config['augment'], context=config['depth'],
                          image_size=config['sample_xy_size'])
     train_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights=train.getWeights(),
                                                                    num_samples=config['num_samples'])
@@ -41,7 +41,7 @@ def train_data_loader3d(train_folder, config):
 
 def val_data_loader3d(val_folder, config):
     print('Building Validation Set Loader...')
-    val = DataLoader3D(directory=val_folder, context=config['context'], image_size=config['image_size'])
+    val = DataLoader3D(directory=val_folder, context=config['depth'], image_size=config['image_size'])
     val_data_list = []
     patients = val.getPatients()
     for key in patients.keys():

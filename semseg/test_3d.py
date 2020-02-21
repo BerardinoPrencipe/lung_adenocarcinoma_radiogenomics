@@ -1,7 +1,7 @@
 import torch
 from semseg.models.vnet3d import VXNet3D
 from projects.liver.data_util.data_load_util import train_data_loader3d, val_data_loader3d
-from projects.liver.train.config import config
+from projects.liver.train.config import config, get_train_val_folders
 from projects.liver.data_util.data_load_3d import DataLoader3D
 from semseg.loss import dice
 device = torch.device('cuda')
@@ -15,8 +15,10 @@ net = VXNet3D(num_outs=num_outs, no_softmax=no_softmax)
 net = net.cuda(device=device)
 net.eval()
 
-train_data = train_data_loader3d(train_folder="C:\\Users\\berar\\PycharmProjects\\LiverSegmentation\\datasets\\ircadb\\npy\\train",config=config)
-validation = val_data_loader3d(val_folder="C:\\Users\\berar\\PycharmProjects\\LiverSegmentation\\datasets\\ircadb\\npy\\val", config=config)
+train_folder, val_folder = get_train_val_folders(dataset='vessels')
+
+train_data = train_data_loader3d(train_folder=train_folder,config=config)
+validation = val_data_loader3d(val_folder=val_folder, config=config)
 # B = 1
 # C = 1
 # D = 16
