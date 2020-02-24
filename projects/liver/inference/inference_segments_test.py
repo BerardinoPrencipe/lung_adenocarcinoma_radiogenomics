@@ -3,7 +3,8 @@ import torch
 import numpy as np
 import SimpleITK as sitk
 
-from utils_calc import normalize_data, normalize_data_old, perform_inference_volumetric_image, get_mcc
+from utils_calc import normalize_data, normalize_data_old, get_mcc
+from projects.liver.util.calc import perform_inference_volumetric_image
 from projects.liver.train.config import window_hu
 from semseg.models.vnet_v2 import VXNet
 
