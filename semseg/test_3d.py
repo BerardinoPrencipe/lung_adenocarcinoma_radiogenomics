@@ -42,10 +42,9 @@ net.eval()
 with torch.no_grad():
     for val in validation:
         for i, data in enumerate(val):
-            image, label = data[0].cuda(device=device), data[1].cuda(device=device)
-            out = net(image)
-            out = out[:, 1].unsqueeze(dim=1)
-            dice_loss = dice(out, label)
-            print('Output Tensor Shape = {}'.format(out.shape))
-            if i == 1:
-                break
+            # image, label = data[0].cuda(device=device), data[1].cuda(device=device)
+            # out = net(image)
+            # out = out[:, 1].unsqueeze(dim=1)
+            # dice_loss = dice(out, label)
+            # print('Output Tensor Shape = {}'.format(out.shape))
+            print(i)
