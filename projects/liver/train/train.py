@@ -5,18 +5,14 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-# net_to_use = 'unet'
-net_to_use = 'vnet'
-
 current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
 from utils import print_dict
-from projects.liver.data_util.data_load_util import train_data_loader, val_data_loader
+from projects.liver.data_util.data_load_util import *
 from projects.liver.train.util import train_model, get_model_name
-from projects.liver.train.config import config, dataset, \
-                                        get_logs_folder, get_train_val_folders, get_criterion, get_num_outs
+from projects.liver.train.config import *
 
 def run(config, dataset):
     logs_folder = get_logs_folder(dataset)
@@ -35,25 +31,19 @@ def run(config, dataset):
     # Network and optimizer
     print('Building Network...')
 
-    if net_to_use == 'vnet':
-        # net = semseg.models.vnet.build_VNet_Xtra_with_config(config, criterion)
+    if config['use_3d']:
+        train_data = train_data_loader3d(train_folder, config)
+        val_data_list = val_data_loader3d(val_folder, config)
+        from semseg.models.vnet3d import build_VXNet3D_with_config
+        net = build_VXNet3D_with_config(config)
+    else:
+        train_data = train_data_loader(train_folder, config)
+        val_data_list = val_data_loader(val_folder, config)
         from semseg.models.vnet_v2 import build_VXNet_with_config
         net = build_VXNet_with_config(config)
-    elif net_to_use == 'unet':
-        from semseg.models.unet import build_UNet_with_config
-        net = build_UNet_with_config(config)
-    else:
-        net = None
-
 
     optimizer = optim.Adam(net.parameters(), lr=config['lr'])
     print('Network built!')
-
-    # Train data loader
-    train_data = train_data_loader(train_folder, config)
-
-    # Validation data loader (per patient)
-    val_data_list = val_data_loader(val_folder, config)
 
     # Training
     device = torch.cuda.current_device()
@@ -115,7 +105,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--net",
-        default=net_to_use,
+        default='vnet',
         help="Specify the network to use [unet | vnet]"
     )
     parser.add_argument(

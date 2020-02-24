@@ -11,8 +11,8 @@ LEARNING_RATE_REDUCTION_FACTOR = 10
 ### MULTI DICE LOSS ###
 #######################
 use_multi_dice = True
-# weights_balancing_path = 'logs/segments/weights.pt'
-weights_balancing_path = 'logs/vessels_tumors/weights.pt'
+weights_balancing_path = 'logs/segments/weights.pt'
+# weights_balancing_path = 'logs/vessels_tumors/weights.pt'
 torch_balancing_weights = torch.load(weights_balancing_path)
 print('Torch Balancing Weights = {}'.format(torch_balancing_weights))
 # gamma = 2.
@@ -30,12 +30,12 @@ if use_tversky:
     print('alpha = ', alpha, ' beta = ', beta)
 
 def get_tversky_loss(outputs, labels):
-    outputs = outputs[:, 1, :, :].unsqueeze(dim=1)
+    outputs = outputs[:, 1].unsqueeze(dim=1)
     loss = tversky(outputs, labels, alpha=alpha, beta=beta)
     return loss
 
 def get_multi_dice_loss(outputs, labels, device=None):
-    labels = labels[:, 0, :, :]
+    labels = labels[:, 0]
     # loss = dice_n_classes(outputs, labels, do_one_hot=True, get_list=False, device=device)
     loss = focal_dice_n_classes(outputs, labels, gamma=gamma, weights=torch_balancing_weights,
                                 do_one_hot=True, get_list=False, device=device)
@@ -43,7 +43,7 @@ def get_multi_dice_loss(outputs, labels, device=None):
 
 def get_loss(outputs, labels, criterion):
     if criterion is None:
-        outputs = outputs[:, 1, :, :].unsqueeze(dim=1)
+        outputs = outputs[:, 1].unsqueeze(dim=1)
         loss = dice_loss(outputs, labels)
     else:
         labels = labels.squeeze(dim=1)
@@ -122,7 +122,7 @@ def train_model(net, optimizer, train_data, config, device=None,
         # loop through patients
         if val_data_list is None: continue
         eval_start_time = time.time()
-        for val_data in val_data_list:
+        for idx_patient, val_data in enumerate(val_data_list):
 
             accuracy = 0.0
             if not multi_class:
@@ -133,6 +133,11 @@ def train_model(net, optimizer, train_data, config, device=None,
                 union = np.zeros(config['num_outs'])
             with torch.no_grad():
                 for i, data in enumerate(val_data):
+
+                    if config['use_3d'] and i % config['depth'] != 0:
+                        continue
+                    else:
+                        print('Index Patient {} - Index Slice {}'.format(idx_patient, i))
 
                     # wrap data in Variable
                     inputs, labels = data
@@ -146,7 +151,7 @@ def train_model(net, optimizer, train_data, config, device=None,
 
                     # round outputs to either 0 or 1
                     if not multi_class:
-                        outputs = outputs[:, 1, :, :].unsqueeze(dim=1).round()
+                        outputs = outputs[:, 1].unsqueeze(dim=1).round()
                     else:
                         outputs = torch.argmax(outputs, dim=1)
                         outputs = outputs.unsqueeze(dim=1)

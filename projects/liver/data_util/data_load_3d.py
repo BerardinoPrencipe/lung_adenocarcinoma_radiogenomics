@@ -43,7 +43,7 @@ def load_patch_3d(data_files, idx, context, directory, image_size, augment=None)
         inputs = inputs[:, :, rx:rx + cx, ry:ry + cy]
         labels = labels[:, :, rx:rx + cx, ry:ry + cy]
 
-    inputs, labels = torch.from_numpy(inputs).float(), torch.from_numpy(labels).long()
+    inputs, labels = torch.from_numpy(inputs).float(), torch.from_numpy(labels.astype(np.uint8)).long()
     return (inputs,labels)
 
 def get_max_index(file_names, patient):

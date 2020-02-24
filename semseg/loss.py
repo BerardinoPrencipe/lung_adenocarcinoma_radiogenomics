@@ -24,7 +24,7 @@ def tversky(outputs, labels, alpha=0.5, beta=0.5):
     tverksy_coeff = (torch.dot(prob_0, gt_0.float()) + eps) \
                      / (torch.dot(prob_0, gt_0.float()) +
                         alpha * torch.dot(prob_0, gt_1.float()) + beta * torch.dot(prob_1, gt_0.float()) + eps)
-    tversky_loss = 1 - tverksy_coeff
+    tversky_loss = - tverksy_coeff + 1
     return tversky_loss
 
 
@@ -32,11 +32,15 @@ def tversky(outputs, labels, alpha=0.5, beta=0.5):
 def one_hot_encode(label, num_classes):
     """
 
-    :param label: Tensor of shape BxHxW
+    :param label: Tensor of shape BxHxW or BxDxHxW
     :param num_classes: K classes
-    :return: label_ohe, Tensor of shape BxKxHxW
+    :return: label_ohe, Tensor of shape BxKxHxW or BxKxDxHxW
     """
-    label_ohe = torch.zeros((label.shape[0], num_classes, label.shape[1], label.shape[2]))
+    assert(len(label.shape) == 3 or len(label.shape) == 4, 'Invalid Label Shape {}'.format(label.shape))
+    if len(label.shape) == 3:
+        label_ohe = torch.zeros((label.shape[0], num_classes, label.shape[1], label.shape[2]))
+    elif len(label.shape) == 4:
+        label_ohe = torch.zeros((label.shape[0], num_classes, label.shape[1], label.shape[2], label.shape[3]))
     for batch_idx, batch_el_label in enumerate(label):
         for cls in range(num_classes):
             label_ohe[batch_idx, cls] = (batch_el_label == cls)
@@ -63,8 +67,8 @@ def dice_n_classes(outputs, labels, do_one_hot=False, get_list=False, device=Non
 
     dices = list()
     for cls in range(1, num_classes):
-        outputs_ = outputs[:, cls, :, :].unsqueeze(dim=1)
-        labels_  = labels[:, cls, :, :].unsqueeze(dim=1)
+        outputs_ = outputs[:, cls].unsqueeze(dim=1)
+        labels_  = labels[:, cls].unsqueeze(dim=1)
         dice_ = dice(outputs_, labels_)
         dices.append(dice_)
     if get_list:
@@ -102,8 +106,8 @@ def focal_dice_n_classes(outputs, labels, gamma=2., start_cls=0, weights=None,
 
     dices = list()
     for cls in range(start_cls, num_classes):
-        outputs_ = outputs[:, cls, :, :].unsqueeze(dim=1)
-        labels_  = labels[:, cls, :, :].unsqueeze(dim=1)
+        outputs_ = outputs[:, cls].unsqueeze(dim=1)
+        labels_  = labels[:, cls].unsqueeze(dim=1)
         dice_ = dice(outputs_, labels_)
         dice_ = weights[cls] * torch.pow(dice_, gamma)
         dices.append(dice_)

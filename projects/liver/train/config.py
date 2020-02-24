@@ -53,6 +53,7 @@ config = {
     'cuda'          : cuda,
     'use_multi_gpu' : use_multi_gpu,
     'context'       : 2,                    # how many slices of context (2.5D)
+    'depth'         : 16,                   # 3D ONLY!
     'lr'            : 1e-2,                 # learning rate
     'batch_size'    : batch_size,
     'num_samples'   : 200,                  # samples per epoch
@@ -61,9 +62,10 @@ config = {
     'val_epochs'    : 100,
     'num_outs'      : 2,
     'num_workers'   : num_workers,
-    'no_softmax'    : False,                 # Set True for Softmax, False for Dice
-    'image_size'    : (512, 512),
-    'sample_xy_size': (384, 384),
+    'no_softmax'    : False,                # Set True for Softmax, False for Dice
+    'image_size'    : (512, 512),           # 3D ONLY!
+    'sample_xy_size': (320, 320),           # 3D ONLY!
+    'use_3d'        : True,
 }
 #################
 
@@ -89,7 +91,6 @@ def get_train_val_folders(dataset):
         "Dataset must be in {}!".format(datasets)
 
     if dataset == "vessels":
-        # Vessels
         train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy/train')
         val_folder   = os.path.join(current_path_abs, 'datasets/ircadb/npy/val')
     elif dataset == "liver":
