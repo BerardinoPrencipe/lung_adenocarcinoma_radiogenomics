@@ -25,7 +25,7 @@ class InitialConv(nn.Module):
 
     def forward(self, x):
         layer = F.relu(self.bn(self.conv(x)))
-        layer = torch.add(layer, torch.cat([x[:,0:1,:,:,:]]*self.out_channels, 1))
+        layer = torch.add(layer, torch.cat([x[:,0:1]]*self.out_channels, 1))
 
         conv = F.relu(self.bn_down(self.conv_down(layer)))
         return layer, conv
@@ -34,6 +34,8 @@ class DownConvBlock2b(nn.Module):
     def __init__(self, out_channels=32):
         super().__init__()
         self.out_channels = out_channels
+
+        ConvND = nn.Conv3d
 
         self.conv_a = nn.Conv3d(in_channels=out_channels, out_channels=out_channels, kernel_size=5, stride=1, padding=2)
         self.bn_a = nn.BatchNorm3d(out_channels)

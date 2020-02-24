@@ -46,26 +46,27 @@ def get_criterion(dataset):
 
 epochs = 1401
 augment = False
+use_3d = True
 config = {
-    'model_name'    : '25D',
+    'model_name'    : '25D' if not use_3d else '3D',
     'augment'       : augment,
     'dropout'       : True,
     'cuda'          : cuda,
     'use_multi_gpu' : use_multi_gpu,
-    'context'       : 2,                    # how many slices of context (2.5D)
-    'depth'         : 16,                   # 3D ONLY!
-    'lr'            : 1e-2,                 # learning rate
+    'context'       : 2,                      # how many slices of context (2.5D)
+    'depth'         : 16 if use_3d else None, # 3D ONLY!
+    'lr'            : 1e-2,                   # learning rate
     'batch_size'    : batch_size,
-    'num_samples'   : 200,                  # samples per epoch
-    'low_lr_epoch'  : 100,                  # epoch where to lower learning rate
-    'epochs'        : epochs,               # total number of epochs
+    'num_samples'   : 200,                    # samples per epoch
+    'low_lr_epoch'  : 100,                    # epoch where to lower learning rate
+    'epochs'        : epochs,                 # total number of epochs
     'val_epochs'    : 100,
     'num_outs'      : 2,
     'num_workers'   : num_workers,
     'no_softmax'    : False,                # Set True for Softmax, False for Dice
     'image_size'    : (512, 512),           # 3D ONLY!
     'sample_xy_size': (320, 320),           # 3D ONLY!
-    'use_3d'        : True,
+    'use_3d'        : use_3d,
 }
 #################
 
