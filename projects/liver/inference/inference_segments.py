@@ -173,9 +173,9 @@ for idx, image_path in enumerate(image_paths):
     gt_segments          = gt_segments.get_data()
 
     cr_before = classification_report(gt_segments.flatten(), pred_segments_before.flatten(),
-                                      labels=labels, target_names=target_names)
+                                      labels=labels, target_names=target_names, output_dict=True)
     cr_after  = classification_report(gt_segments.flatten(), pred_segments_after.flatten(),
-                                      labels=labels, target_names=target_names)
+                                      labels=labels, target_names=target_names, output_dict=True)
 
     cr_before_list.append(cr_before)
     cr_after_list.append(cr_after)
