@@ -203,7 +203,7 @@ def correct_volume_slice_split(volume):
         is_above_left_pv , _, _ = check_above_below_left_pv(slice)
         if is_above_left_pv and index_split_left == -1:
             index_split_left  = idx
-        if is_above_right_pv and index_split_left == -1:
+        if is_above_right_pv and index_split_right == -1:
             index_split_right = idx
         if index_split_left > 0 and index_split_right > 0:
             break
