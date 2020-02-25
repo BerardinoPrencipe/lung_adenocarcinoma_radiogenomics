@@ -17,6 +17,52 @@ def normalize_data(data, interval=(-150,350)):
     return norm_data
 
 
+def perform_inference_volumetric_image_3d(net, data, depth=16, do_round=True,
+                                          cuda_dev=torch.device('cuda'), do_argmax=False):
+    assert do_round is False or do_argmax is False, "do_round={} do_argmax={}".format(do_round, do_argmax)
+
+    start_time = time.time()
+
+    # save output here
+    output = np.zeros(data.shape)
+
+    # loop through z-axis
+    idx_start = 0
+    for i in range(idx_start, len(data), depth):
+        if i+depth >= data.shape[0]:
+            i = data.shape[0]-depth
+
+        inputs = data[i:i+depth, :, :]          # 3D
+        inputs = np.expand_dims(inputs, axis=0) # 4D
+        inputs = np.expand_dims(inputs, axis=0) # 5D
+        # DEBUG ONLY
+        # print('Inputs   shape = {}'.format(inputs.shape))
+        # print('Expected shape = {}'.format((1,1,depth,512,512)))
+
+        with torch.no_grad():
+            # run slices through the network and save the predictions
+            inputs = torch.from_numpy(inputs).float()
+            if cuda: inputs = inputs.cuda(cuda_dev)
+
+            # inference
+            outputs = net(inputs)
+
+            if do_argmax:
+                outputs = torch.argmax(outputs, dim=1)
+                outputs = outputs[0,:,:]
+            elif do_round:
+                outputs = outputs.round()
+                outputs = outputs[0, 1, :, :]
+
+            outputs = outputs.data.cpu().numpy()
+
+            output[i:i+depth, :, :] = outputs
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print("Elapsed time is: ", elapsed_time, " for processing image with shape: ", output.shape)
+    return output
+
 def perform_inference_volumetric_image(net, data, context=2, do_round=True,
                                        cuda_dev=torch.device('cuda'), do_argmax=False):
     assert do_round is False or do_argmax is False, "do_round={} do_argmax={}".format(do_round, do_argmax)
