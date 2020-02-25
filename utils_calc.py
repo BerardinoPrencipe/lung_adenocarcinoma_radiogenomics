@@ -1,9 +1,6 @@
 import numpy as np
 import torch
-import time
-import SimpleITK as sitk
-import nibabel as nib
-import os
+
 cuda = torch.cuda.is_available()
 
 # TODO: deprecated function! Delete and replace with v2
@@ -15,6 +12,7 @@ def normalize_data(data, interval=(-150,350)):
     clipped_data = np.clip(data, dmin, dmax)
     norm_data = (clipped_data - dmin) / (dmax-dmin)
     return norm_data
+
 
 
 def perform_inference_volumetric_image_3d(net, data, depth=16, do_round=True,
@@ -123,41 +121,9 @@ def perform_inference_volumetric_image(net, data, context=2, do_round=True,
     print("Elapsed time is: ", elapsed_time, " for processing image with shape: ", output.shape)
     return output
 
-
+  
 def use_multi_gpu_model(net):
     return torch.nn.DataParallel(net, device_ids=list(range(torch.cuda.device_count()))).cuda()
-
-
-def post_process_liver(output, vector_radius=(25, 25, 25), kernel=sitk.sitkBall):
-    # Get connected components
-    ccif = sitk.ConnectedComponentImageFilter()
-    sitk_output = sitk.GetImageFromArray(output)
-    conn_comps = ccif.Execute(sitk_output)
-    conn_comps_np = sitk.GetArrayFromImage(conn_comps)
-
-    unique_values = np.unique(conn_comps_np)
-    n_uniques = len(unique_values)
-    counter_uniques = np.zeros(n_uniques)
-    for i in range(1, max(unique_values) + 1):
-        counter_uniques[i] = (conn_comps_np == i).sum()
-    biggest_region_value = np.argmax(counter_uniques)
-
-    # Get largest connected component
-    largest_conn_comp = np.zeros(conn_comps_np.shape, dtype=np.uint8)
-    largest_conn_comp[conn_comps_np == biggest_region_value] = 1
-
-    # Morphological Closing
-    largest_conn_comp_uint8 = largest_conn_comp.astype(np.uint8)
-    largest_conn_comp_sitk = sitk.GetImageFromArray(largest_conn_comp_uint8)
-    largest_conn_comp_closed_sitk = sitk.BinaryMorphologicalClosing(largest_conn_comp_sitk, vector_radius, kernel)
-    largest_conn_comp_closed_np = sitk.GetArrayFromImage(largest_conn_comp_closed_sitk)
-
-    # Output
-    print("Liver Voxels in Original Output    : ", output.sum())
-    print("Liver Voxels after ConnectCompLabel: ", largest_conn_comp.sum())
-    print("Liver Voxels after Closing         : ", largest_conn_comp_closed_np.sum())
-
-    return largest_conn_comp_closed_np
 
 
 def get_patient_id(s):

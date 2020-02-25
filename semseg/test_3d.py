@@ -1,17 +1,17 @@
 import torch
-from semseg.models.vnet3d import VXNet3D
+from semseg.models.vnet_v3 import build_VXNet_with_config
 from projects.liver.data_util.data_load_util import train_data_loader3d, val_data_loader3d
 from projects.liver.train.config import config, get_train_val_folders
 from projects.liver.data_util.data_load_3d import DataLoader3D
 from semseg.loss import dice
 device = torch.device('cuda')
 
-config['context'] = 16
 config['batch_size'] = 1
+config['use_3d'] = True
 
 num_outs = 2
 no_softmax = False
-net = VXNet3D(num_outs=num_outs, no_softmax=no_softmax)
+net = build_VXNet_with_config(config)
 net = net.cuda(device=device)
 net.eval()
 
@@ -44,10 +44,9 @@ net.eval()
 with torch.no_grad():
     for val in validation:
         for i, data in enumerate(val):
-            image, label = data[0].cuda(device=device), data[1].cuda(device=device)
-            out = net(image)
-            out = out[:, 1].unsqueeze(dim=1)
-            dice_loss = dice(out, label)
-            print('Output Tensor Shape = {}'.format(out.shape))
-            if i == 1:
-                break
+            # image, label = data[0].cuda(device=device), data[1].cuda(device=device)
+            # out = net(image)
+            # out = out[:, 1].unsqueeze(dim=1)
+            # dice_loss = dice(out, label)
+            # print('Output Tensor Shape = {}'.format(out.shape))
+            print(i)
