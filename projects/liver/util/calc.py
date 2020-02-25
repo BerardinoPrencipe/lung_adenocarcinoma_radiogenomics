@@ -1,74 +1,29 @@
-import time
-
 import SimpleITK as sitk
 import numpy as np
-import torch
-
-from utils_calc import cuda
 
 
-def perform_inference_volumetric_image(net, data, context=2, do_round=True,
-                                       cuda_dev=torch.device('cuda'), do_argmax=False):
-    assert do_round is False or do_argmax is False, "do_round={} do_argmax={}".format(do_round, do_argmax)
+def get_largest_cc(image):
+    # Get connected components
+    ccif = sitk.ConnectedComponentImageFilter()
+    sitk_output = sitk.GetImageFromArray(image)
+    conn_comps = ccif.Execute(sitk_output)
+    conn_comps_np = sitk.GetArrayFromImage(conn_comps)
 
-    start_time = time.time()
+    unique_values = np.unique(conn_comps_np)
+    n_uniques = len(unique_values)
+    counter_uniques = np.zeros(n_uniques)
+    for i in range(1, max(unique_values) + 1):
+        counter_uniques[i] = (conn_comps_np == i).sum()
+    biggest_region_value = np.argmax(counter_uniques)
 
-    # save output here
-    output = np.zeros(data.shape)
+    # Get largest connected component
+    largest_conn_comp = np.zeros(conn_comps_np.shape, dtype=np.uint8)
+    largest_conn_comp[conn_comps_np == biggest_region_value] = 1
 
-    # loop through z-axis
-    for i in range(len(data)):
-
-        # append multiple slices in a row
-        slices_input = []
-        z = i - context
-
-        # middle slice first, same as during training
-        slices_input.append(np.expand_dims(data[i], 0))
-
-        while z <= i + context:
-
-            if z == i:
-                # middle slice is already appended
-                pass
-            elif z < 0:
-                # append first slice if z falls outside of data bounds
-                slices_input.append(np.expand_dims(data[0], 0))
-            elif z >= len(data):
-                # append last slice if z falls outside of data bounds
-                slices_input.append(np.expand_dims(data[len(data) - 1], 0))
-            else:
-                # append slice z
-                slices_input.append(np.expand_dims(data[z], 0))
-            z += 1
-
-        inputs = np.expand_dims(np.concatenate(slices_input, 0), 0)
-
-        with torch.no_grad():
-            # run slices through the network and save the predictions
-            inputs = torch.from_numpy(inputs).float()
-            if cuda: inputs = inputs.cuda(cuda_dev)
-
-            # inference
-            outputs = net(inputs)
-            if do_argmax:
-                outputs = torch.argmax(outputs, dim=1)
-                outputs = outputs[0,:,:]
-            elif do_round:
-                outputs = outputs.round()
-                outputs = outputs[0, 1, :, :]
-
-            outputs = outputs.data.cpu().numpy()
-
-            output[i, :, :] = outputs
-
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print("Elapsed time is: ", elapsed_time, " for processing image with shape: ", output.shape)
-    return output
-
+    return largest_conn_comp
 
 def post_process_liver(output, vector_radius=(25, 25, 25), kernel=sitk.sitkBall):
+    '''
     # Get connected components
     ccif = sitk.ConnectedComponentImageFilter()
     sitk_output = sitk.GetImageFromArray(output)
@@ -85,6 +40,9 @@ def post_process_liver(output, vector_radius=(25, 25, 25), kernel=sitk.sitkBall)
     # Get largest connected component
     largest_conn_comp = np.zeros(conn_comps_np.shape, dtype=np.uint8)
     largest_conn_comp[conn_comps_np == biggest_region_value] = 1
+    '''
+
+    largest_conn_comp = get_largest_cc(output)
 
     # Morphological Closing
     largest_conn_comp_uint8 = largest_conn_comp.astype(np.uint8)
@@ -100,6 +58,7 @@ def post_process_liver(output, vector_radius=(25, 25, 25), kernel=sitk.sitkBall)
     return largest_conn_comp_closed_np
 
 NUM_SEGMENTS = 8
+segments = [idx+1 for idx in range(NUM_SEGMENTS)]
 
 # M[I,J] = 1 if the segment i and j can be in the same slice, otherwise 0
 segments_consistency_matrix = np.resize(np.array([1,1,1,1,1,1,1,1,
@@ -114,6 +73,12 @@ segments_consistency_matrix = np.resize(np.array([1,1,1,1,1,1,1,1,
 segments_other    = [1,4]
 segments_above_pv = [2,7,8]
 segments_below_pv = [3,5,6]
+
+segments_above_left_pv  = [2]
+segments_above_right_pv = [7,8]
+segments_below_left_pv  = [3]
+segments_below_right_pv = [5,6]
+
 
 def consistency_check(slice):
     inconsistent_pairs = []
@@ -147,6 +112,60 @@ def check_above_below_pv(slice):
     is_above_pv = cnt_above > cnt_below
     return is_above_pv, cnt_above, cnt_below
 
+def check_above_below_left_pv(slice):
+    slice = np.array(slice, dtype=np.uint8).flatten()
+
+    # COUNT VOXELS ABOVE LEFT PV
+    cnt_above = 0
+    for idx_above_pv in segments_above_left_pv:
+        cnt_above += (slice == idx_above_pv).sum()
+
+    # COUNT VOXELS BELOW LEFT PV
+    cnt_below = 0
+    for idx_below_pv in segments_below_left_pv:
+        cnt_below += (slice == idx_below_pv).sum()
+
+    is_above_pv = cnt_above > cnt_below
+    return is_above_pv, cnt_above, cnt_below
+
+def check_above_below_right_pv(slice):
+    slice = np.array(slice, dtype=np.uint8).flatten()
+
+    # COUNT VOXELS ABOVE RIGHT PV
+    cnt_above = 0
+    for idx_above_pv in segments_above_right_pv:
+        cnt_above += (slice == idx_above_pv).sum()
+
+    # COUNT VOXELS BELOW RIGHT PV
+    cnt_below = 0
+    for idx_below_pv in segments_below_right_pv:
+        cnt_below += (slice == idx_below_pv).sum()
+
+    is_above_pv = cnt_above > cnt_below
+    return is_above_pv, cnt_above, cnt_below
+
+def correct_slice_left_pv(slice):
+    is_above_left_pv, _, _ = check_above_below_left_pv(slice)
+    if is_above_left_pv:
+        slice[slice == 3] = 2
+    else:
+        slice[slice == 2] = 3
+    return slice
+
+def correct_slice_right_pv(slice):
+    is_above_right_pv, _, _ = check_above_below_right_pv(slice)
+    if is_above_right_pv:
+        slice[slice == 6] = 7
+        slice[slice == 5] = 8
+    else:
+        slice[slice == 7] = 6
+        slice[slice == 8] = 5
+    return slice
+
+def correct_slice_right_left_pv(slice):
+    slice_corr_right = correct_slice_right_pv(slice)
+    slice_corr = correct_slice_left_pv(slice_corr_right)
+    return slice_corr
 
 def correct_slice(slice):
     is_above_pv, _, _ = check_above_below_pv(slice)
@@ -168,14 +187,69 @@ def correct_volume(volume):
         corr_volume[idx] = slice_corr
     return corr_volume
 
-# cc = consistency_check([0,1,2,4])
-#
-# ccs = check_above_below_pv([0,0,0,0,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,8,8,8,8,8,8])
-#
-# ex_slice = np.array([[1,2,1,1,1],
-#                    [3,2,1,2,1],
-#                    [7,7,7,7,8],
-#                    [8,8,8,1,2],
-#                    [3,3,2,2,7]])
-#
-# ex_slice_corr = correct_slice(ex_slice.copy())
+
+def correct_volume_right_left(volume):
+    corr_volume = np.zeros(volume.shape, dtype=np.uint8)
+    for idx, slice in enumerate(volume):
+        slice_corr = correct_slice_right_left_pv(slice)
+        corr_volume[idx] = slice_corr
+    return corr_volume
+
+def correct_volume_slice_split(volume):
+    corr_volume = volume.copy()
+    index_split_left, index_split_right = -1, -1
+    for idx, slice in enumerate(volume):
+        is_above_right_pv, _, _ = check_above_below_right_pv(slice)
+        is_above_left_pv , _, _ = check_above_below_left_pv(slice)
+        if is_above_left_pv and index_split_left == -1:
+            index_split_left  = idx
+        if is_above_right_pv and index_split_left == -1:
+            index_split_right = idx
+        if index_split_left > 0 and index_split_right > 0:
+            break
+
+    print('Volume shape      = {}'.format(volume.shape))
+    print('Index Split Left  = {}'.format(index_split_left))
+    print('Index Split Right = {}'.format(index_split_right))
+
+    # BELOW LEFT
+    corr_volume[0:index_split_left, :, :][volume[0:index_split_left, :, :] == 2] = 3
+
+    # ABOVE LEFT
+    corr_volume[index_split_left:, :, :][volume[index_split_left:, :, :] == 3] = 2
+
+    # BELOW RIGHT
+    corr_volume[0:index_split_right, :, :][volume[0:index_split_right, :, :] == 7] = 6
+    corr_volume[0:index_split_right, :, :][volume[0:index_split_right, :, :] == 8] = 5
+
+    # ABOVE RIGHT
+    corr_volume[index_split_right:, :, :][volume[index_split_right:, :, :] == 6] = 7
+    corr_volume[index_split_right:, :, :][volume[index_split_right:, :, :] == 5] = 8
+
+    return corr_volume
+
+def get_complement(idx):
+    if idx == 2:
+        return 3
+    elif idx == 3:
+        return 2
+    elif idx == 6:
+        return 7
+    elif idx == 7:
+        return 6
+    elif idx == 8:
+        return 5
+    elif idx == 5:
+        return 8
+    else:
+        return idx
+
+def erase_non_max_cc_segments(image):
+    image_after_erase = np.zeros(image.shape, dtype=np.uint8)
+    for idx_segment in segments:
+        image_idx = (image == idx_segment).astype(np.uint8)
+        image_idx_max_cc = get_largest_cc(image_idx)
+        image_after_erase[image_idx_max_cc!=0] = idx_segment
+    return image_after_erase
+
+

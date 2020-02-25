@@ -16,7 +16,8 @@ print('{} appended to sys!'.format(current_path_abs))
 
 from projects.liver.train.config import isLinux
 from utils_calc import normalize_data, use_multi_gpu_model, get_patient_id, get_dice, get_iou
-from projects.liver.util.calc import perform_inference_volumetric_image, post_process_liver
+from projects.liver.util.calc import post_process_liver
+from projects.liver.util.inference import perform_inference_volumetric_image
 from projects.liver.train.config import window_hu
 
 

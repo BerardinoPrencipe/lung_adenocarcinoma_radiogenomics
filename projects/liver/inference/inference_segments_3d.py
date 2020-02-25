@@ -8,8 +8,8 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from utils_calc import normalize_data, normalize_data_old, \
-                       perform_inference_volumetric_image, perform_inference_volumetric_image_3d, get_mcc
+from utils_calc import normalize_data
+from projects.liver.util.inference import perform_inference_volumetric_image_3d
 from projects.liver.train.config import window_hu
 from semseg.models.vnet3d import VXNet3D
 
