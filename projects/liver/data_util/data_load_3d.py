@@ -6,7 +6,7 @@ from projects.liver.data_util.data_load import LiverDataSet
 class DataLoader3D(LiverDataSet):
 
     def __init__(self, directory, augment=None, context=0, image_size=(384,384)):
-        assert(context%16 == 0, 'Context {} is not divisible per 16!'.format(context))
+        assert context % 16 == 0, 'Context {} is not divisible per 16!'.format(context)
         super().__init__(directory, augment=augment, context=context)
         self.image_size = image_size
     def __getitem__(self, idx):
