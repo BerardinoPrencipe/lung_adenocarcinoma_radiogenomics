@@ -18,7 +18,7 @@ else:
 # The dataset to use!
 datasets = ["liver", "vessels", "segments", "vessels_tumors"]
 dataset = datasets[-1]
-use_masked_dataset = False
+use_masked_dataset = True
 
 # Hyperparams
 isWindows = 'Windows' in platform.system()
@@ -44,9 +44,9 @@ else:
 def get_criterion(dataset):
     return None
 
-epochs = 1401
+epochs  = 1401
 augment = False
-use_3d = True
+use_3d  = False
 config = {
     'model_name'    : '25D' if not use_3d else '3D',
     'augment'       : augment,

@@ -14,7 +14,7 @@ print('{} appended to sys!'.format(current_path_abs))
 from utils_calc import normalize_data, normalize_data_old, get_mcc
 from projects.liver.util.calc import correct_volume_slice_split, \
                                      erase_non_max_cc_segments
-from projects.liver.util.inference import perform_inference_volumetric_image
+from projects.liver.util.inference import perform_inference_volumetric_image, map_thickness_to_spacing_context
 from projects.liver.train.config import window_hu
 from semseg.models.vnet_v2 import VXNet
 
@@ -91,6 +91,7 @@ for idx, image_path in enumerate(image_paths):
 
     # load file
     data = nib.load(path_test_image)
+    thickness = data.header.get_zooms()[2]
     # save affine
     input_aff = data.affine
     # convert to numpy
@@ -109,7 +110,10 @@ for idx, image_path in enumerate(image_paths):
 
     # CNN
     if inference_segments:
+        spacing_context = map_thickness_to_spacing_context(thickness)
+        print('Thickness = {} Spacing Context = {}'.format(thickness, spacing_context))
         output_segments_before = perform_inference_volumetric_image(net_segments, data, context=2,
+                                                                    spacing_context=spacing_context,
                                                                     do_round=False, do_argmax=True, cuda_dev=cuda_dev)
         print('Shape before correction: {}'.format(output_segments_before.shape))
         output_segments = erase_non_max_cc_segments(output_segments_before)
@@ -151,11 +155,24 @@ for idx, image_path in enumerate(image_paths):
 
 from sklearn.metrics import classification_report
 
-target_names = ['b'] + ['s{:d}'.format(idx+1) for idx in range(8)]
-labels = [idx for idx in range(9)]
+NUM_CLASSES = 9
+NUM_IMAGES  = len(image_paths)
+eps         = 1e-5
+do_class_report = False
+
+target_names = ['b'] + ['s{:d}'.format(idx+1) for idx in range(NUM_CLASSES-1)]
+labels = [idx for idx in range(NUM_CLASSES)]
 
 cr_before_list = []
 cr_after_list  = []
+
+intersect_before = np.zeros(NUM_CLASSES)
+intersect_after  = np.zeros(NUM_CLASSES)
+union_before     = np.zeros(NUM_CLASSES)
+union_after      = np.zeros(NUM_CLASSES)
+
+accuracy_before_cumul = 0
+accuracy_after_cumul  = 0
 
 # Start iteration over val set
 for idx, image_path in enumerate(image_paths):
@@ -172,13 +189,59 @@ for idx, image_path in enumerate(image_paths):
     gt_segments          = nib.load(path_test_gt_segments)
     gt_segments          = gt_segments.get_data()
 
-    cr_before = classification_report(gt_segments.flatten(), pred_segments_before.flatten(),
-                                      labels=labels, target_names=target_names, output_dict=True)
-    cr_after  = classification_report(gt_segments.flatten(), pred_segments_after.flatten(),
-                                      labels=labels, target_names=target_names, output_dict=True)
+    if do_class_report:
+        cr_before = classification_report(gt_segments.flatten(), pred_segments_before.flatten(),
+                                          labels=labels, target_names=target_names, output_dict=True)
+        cr_after  = classification_report(gt_segments.flatten(), pred_segments_after.flatten(),
+                                          labels=labels, target_names=target_names, output_dict=True)
 
-    cr_before_list.append(cr_before)
-    cr_after_list.append(cr_after)
+        cr_before_list.append(cr_before)
+        cr_after_list.append(cr_after)
 
-    print('Classification Report Before:\n{}'.format(cr_before))
-    print('Classification Report After :\n{}'.format(cr_after))
+        print('Classification Report Before:\n{}'.format(cr_before))
+        print('Classification Report After :\n{}'.format(cr_after))
+
+    # ACCURACY
+    accuracy_before_cumul += (pred_segments_before == gt_segments).sum() / float(gt_segments.size)
+    accuracy_after_cumul  += (pred_segments_after == gt_segments).sum() / float(gt_segments.size)
+
+    # DICES
+    for cls in range(0, NUM_CLASSES):
+        outputs_cls_after  = (pred_segments_after == cls)
+        outputs_cls_before = (pred_segments_before == cls)
+        labels_cls         = (gt_segments == cls)
+        intersect_cls_after  = (np.logical_and(outputs_cls_after, labels_cls)).sum()
+        intersect_cls_before = (np.logical_and(outputs_cls_before, labels_cls)).sum()
+        union_cls_after  = np.sum(outputs_cls_after)  + np.sum(labels_cls)
+        union_cls_before = np.sum(outputs_cls_before) + np.sum(labels_cls)
+
+        intersect_after[cls]  += intersect_cls_after
+        intersect_before[cls] += intersect_cls_before
+        union_after[cls] += union_cls_after
+        union_before[cls] += union_cls_before
+
+
+accuracy_after  = accuracy_after_cumul / NUM_IMAGES
+accuracy_before = accuracy_before_cumul / NUM_IMAGES
+
+print('Accuracy     Before = {}'.format(accuracy_before))
+print('Accuracy     After  = {}'.format(accuracy_after))
+
+dice_cls_after  = np.zeros(NUM_CLASSES)
+dice_cls_before = np.zeros(NUM_CLASSES)
+for cls in range(0, NUM_CLASSES):
+    dice_cls_after  [cls] = (2 * intersect_after[cls]  + eps) / (union_after[cls] + eps)
+    dice_cls_before [cls] = (2 * intersect_before[cls] + eps) / (union_before[cls] + eps)
+
+improvement = (dice_cls_after > dice_cls_before).sum() / NUM_CLASSES - 0.5
+print('Improvement = {}'.format(improvement))
+
+avg_dice_after  = np.mean(dice_cls_after)
+avg_dice_before = np.mean(dice_cls_before)
+print('Average Dice Before = {}'.format(avg_dice_before))
+print('Average Dice After  = {}'.format(avg_dice_after))
+
+
+weights_segments_torch = torch.load('logs/segments/weights.pt')
+weights_segments_np = weights_segments_torch.numpy()
+

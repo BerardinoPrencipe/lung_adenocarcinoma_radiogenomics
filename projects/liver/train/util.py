@@ -134,10 +134,11 @@ def train_model(net, optimizer, train_data, config, device=None,
             with torch.no_grad():
                 for i, data in enumerate(val_data):
 
-                    if config['use_3d'] and i % config['depth'] != 0:
-                        continue
-                    else:
-                        print('Index Patient {} - Index Slice {}'.format(idx_patient, i))
+                    if config['use_3d']:
+                        if i % config['depth'] != 0:
+                            continue
+                        else:
+                            print('Index Patient {} - Index Slice {}'.format(idx_patient, i))
 
                     # wrap data in Variable
                     inputs, labels = data

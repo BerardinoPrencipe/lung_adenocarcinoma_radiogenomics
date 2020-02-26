@@ -5,7 +5,7 @@ import torch
 
 from utils import get_num_from_path
 
-dataset_path_base = 'E:/Datasets/LiverDecathlon'
+dataset_path_base = 'datasets/LiverDecathlon'
 dataset_path = os.path.join(dataset_path_base, 'nii')
 images_folder = os.path.join(dataset_path, 'images')
 labels_segments_folder = os.path.join(dataset_path, 'labels_segments')
@@ -98,6 +98,7 @@ for idx, image_filt_path in enumerate(images_filtered_by_segments):
         cnt_cls[cls] += (image_filt_np == cls).sum()
 
 sum_cls = sum(cnt_cls)
+# inverse_sum_cnt_cls = [1/cnt_cls_cls for cnt_cls_cls in cnt_cls]
 ratio_cnt_cls = [cnt_cls_cls/sum_cls for cnt_cls_cls in cnt_cls]
 inverse_ratio_cnt_cls = [1/ratio_cnt_cl for ratio_cnt_cl in ratio_cnt_cls]
 log_i_r_cnt_cls = [np.log(i_r_cnt_cl) for i_r_cnt_cl in inverse_ratio_cnt_cls]

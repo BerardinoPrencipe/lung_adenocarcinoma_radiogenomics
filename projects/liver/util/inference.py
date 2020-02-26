@@ -6,9 +6,17 @@ import torch
 from utils_calc import cuda
 
 
-def perform_inference_volumetric_image(net, data, context=2, do_round=True,
+def map_thickness_to_spacing_context(thickness):
+    spacing = 6 - int(thickness)
+    if spacing < 1:
+        print('spacing too low: {}, returning spacing = 1'.format(spacing))
+        spacing = 1
+    return spacing
+
+def perform_inference_volumetric_image(net, data, context=2, spacing_context=1, do_round=True,
                                        cuda_dev=torch.device('cuda'), do_argmax=False):
     assert do_round is False or do_argmax is False, "do_round={} do_argmax={}".format(do_round, do_argmax)
+    assert spacing_context >= 1, "Spacing context must be greater or equal than 1! spacing_context = {}".format(spacing_context)
 
     start_time = time.time()
 
@@ -20,12 +28,12 @@ def perform_inference_volumetric_image(net, data, context=2, do_round=True,
 
         # append multiple slices in a row
         slices_input = []
-        z = i - context
+        z = i - (context * spacing_context)
 
         # middle slice first, same as during training
         slices_input.append(np.expand_dims(data[i], 0))
 
-        while z <= i + context:
+        while z <= i + (context * spacing_context):
 
             if z == i:
                 # middle slice is already appended
@@ -39,7 +47,7 @@ def perform_inference_volumetric_image(net, data, context=2, do_round=True,
             else:
                 # append slice z
                 slices_input.append(np.expand_dims(data[z], 0))
-            z += 1
+            z += spacing_context
 
         inputs = np.expand_dims(np.concatenate(slices_input, 0), 0)
 
