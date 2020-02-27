@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import medpy.metric.binary as mmb
 import sys
+import time
 from sklearn.metrics import confusion_matrix, matthews_corrcoef
 
 current_path_abs = os.path.abspath('.')
@@ -30,7 +31,11 @@ if inference_segments:
         net_segments = VXNet(dropout=True, context=2, num_outs=9, no_softmax=False)
         net_segments.load_state_dict(torch.load(path_net_segments))
     else:
-        path_net_segments = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-19__07_13_36.pht')
+        if do_mask_liver:
+            path_net_segments = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-27__06_35_54.pht')
+        else:
+            path_net_segments = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-19__07_13_36.pht')
+
         net_segments = torch.load(path_net_segments)
     print('Network Path Segments = {}'.format(path_net_segments))
 
@@ -100,7 +105,7 @@ for idx, image_path in enumerate(image_paths):
     if do_mask_liver:
         data_liver = nib.load(path_test_liver)
         data_liver = data_liver.get_data()
-        data[data_liver == 0] = 0
+        data *= data_liver
 
     # normalize data
     data = normalize_data(data, window_hu)
@@ -116,9 +121,13 @@ for idx, image_path in enumerate(image_paths):
                                                                     spacing_context=spacing_context,
                                                                     do_round=False, do_argmax=True, cuda_dev=cuda_dev)
         print('Shape before correction: {}'.format(output_segments_before.shape))
+        start_time = time.time()
         output_segments = erase_non_max_cc_segments(output_segments_before)
         output_segments = correct_volume_slice_split(output_segments)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
         print('Shape after  correction: {}'.format(output_segments.shape))
+        print('Elapsed Time for correction: {}'.format(elapsed_time))
         output_segments = np.transpose(output_segments, (1, 2, 0)).astype(np.uint8)
 
         non_zero_elements_segments = np.count_nonzero(output_segments)

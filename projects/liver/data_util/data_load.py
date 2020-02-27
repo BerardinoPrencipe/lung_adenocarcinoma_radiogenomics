@@ -7,9 +7,9 @@ import torch.utils.data as data_utils
 # when false selects both the liver and the tumor as positive labels
 class LiverDataSet(torch.utils.data.Dataset):
 
-    def __init__(self, directory, augment=False, context=0):
+    def __init__(self, directory, augmentation=None, context=0):
 
-        self.augment = augment
+        self.augmentation = augmentation
         self.context = context
         self.directory = directory
         self.data_files = os.listdir(directory)
@@ -25,9 +25,9 @@ class LiverDataSet(torch.utils.data.Dataset):
     def __getitem__(self, idx):
 
         if self.context > 0:
-            return load_file_context(self.data_files, idx, self.context, self.directory, self.augment)
+            return load_file_context(self.data_files, idx, self.context, self.directory, self.augmentation)
         else:
-            return load_file(self.data_files[idx], self.directory, self.augment)
+            return load_file(self.data_files[idx], self.directory, self.augmentation)
 
     def __len__(self):
 
@@ -75,27 +75,65 @@ class LiverDataSet(torch.utils.data.Dataset):
 
         return patient_dictionary
 
+def perform_augmentation(image, mask, augmentation):
+    """
+
+    :param image: Image with shape C x H x W
+    :param mask:  Mask  with shape 1 x H x W
+    :param augmentation: imgaug object
+    :return: tuple (image, mask) after augmentation
+    """
+
+    # Store shapes before augmentation to compare
+    image_shape = image.shape
+    mask_shape = mask.shape
+
+    # Put Channels as last axis
+    image = np.transpose(image, (1, 2, 0)) # H x W x C
+    mask  = np.transpose(mask, (1, 2, 0))  # H x W x C
+
+    # Make augmenters deterministic to apply similarly to images and masks
+    det   = augmentation.to_deterministic()
+    image = det.augment_image(image.astype(np.float32))
+    mask  = det.augment_image(mask.astype(np.uint8))
+
+    # Put Channels as first axis
+    image = np.transpose(image, (2, 0, 1)) # C x H x W
+    mask = np.transpose(mask, (2, 0, 1))   # C x H x W
+
+    # Verify that shapes didn't change
+    assert image.shape == image_shape, "Augmentation shouldn't change image size"
+    assert mask.shape == mask_shape, "Augmentation shouldn't change mask size"
+    return image, mask
+
 
 # load data_file in directory and possibly augment
-def load_file(data_file, directory, augment):
+def load_file(data_file, directory, augmentation=None):
 
     inputs, labels = data_file
     inputs, labels = np.load(os.path.join(directory, inputs)), np.load(os.path.join(directory, labels))
     inputs, labels = np.expand_dims(inputs, 0), np.expand_dims(labels, 0)
 
     # augment
+    # OLD
+    '''
     if augment and np.random.rand() > 0.5:
         inputs = np.fliplr(inputs).copy()
         labels = np.fliplr(labels).copy()
+    '''
+
+    if augmentation is not None:
+        inputs, labels = perform_augmentation(inputs, labels, augmentation=augmentation)
 
     features, targets = torch.from_numpy(inputs).float(), torch.from_numpy(labels).long()
     return (features, targets)
 
 # load data_file in directory and possibly augment including the slides above and below it
-def load_file_context(data_files, idx, context, directory, augment):
+def load_file_context(data_files, idx, context, directory, augmentation):
 
+    # OLD
     # check whether all inputs need to be augmented
-    if augment and np.random.rand() > 0.5: augment = False
+    # if augment and np.random.rand() > 0.5: augment = False
 
     # load middle slice
     inputs_b, labels_b = data_files[idx]
@@ -103,9 +141,12 @@ def load_file_context(data_files, idx, context, directory, augment):
     inputs_b, labels_b = np.expand_dims(inputs_b, 0), np.expand_dims(labels_b, 0)
 
     # augment
+    # OLD
+    ''' 
     if augment:
         inputs_b = np.fliplr(inputs_b).copy()
         labels_b = np.fliplr(labels_b).copy()
+   '''
 
     # load slices before middle slice
     inputs_a = []
@@ -118,7 +159,8 @@ def load_file_context(data_files, idx, context, directory, augment):
             inputs, _ = data_files[i]
             inputs = np.load(os.path.join(directory, inputs))
             inputs = np.expand_dims(inputs, 0)
-            if augment: inputs = np.fliplr(inputs).copy()
+            # OLD
+            # if augment: inputs = np.fliplr(inputs).copy()
 
         inputs_a.append(inputs)
 
@@ -133,7 +175,8 @@ def load_file_context(data_files, idx, context, directory, augment):
             inputs, _ = data_files[i]
             inputs = np.load(os.path.join(directory, inputs))
             inputs = np.expand_dims(inputs, 0)
-            if augment: inputs = np.fliplr(inputs).copy()
+            # OLD
+            # if augment: inputs = np.fliplr(inputs).copy()
 
         inputs_c.append(inputs)
 
@@ -144,6 +187,10 @@ def load_file_context(data_files, idx, context, directory, augment):
     labels = labels.astype(np.uint8)
 
     inputs = np.concatenate(inputs, 0)
+
+    # NEW
+    if augmentation is not None:
+        inputs, labels = perform_augmentation(inputs, labels, augmentation=augmentation)
 
     features, targets = torch.from_numpy(inputs).float(), torch.from_numpy(labels).long()
     return (features, targets)

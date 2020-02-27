@@ -3,6 +3,7 @@ import platform
 import sys
 import torch
 import torch.nn as nn
+from imgaug import augmenters as iaa
 
 current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
@@ -18,7 +19,7 @@ else:
 # The dataset to use!
 datasets = ["liver", "vessels", "segments", "vessels_tumors"]
 dataset = datasets[-1]
-use_masked_dataset = True
+use_masked_dataset = False
 
 # Hyperparams
 isWindows = 'Windows' in platform.system()
@@ -45,11 +46,17 @@ def get_criterion(dataset):
     return None
 
 epochs  = 1401
-augment = False
 use_3d  = False
+
+augmentation = iaa.SomeOf((0,2), [
+                iaa.GaussianBlur(sigma=(0.0, 0.1)),
+                iaa.ElasticTransformation(alpha=(4,6), sigma=2.5),
+                iaa.Multiply((0.98, 1.02)),
+            ])
+
 config = {
     'model_name'    : '25D' if not use_3d else '3D',
-    'augment'       : augment,
+    'augmentation'  : augmentation,
     'dropout'       : True,
     'cuda'          : cuda,
     'use_multi_gpu' : use_multi_gpu,
