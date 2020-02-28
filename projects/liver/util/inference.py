@@ -7,7 +7,7 @@ from utils_calc import cuda
 
 
 def map_thickness_to_spacing_context(thickness):
-    spacing = 6 - int(thickness)
+    spacing = int(6 - thickness)
     if spacing < 1:
         print('spacing too low: {}, returning spacing = 1'.format(spacing))
         spacing = 1

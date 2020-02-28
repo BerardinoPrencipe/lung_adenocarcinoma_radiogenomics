@@ -3,6 +3,8 @@ import torch
 import numpy as np
 import torch.utils.data as data_utils
 
+from utils_calc import normalize_data
+
 # Liver Dataset - segmentation task
 # when false selects both the liver and the tumor as positive labels
 class LiverDataSet(torch.utils.data.Dataset):
@@ -95,7 +97,11 @@ def perform_augmentation(image, mask, augmentation):
     # Make augmenters deterministic to apply similarly to images and masks
     det   = augmentation.to_deterministic()
     image = det.augment_image(image.astype(np.float32))
+    # TODO: handle augmentation of mask
     mask  = det.augment_image(mask.astype(np.uint8))
+
+    # Normalize
+    # TODO: normalize after augmentation
 
     # Put Channels as first axis
     image = np.transpose(image, (2, 0, 1)) # C x H x W

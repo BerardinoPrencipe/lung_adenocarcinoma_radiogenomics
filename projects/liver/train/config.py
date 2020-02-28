@@ -48,10 +48,9 @@ def get_criterion(dataset):
 epochs  = 1401
 use_3d  = False
 
-augmentation = iaa.SomeOf((0,2), [
-                iaa.GaussianBlur(sigma=(0.0, 0.1)),
-                iaa.ElasticTransformation(alpha=(4,6), sigma=2.5),
-                iaa.Multiply((0.98, 1.02)),
+# TODO: more augmentations
+augmentation = iaa.SomeOf((0,1), [
+                iaa.Rotate(rotate=(-15,15)),
             ])
 
 config = {

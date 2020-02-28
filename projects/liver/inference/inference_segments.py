@@ -32,9 +32,14 @@ if inference_segments:
         net_segments.load_state_dict(torch.load(path_net_segments))
     else:
         if do_mask_liver:
-            path_net_segments = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-27__06_35_54.pht')
+            model = 'model_25D__2020-02-27__06_35_54.pht'
+
         else:
-            path_net_segments = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-19__07_13_36.pht')
+            # NO AUGMENTATIONS
+            model = 'model_25D__2020-02-19__07_13_36.pht'
+            # AUGMENTATIONS
+            # model = 'model_25D__2020-02-28__11_42_39.pht'
+        path_net_segments = os.path.join(current_path_abs, 'logs/segments', model)
 
         net_segments = torch.load(path_net_segments)
     print('Network Path Segments = {}'.format(path_net_segments))
@@ -58,12 +63,13 @@ if inference_vessels:
     net_vessels = net_vessels.cuda(cuda_dev)
     net_vessels.eval()
 
-folder_dataset        = 'datasets/LiverDecathlon/nii/images'
-folder_liver_masks    = 'datasets/LiverDecathlon/nii/labels_liver'
-folder_segments_masks = 'datasets/LiverDecathlon/nii/labels_segments'
-folder_prediction_segments_before = 'datasets/LiverDecathlon/nii/pred_segments'
-folder_prediction_segments_after  = 'datasets/LiverDecathlon/nii/pred_segments_after'
-folder_prediction_vessels  = 'datasets/LiverDecathlon/nii/pred_vessels'
+folder_dataset        = 'datasets/LiverDecathlon'
+folder_input_images   = os.path.join(folder_dataset, 'nii/images' )
+folder_liver_masks    = os.path.join(folder_dataset, 'nii/labels_liver' )
+folder_segments_masks = os.path.join(folder_dataset, 'nii/labels_segments')
+folder_prediction_segments_before = os.path.join(folder_dataset, 'nii/pred_segments')
+folder_prediction_segments_after  = os.path.join(folder_dataset, 'nii/pred_segments_after')
+folder_prediction_vessels         = os.path.join(folder_dataset, 'nii/pred_vessels')
 
 if not os.path.exists(folder_prediction_segments_before):
     os.makedirs(folder_prediction_segments_before)
@@ -88,7 +94,7 @@ for idx in range(1,50):
 # Start iteration over val set
 for idx, image_path in enumerate(image_paths):
 
-    path_test_image = os.path.join(folder_dataset, image_path)
+    path_test_image = os.path.join(folder_input_images, image_path)
     path_test_pred_segments_before = os.path.join(folder_prediction_segments_before, image_path)
     path_test_pred_segments_after  = os.path.join(folder_prediction_segments_after, image_path)
     path_test_pred_vessels  = os.path.join(folder_prediction_vessels, image_path)
@@ -250,7 +256,14 @@ avg_dice_before = np.mean(dice_cls_before)
 print('Average Dice Before = {}'.format(avg_dice_before))
 print('Average Dice After  = {}'.format(avg_dice_after))
 
+metrics = {
+    'AccuracyBefore' : accuracy_before,
+    'AccuracyAfter'  : accuracy_after,
+    'AvgDiceBefore'  : avg_dice_before,
+    'AvgDiceAfter'   : avg_dice_after,
+}
 
-weights_segments_torch = torch.load('logs/segments/weights.pt')
-weights_segments_np = weights_segments_torch.numpy()
-
+import json
+json_path = os.path.join(folder_dataset, 'metrics_{}.json'.format(model))
+with open(json_path, 'w') as fp:
+    json.dump(metrics, fp)
