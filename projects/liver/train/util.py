@@ -10,13 +10,15 @@ LEARNING_RATE_REDUCTION_FACTOR = 10
 #######################
 ### MULTI DICE LOSS ###
 #######################
-use_multi_dice = True
-weights_balancing_path = 'logs/segments/weights.pt'
-# weights_balancing_path = 'logs/vessels_tumors/weights.pt'
-torch_balancing_weights = torch.load(weights_balancing_path)
-print('Torch Balancing Weights = {}'.format(torch_balancing_weights))
-# gamma = 2.
-gamma = 1.5
+use_multi_dice = False
+print(f'use_multi_dice = {use_multi_dice}')
+if use_multi_dice:
+    weights_balancing_path = 'logs/segments/weights.pt'
+    # weights_balancing_path = 'logs/vessels_tumors/weights.pt'
+    torch_balancing_weights = torch.load(weights_balancing_path)
+    print('Torch Balancing Weights = {}'.format(torch_balancing_weights))
+    # gamma = 2.
+    gamma = 1.5
 
 ###############
 ### TVERSKY ###
