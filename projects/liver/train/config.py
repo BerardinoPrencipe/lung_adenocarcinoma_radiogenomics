@@ -45,7 +45,7 @@ else:
 def get_criterion(dataset):
     return None
 
-epochs  = 1401
+epochs  = 2001
 use_3d  = False
 
 # TODO: more augmentations

@@ -21,12 +21,12 @@ else:
 
 
 # validation list
-val_list = ["{:02d}".format(idx) for idx in range(1,5)]
-exclude_list = ["10"]
+val_list = ["{:02d}".format(idx) for idx in range(1,3)]
+exclude_list = [] # exclude_list = ["10"]
 
 dataset_folder = os.path.join(current_path_abs, 'datasets/ircadb')
 # source folder where the .nii.gz files are located
-source_folder = dataset_folder
+source_folder = os.path.join(dataset_folder, 'nii')
 
 #################
 
@@ -35,10 +35,7 @@ VESSELS_CLASS = (2, 3)
 ARTERY_CLASS = (4,)
 
 # destination folder where the subfolders with npy files will go
-if isLinux:
-    destination_folder = os.path.join(current_path_abs, 'datasets/ircadb_npy')
-else:
-    destination_folder = 'E:/Datasets/ircadb'
+destination_folder = os.path.join(dataset_folder, 'npy')
 
 # create destination folder and possible subfolders
 subfolders = ["train", "val"]
@@ -53,7 +50,8 @@ for name in subfolders:
         print('Created subdir: {}'.format(name))
 
 
-source_subolders = os.listdir(source_folder).sort()
+source_subolders = os.listdir(source_folder)
+source_subolders.sort()
 print('Source Folder  = {}'.format(source_folder))
 print('Source SubDirs = {}'.format(source_subolders))
 

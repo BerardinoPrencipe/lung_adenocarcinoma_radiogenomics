@@ -39,6 +39,7 @@ if inference_segments:
             model = 'model_25D__2020-02-19__07_13_36.pht'
             # AUGMENTATIONS
             # model = 'model_25D__2020-02-28__11_42_39.pht'
+            # model = 'model_25D__2020-02-29__12_28_14.pht'
         path_net_segments = os.path.join(current_path_abs, 'logs/segments', model)
 
         net_segments = torch.load(path_net_segments)

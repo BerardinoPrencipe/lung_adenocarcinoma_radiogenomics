@@ -1,10 +1,9 @@
 import os
-import semseg.models.vnet
 import numpy as np
 import torch
 
 cuda = torch.cuda.is_available()
-use_multi = True
+use_multi = False
 
 # name of the model saved
 model_name = '25D'
@@ -14,6 +13,10 @@ if not use_multi:
     path_final_model = os.path.join(logs_dir,"model_"+model_name+".pht")
 else:
     path_final_model = os.path.join(logs_dir,"multi_gpu","model_"+model_name+".pht")
+
+path_final_model = 'logs/vessels/model_25D__2020-02-01__16_42_49.pht'
+path_final_model = 'logs/vessels/model_25D__2020-02-02__18_15_53.pht'
+path_final_model = 'logs/vessels_tumors/model_25D__2020-02-20__06_53_17.pht'
 
 net_input_shape = (1,5,512,512)
 
@@ -43,7 +46,7 @@ with torch.no_grad():
     print("Output Original     [0,0,0,:5]  = ", output_original[0,0,0,:5])
     print("Identical elements traced 1     = ", (output_traced == output_original).sum())
     print("Elements withing range traced 1 = ",( ( output_traced < (output_original + eps) ) * ((output_original - eps) < output_traced ) ).sum())
-    print("Total elements                  = ", 512 * 512 * 2)
+    print("Total elements                  = ", 512 * 512 * 5)
 
 if cuda:
     if use_multi:
