@@ -18,6 +18,11 @@ path_final_model = 'logs/vessels/model_25D__2020-02-01__16_42_49.pht'
 path_final_model = 'logs/vessels/model_25D__2020-02-02__18_15_53.pht'
 path_final_model = 'logs/vessels_tumors/model_25D__2020-02-20__06_53_17.pht'
 
+from semseg.models.vnet_v2 import VXNet
+path_model = 'logs/vessels/model_epoch_0999.pht'
+
+path_final_model = 'logs/segments/model_25D__2020-02-19__07_13_36.pht'
+
 net_input_shape = (1,5,512,512)
 
 #%%
@@ -29,7 +34,11 @@ with torch.no_grad():
     eps = 1e-6
     example = torch.rand(net_input_shape)
     if cuda: example = example.cuda()
+
     net = torch.load(path_final_model)
+    # net = VXNet(dropout=True, context=2, num_outs=2, no_softmax=False)
+    # net.load_state_dict(torch.load(path_model))
+
     if cuda: net = net.cuda()
     else: net = net.cpu()
     net.eval()

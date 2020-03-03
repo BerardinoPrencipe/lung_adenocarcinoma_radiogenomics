@@ -2,6 +2,7 @@ import os
 import sys
 import matplotlib.pyplot as plt
 
+import cv2
 import numpy as np
 import torch
 import torch.nn as nn
@@ -16,20 +17,27 @@ from projects.liver.data_util.data_load_util import *
 from projects.liver.train.util import train_model, get_model_name
 from projects.liver.train.config import *
 
+from albumentations import (
+    GaussianBlur, ElasticTransform, MultiplicativeNoise, Rotate,
+    Compose
+)
 
-augmentation = iaa.Sequential( [
-                iaa.GaussianBlur(sigma=(0.0, 0.03)),
-                iaa.ElasticTransformation(alpha=(1,2), sigma=2.5),
-                iaa.Multiply((0.99, 1.01)),
-                iaa.Rotate(rotate=(-15,15))
-            ])
+augmentation = Compose([
+        GaussianBlur(p=1.),
+        ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=1.),
+        MultiplicativeNoise(multiplier=(0.98,1.02), per_channel=False, elementwise=True),
+        Rotate(limit=(-15,15),border_mode=cv2.BORDER_CONSTANT,value=-200,mask_value=0,p=1.),
+    ]
+)
+
 config['augmentation'] = augmentation
 
-dataset = 'segments'
+dataset = 'vessels_no_norm'
 logs_folder = get_logs_folder(dataset)
 train_folder, val_folder = get_train_val_folders(dataset)
 criterion = get_criterion(dataset)
 config['num_outs'] = get_num_outs(dataset)
+config['do_normalize'] = True
 
 print('Train Folder = {}\nValidation Folder = {}\nLogs Folder = {}'.format(train_folder, val_folder, logs_folder))
 
@@ -54,12 +62,10 @@ for i, data in enumerate(train_data):
 
     inputs, labels = inputs.cpu().numpy(), labels.cpu().numpy()
 
-    print('Min = {}'.format(inputs.min()))
-    print('Max = {}'.format(inputs.max()))
-
+    print(f'Min = {inputs.min()} - Max = {inputs.max()}')
 
     img = inputs[0,0,:,:]
-    lab = labels[0, 0, :, :]
+    lab = labels[0,0,:,:]
     ov  = inputs[0,0,:,:] + labels[0, 0, :, :]
     imgs = [img, lab, ov]
     imgs_mont = montage(imgs, dim=(1,3))

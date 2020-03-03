@@ -3,7 +3,11 @@ import platform
 import sys
 import torch
 import torch.nn as nn
-from imgaug import augmenters as iaa
+import cv2
+from albumentations import (
+    GaussianBlur, ElasticTransform, MultiplicativeNoise, Rotate,
+    Compose
+)
 
 current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
@@ -17,7 +21,7 @@ else:
     isLinux = False
 
 # The dataset to use!
-datasets = ["liver", "vessels", "segments", "vessels_tumors"]
+datasets = ["liver", "vessels", "vessels_no_norm", "segments", "vessels_tumors"]
 dataset = datasets[-1]
 use_masked_dataset = False
 
@@ -48,14 +52,18 @@ def get_criterion(dataset):
 epochs  = 2001
 use_3d  = False
 
-# TODO: more augmentations
-augmentation = iaa.SomeOf((0,1), [
-                iaa.Rotate(rotate=(-15,15)),
-            ])
+augmentation = Compose([
+        GaussianBlur(p=0.3),
+        ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=0.3),
+        MultiplicativeNoise(multiplier=(0.98,1.02), per_channel=False, elementwise=True, p=0.3),
+        Rotate(limit=(-15,15),border_mode=cv2.BORDER_CONSTANT,value=-200,mask_value=0, p=0.3),
+    ]
+)
 
 config = {
     'model_name'    : '25D' if not use_3d else '3D',
     'augmentation'  : augmentation,
+    'do_normalize'  : False,
     'dropout'       : True,
     'cuda'          : cuda,
     'use_multi_gpu' : use_multi_gpu,
@@ -100,6 +108,9 @@ def get_train_val_folders(dataset):
     if dataset == "vessels":
         train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy/train')
         val_folder   = os.path.join(current_path_abs, 'datasets/ircadb/npy/val')
+    elif dataset == "vessels_no_norm":
+        train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_no_norm/train')
+        val_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_no_norm/val')
     elif dataset == "liver":
         train_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy/train')
         val_folder   = os.path.join(current_path_abs, 'datasets/LiTS/npy/val')

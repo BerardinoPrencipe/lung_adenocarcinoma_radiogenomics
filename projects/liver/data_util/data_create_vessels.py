@@ -36,18 +36,24 @@ ARTERY_CLASS = (4,)
 
 # destination folder where the subfolders with npy files will go
 destination_folder = os.path.join(dataset_folder, 'npy')
+destination_folder_no_norm = os.path.join(dataset_folder, 'npy_no_norm')
+
+destination_folders = list()
+destination_folders.append(destination_folder)
+destination_folders.append(destination_folder_no_norm)
 
 # create destination folder and possible subfolders
 subfolders = ["train", "val"]
 
-if not os.path.isdir(destination_folder):
-    os.makedirs(destination_folder)
-    print('Created destionation_folder in {}'.format(destination_folder))
+for dest_folder in destination_folders:
+    if not os.path.isdir(dest_folder):
+        os.makedirs(dest_folder)
+        print('Created destionation_folder in {}'.format(dest_folder))
 
-for name in subfolders:
-    if not os.path.isdir(os.path.join(destination_folder, name)):
-        os.makedirs(os.path.join(destination_folder, name))
-        print('Created subdir: {}'.format(name))
+    for name in subfolders:
+        if not os.path.isdir(os.path.join(dest_folder, name)):
+            os.makedirs(os.path.join(dest_folder, name))
+            print('Created subdir: {}'.format(name))
 
 
 source_subolders = os.listdir(source_folder)
@@ -55,7 +61,10 @@ source_subolders.sort()
 print('Source Folder  = {}'.format(source_folder))
 print('Source SubDirs = {}'.format(source_subolders))
 
-for idx, subfolder_source in enumerate(os.listdir(source_folder)):
+do_no_norm = False
+do_norm    = False
+
+for idx, subfolder_source in enumerate(source_subolders):
 
     print('Index {} on {}'.format(idx, len(os.listdir(source_folder))-1))
 
@@ -84,23 +93,36 @@ for idx, subfolder_source in enumerate(os.listdir(source_folder)):
         mask_data = nib.load(mask_filename)
 
         # convert to numpy
-        image_data = image_data.get_data()
-        image_data = normalize_data(image_data, window_hu)
         mask_data = mask_data.get_data()
         mask_data_hv = (mask_data == VESSELS_CLASS[0]).astype(np.uint8)
         mask_data_pv = (mask_data == VESSELS_CLASS[1]).astype(np.uint8)
-        mask_data = np.logical_or(mask_data_hv, mask_data_pv)
+        mask_data          = np.logical_or(mask_data_hv, mask_data_pv)
+        image_data_no_norm = image_data.get_data()
+        image_data_norm    = normalize_data(image_data_no_norm, window_hu)
 
         # transpose so the z-axis (slices) are the first dimension
-        image_data = np.transpose(image_data, (2,0,1))
-        mask_data = np.transpose(mask_data, (2,0,1))
+        image_data_norm    = np.transpose(image_data_norm, (2,0,1))
+        image_data_no_norm = np.transpose(image_data_no_norm, (2, 0, 1))
+        mask_data          = np.transpose(mask_data, (2,0,1))
+
+        print(f'[  Norm   ] Max = {image_data_norm.max()} - Min = {image_data_norm.min()}')
+        print(f'[ No Norm ] Max = {image_data_no_norm.max()} - Min = {image_data_no_norm.min()}')
 
         # loop through the mask slices
         for i, z_slice in enumerate(mask_data):
             # save at new location (train or val)
-            np.save(os.path.join(destination_folder, sub, new_mask_filename + '_' + str(i)), z_slice)
+            if do_norm:
+                np.save(os.path.join(destination_folder, sub, new_mask_filename + '_' + str(i)), z_slice)
+            if do_no_norm:
+                np.save(os.path.join(destination_folder_no_norm, sub, new_mask_filename + '_' + str(i)), z_slice)
 
-        # loop through the scan slices
-        for i, z_slice in enumerate(image_data):
-            # save at new location (train or val)
-            np.save(os.path.join(destination_folder, sub, new_image_filename + '_' + str(i)), z_slice)
+        if do_norm:
+            # loop through the scan slices
+            for i, z_slice in enumerate(image_data_norm):
+                # save at new location (train or val)
+                np.save(os.path.join(destination_folder, sub, new_image_filename + '_' + str(i)), z_slice)
+
+        if do_no_norm:
+            for i, z_slice in enumerate(image_data_no_norm):
+                # save at new location (train or val)
+                np.save(os.path.join(destination_folder_no_norm, sub, new_image_filename + '_' + str(i)), z_slice)
