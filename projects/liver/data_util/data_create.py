@@ -11,40 +11,37 @@ sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
 from utils_calc import normalize_data, get_patient_id
-from projects.liver.train.config import window_hu, isLinux
+from projects.liver.train.config import window_hu
 
 ### variables ###
 
 # validation list
-val_list = [idx for idx in range(20)]
-
-if isLinux:
-    dataset_folder = os.path.join(current_path_abs, 'datasets/LiTS/train')
-else:
-    dataset_folder = 'F:/Datasets/LiTS/train'
+val_list = [idx for idx in range(10)]
 
 # source folder where the .nii.gz files are located
-source_folder = dataset_folder
+dataset_folder = os.path.join(current_path_abs, 'datasets/LiTS')
+source_folder = os.path.join(dataset_folder, 'nii/train')
 
 #################
-
 LIVER_CLASS = 1
 TUMOR_CLASS = 2
 
 # destination folder where the subfolders with npy files will go
-if isLinux:
-    destination_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy')
-else:
-    destination_folder = 'E:/Datasets/LiTS'
+destination_folder = os.path.join(dataset_folder, 'npy')
+destination_folder_no_norm = os.path.join(dataset_folder, 'npy_no_norm')
 
+destination_folders = list()
+destination_folders.append(destination_folder)
+destination_folders.append(destination_folder_no_norm)
 
 # create destination folder and possible subfolders
 subfolders = ["train", "val"]
-if not os.path.isdir(destination_folder):
-	os.makedirs(destination_folder)
-for name in subfolders:
-    if not os.path.isdir(os.path.join(destination_folder, name)):
-        os.makedirs(os.path.join(destination_folder, name))
+for dest_folder in destination_folders:
+    if not os.path.isdir(dest_folder):
+        os.makedirs(dest_folder)
+    for name in subfolders:
+        if not os.path.isdir(os.path.join(dest_folder, name)):
+            os.makedirs(os.path.join(dest_folder, name))
 
 for idx, file_name in enumerate(os.listdir(source_folder)):
 
@@ -66,9 +63,9 @@ for idx, file_name in enumerate(os.listdir(source_folder)):
     # check if it is a volume file and clip and standardize if so
     if file_name[:3] == 'vol':
         print('[Before Normalization] data.min() = {} data.max() = {}'.format(data.min(), data.max()))
-        # data = normalize_data_old(data, dmin=window_hu[0], dmax=window_hu[1])
-        data = normalize_data(data, window_hu)
-        print('[After  Normalization] data.min() = {} data.max() = {}'.format(data.min(),data.max()))
+        norm_data = normalize_data(data, window_hu)
+        print('[After  Normalization] data.min() = {} data.max() = {}'.format(norm_data.min(),norm_data.max()))
+        norm_data = np.transpose(norm_data, (2,0,1))
 
     # check if it is a segmentation file and select only the tumor (2) as positive label
     if file_name[:3] == 'seg': data = (data==LIVER_CLASS).astype(np.uint8)
@@ -76,8 +73,18 @@ for idx, file_name in enumerate(os.listdir(source_folder)):
     # transpose so the z-axis (slices) are the first dimension
     data = np.transpose(data, (2, 0, 1))
 
+
     # loop through the slices
     for i, z_slice in enumerate(data):
-
         # save at new location (train or val)
         np.save(os.path.join(destination_folder, sub, new_file_name + '_' + str(i)), z_slice)
+
+    # Save masks with no norm
+    if file_name[:3] == 'seg':
+        for i, z_slice in enumerate(data):
+            np.save(os.path.join(destination_folder_no_norm, sub, new_file_name + '_' + str(i)), z_slice)
+
+    # Save volumes with no norm
+    if file_name[:3] == 'vol':
+        for i, z_slice in enumerate(norm_data):
+            np.save(os.path.join(destination_folder_no_norm, sub, new_file_name + '_' + str(i)), z_slice)

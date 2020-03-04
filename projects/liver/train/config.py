@@ -21,7 +21,7 @@ else:
     isLinux = False
 
 # The dataset to use!
-datasets = ["liver", "vessels", "vessels_no_norm", "segments", "vessels_tumors"]
+datasets = ["liver", "liver_no_norm", "vessels", "vessels_no_norm", "segments", "vessels_tumors"]
 dataset = datasets[-1]
 use_masked_dataset = False
 
@@ -49,14 +49,15 @@ else:
 def get_criterion(dataset):
     return None
 
-epochs  = 2001
+epochs  = 1401
 use_3d  = False
+p = 0.25
 
 augmentation = Compose([
-        GaussianBlur(p=0.3),
-        ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=0.3),
-        MultiplicativeNoise(multiplier=(0.98,1.02), per_channel=False, elementwise=True, p=0.3),
-        Rotate(limit=(-15,15),border_mode=cv2.BORDER_CONSTANT,value=-200,mask_value=0, p=0.3),
+        GaussianBlur(p=p),
+        ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=p),
+        MultiplicativeNoise(multiplier=(0.98,1.02), per_channel=False, elementwise=True, p=p),
+        Rotate(limit=(-15,15),border_mode=cv2.BORDER_CONSTANT,value=-200,mask_value=0, p=p),
     ]
 )
 
@@ -114,6 +115,9 @@ def get_train_val_folders(dataset):
     elif dataset == "liver":
         train_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy/train')
         val_folder   = os.path.join(current_path_abs, 'datasets/LiTS/npy/val')
+    elif dataset == "liver_no_norm":
+        train_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy_no_norm/train')
+        val_folder = os.path.join(current_path_abs, 'datasets/LiTS/npy_no_norm/val')
     elif dataset == "segments":
         npy_folder = "npy" if not use_masked_dataset else "npy_masked"
         train_folder = os.path.join(current_path_abs, 'datasets/LiverDecathlon', npy_folder,'train')

@@ -33,6 +33,8 @@ augmentation = Compose([
 config['augmentation'] = augmentation
 
 dataset = 'vessels_no_norm'
+dataset = 'liver'
+dataset = 'liver_no_norm'
 logs_folder = get_logs_folder(dataset)
 train_folder, val_folder = get_train_val_folders(dataset)
 criterion = get_criterion(dataset)
