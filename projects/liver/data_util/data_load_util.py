@@ -17,7 +17,8 @@ def train_data_loader(train_folder, config):
 
 def val_data_loader(val_folder, config):
     print('Building Validation Set Loader...')
-    val = LiverDataSet(directory=val_folder, context=config['context'])
+    val = LiverDataSet(directory=val_folder, context=config['context'],
+                       augmentation=None, do_normalize=config['do_normalize'])
     val_data_list = []
     patients = val.getPatients()
     for key in patients.keys():

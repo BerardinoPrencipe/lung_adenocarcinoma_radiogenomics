@@ -82,14 +82,12 @@ class LiverDataSet(torch.utils.data.Dataset):
 
         return patient_dictionary
 
-def perform_augmentation(image, mask, augmentation, do_normalize=False):
+def perform_augmentation(image, mask, augmentation):
     """
 
     :param image: Image with shape C x H x W
     :param mask:  Mask  with shape 1 x H x W
     :param augmentation: imgaug object
-    :param do_normalize: boolean flag for normalization.
-                         True for performing normalization; False otherwise.
     :return: tuple (image, mask) after augmentation
     """
 
@@ -106,18 +104,7 @@ def perform_augmentation(image, mask, augmentation, do_normalize=False):
     # Albumentations augmentation
     data = {"image": image, "mask": mask}
     augmented = augmentation(**data)
-
-    if DEBUG:
-        print(f'[Pre  Augm] Image Min = {image.min()} - Max = {image.max()}')
     image, mask = augmented["image"], augmented["mask"]
-
-    # Normalize
-    if DEBUG:
-        print(f'[Pre  Norm] Image Min = {image.min()} - Max = {image.max()}')
-    if do_normalize:
-        image = normalize_data(image,interval=window_hu)
-    if DEBUG:
-        print(f'[Post Norm] Image Min = {image.min()} - Max = {image.max()}')
 
     # Put Channels as first axis
     image = np.transpose(image, (2, 0, 1)) # C x H x W
@@ -138,6 +125,8 @@ def load_file(data_file, directory, augmentation=None, do_normalize=False):
 
     if augmentation is not None:
         inputs, labels = perform_augmentation(inputs, labels, augmentation=augmentation, do_normalize=do_normalize)
+    if do_normalize:
+        inputs = normalize_data(inputs,interval=window_hu)
 
     features, targets = torch.from_numpy(inputs).float(), torch.from_numpy(labels).long()
     return (features, targets)
@@ -187,7 +176,9 @@ def load_file_context(data_files, idx, context, directory, augmentation=None, do
     inputs = np.concatenate(inputs, 0)
 
     if augmentation is not None:
-        inputs, labels = perform_augmentation(inputs, labels, augmentation=augmentation, do_normalize=do_normalize)
+        inputs, labels = perform_augmentation(inputs, labels, augmentation=augmentation)
+    if do_normalize:
+        inputs = normalize_data(inputs,interval=window_hu)
 
     features, targets = torch.from_numpy(inputs).float(), torch.from_numpy(labels).long()
     return (features, targets)
