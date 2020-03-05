@@ -12,7 +12,7 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from utils import print_dict, montage, labeloverlay
+from util.utils import print_dict, montage, labeloverlay
 from projects.liver.data_util.data_load_util import *
 from projects.liver.train.util import train_model, get_model_name
 from projects.liver.train.config import *
@@ -23,12 +23,13 @@ from albumentations import (
 )
 
 augmentation = Compose([
-        GaussianBlur(p=1.),
-        ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=1.),
-        MultiplicativeNoise(multiplier=(0.98,1.02), per_channel=False, elementwise=True),
-        Rotate(limit=(-15,15),border_mode=cv2.BORDER_CONSTANT,value=-200,mask_value=0,p=1.),
+        # GaussianBlur(p=1.),
+        # ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=1.),
+        # MultiplicativeNoise(multiplier=(0.98,1.02), per_channel=False, elementwise=True),
+        Rotate(limit=(-5,5),border_mode=cv2.BORDER_CONSTANT,value=-200,mask_value=0,p=1.),
     ]
 )
+augmentation = None
 
 config['augmentation'] = augmentation
 

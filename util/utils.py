@@ -8,7 +8,7 @@ import cv2
 import imageio
 import matplotlib
 
-from utils_calc import normalize_data, normalize
+from util.utils_calc import normalize_data, normalize
 
 # matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt

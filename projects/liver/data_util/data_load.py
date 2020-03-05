@@ -3,10 +3,10 @@ import torch
 import numpy as np
 import torch.utils.data as data_utils
 
-from utils_calc import normalize_data
+from util.utils_calc import normalize_data
 from projects.liver.train.config import window_hu
 
-DEBUG = False
+DEBUG = True
 
 # Liver Dataset - segmentation task
 # when false selects both the liver and the tumor as positive labels
@@ -104,8 +104,11 @@ def perform_augmentation(image, mask, augmentation):
     # Albumentations augmentation
     data = {"image": image, "mask": mask}
     augmented = augmentation(**data)
+    if DEBUG:
+        print(f'Before augmentation - Max = {image.max()} - Min = {image.min()}')
     image, mask = augmented["image"], augmented["mask"]
-
+    if DEBUG:
+        print(f'After  augmentation - Max = {image.max()} - Min = {image.min()}')
     # Put Channels as first axis
     image = np.transpose(image, (2, 0, 1)) # C x H x W
     mask = np.transpose(mask, (2, 0, 1))   # C x H x W
