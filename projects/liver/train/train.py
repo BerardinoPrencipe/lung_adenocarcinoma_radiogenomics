@@ -1,3 +1,7 @@
+# Try this (Windows):
+# set PYTHONPATH=.
+from __future__ import absolute_import
+
 import os
 import sys
 
@@ -9,7 +13,7 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from utils import print_dict
+from utils.utils import print_dict
 from projects.liver.data_util.data_load_util import *
 from projects.liver.train.util import train_model, get_model_name
 from projects.liver.train.config import *

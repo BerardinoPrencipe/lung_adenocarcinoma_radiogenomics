@@ -3,10 +3,10 @@ import torch
 import numpy as np
 import torch.utils.data as data_utils
 
-from util.utils_calc import normalize_data, normalize
+from utils.utils_calc import normalize_data, normalize
 from projects.liver.train.config import window_hu
 
-DEBUG = True
+DEBUG = False
 
 # Liver Dataset - segmentation task
 # when false selects both the liver and the tumor as positive labels
@@ -128,7 +128,7 @@ def load_file(data_file, directory, augmentation=None, do_normalize=False):
     inputs, labels = np.expand_dims(inputs, 0), np.expand_dims(labels, 0)
 
     if augmentation is not None:
-        inputs, labels = perform_augmentation(inputs, labels, augmentation=augmentation, do_normalize=do_normalize)
+        inputs, labels = perform_augmentation(inputs, labels, augmentation=augmentation)
     if do_normalize:
         # inputs = normalize_data(inputs,interval=window_hu)
         inputs = normalize(inputs)

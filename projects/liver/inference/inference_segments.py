@@ -12,7 +12,7 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from utils_calc import normalize_data, normalize_data_old, get_mcc
+from utils.utils_calc import normalize_data, normalize_data_old, get_mcc
 from projects.liver.util.calc import correct_volume_slice_split, \
                                      erase_non_max_cc_segments
 from projects.liver.util.inference import perform_inference_volumetric_image, map_thickness_to_spacing_context

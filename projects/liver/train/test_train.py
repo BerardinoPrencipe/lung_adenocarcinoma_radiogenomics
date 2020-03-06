@@ -12,7 +12,7 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from util.utils import print_dict, montage, labeloverlay
+from utils.utils import print_dict, montage, labeloverlay
 from projects.liver.data_util.data_load_util import *
 from projects.liver.train.util import train_model, get_model_name
 from projects.liver.train.config import *
@@ -25,8 +25,8 @@ from albumentations import (
 augmentation = Compose([
         GaussianBlur(p=1.),
         ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=1.),
-        # MultiplicativeNoise(multiplier=(0.98,1.02), per_channel=False, elementwise=True),
-        Rotate(limit=(-5,5),border_mode=cv2.BORDER_CONSTANT,value=-200,mask_value=0,p=1.),
+        MultiplicativeNoise(multiplier=(0.90,1.10), per_channel=False, elementwise=True),
+        Rotate(limit=(-45,45),border_mode=cv2.BORDER_CONSTANT,value=0,mask_value=0,p=1.),
     ]
 )
 # augmentation = None
@@ -40,8 +40,7 @@ logs_folder = get_logs_folder(dataset)
 train_folder, val_folder = get_train_val_folders(dataset)
 criterion = get_criterion(dataset)
 config['num_outs'] = get_num_outs(dataset)
-config['do_normalize'] = True
-# config['do_normalize'] = False
+config['do_normalize'] = False
 
 print('Train Folder = {}\nValidation Folder = {}\nLogs Folder = {}'.format(train_folder, val_folder, logs_folder))
 

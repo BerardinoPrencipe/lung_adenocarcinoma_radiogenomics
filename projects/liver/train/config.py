@@ -49,22 +49,23 @@ else:
 def get_criterion(dataset):
     return None
 
-epochs  = 1401
+epochs  = 2001
 use_3d  = False
 p = 0.25
+do_normalize = False
 
 augmentation = Compose([
         GaussianBlur(p=p),
         ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=p),
-        MultiplicativeNoise(multiplier=(0.98,1.02), per_channel=False, elementwise=True, p=p),
-        Rotate(limit=(-15,15),border_mode=cv2.BORDER_CONSTANT,value=-200,mask_value=0, p=p),
+        MultiplicativeNoise(multiplier=(0.97,1.03), per_channel=False, elementwise=True, p=p),
+        Rotate(limit=(-10,10),border_mode=cv2.BORDER_CONSTANT,value=0,mask_value=0, p=p),
     ]
 )
 
 config = {
     'model_name'    : '25D' if not use_3d else '3D',
     'augmentation'  : augmentation,
-    'do_normalize'  : False,
+    'do_normalize'  : do_normalize,
     'dropout'       : True,
     'cuda'          : cuda,
     'use_multi_gpu' : use_multi_gpu,

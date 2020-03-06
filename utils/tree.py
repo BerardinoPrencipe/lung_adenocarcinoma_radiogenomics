@@ -1,5 +1,5 @@
 import numpy as np
-from util.geometric import getEuclidanDistance
+from utils.geometric import getEuclidanDistance
 
 class TreeNode(object):
     """
