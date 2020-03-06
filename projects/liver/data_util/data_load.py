@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import torch.utils.data as data_utils
 
-from util.utils_calc import normalize_data
+from util.utils_calc import normalize_data, normalize
 from projects.liver.train.config import window_hu
 
 DEBUG = True
@@ -95,6 +95,7 @@ def perform_augmentation(image, mask, augmentation):
     image_shape = image.shape
     mask_shape = mask.shape
 
+    image = image.astype(np.float32)
     # Put Channels as last axis
     image = np.transpose(image, (1, 2, 0)) # H x W x C
     mask  = np.transpose(mask, (1, 2, 0))  # H x W x C
@@ -129,7 +130,8 @@ def load_file(data_file, directory, augmentation=None, do_normalize=False):
     if augmentation is not None:
         inputs, labels = perform_augmentation(inputs, labels, augmentation=augmentation, do_normalize=do_normalize)
     if do_normalize:
-        inputs = normalize_data(inputs,interval=window_hu)
+        # inputs = normalize_data(inputs,interval=window_hu)
+        inputs = normalize(inputs)
 
     features, targets = torch.from_numpy(inputs).float(), torch.from_numpy(labels).long()
     return (features, targets)
@@ -181,7 +183,8 @@ def load_file_context(data_files, idx, context, directory, augmentation=None, do
     if augmentation is not None:
         inputs, labels = perform_augmentation(inputs, labels, augmentation=augmentation)
     if do_normalize:
-        inputs = normalize_data(inputs,interval=window_hu)
+        # inputs = normalize_data(inputs,interval=window_hu)
+        inputs = normalize(inputs)
 
     features, targets = torch.from_numpy(inputs).float(), torch.from_numpy(labels).long()
     return (features, targets)

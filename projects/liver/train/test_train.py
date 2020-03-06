@@ -23,24 +23,25 @@ from albumentations import (
 )
 
 augmentation = Compose([
-        # GaussianBlur(p=1.),
-        # ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=1.),
+        GaussianBlur(p=1.),
+        ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=1.),
         # MultiplicativeNoise(multiplier=(0.98,1.02), per_channel=False, elementwise=True),
         Rotate(limit=(-5,5),border_mode=cv2.BORDER_CONSTANT,value=-200,mask_value=0,p=1.),
     ]
 )
-augmentation = None
+# augmentation = None
 
 config['augmentation'] = augmentation
 
-dataset = 'vessels_no_norm'
+# dataset = 'vessels_no_norm'
 dataset = 'liver'
-dataset = 'liver_no_norm'
+# dataset = 'liver_no_norm'
 logs_folder = get_logs_folder(dataset)
 train_folder, val_folder = get_train_val_folders(dataset)
 criterion = get_criterion(dataset)
 config['num_outs'] = get_num_outs(dataset)
 config['do_normalize'] = True
+# config['do_normalize'] = False
 
 print('Train Folder = {}\nValidation Folder = {}\nLogs Folder = {}'.format(train_folder, val_folder, logs_folder))
 

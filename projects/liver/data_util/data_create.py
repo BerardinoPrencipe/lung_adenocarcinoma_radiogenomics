@@ -10,7 +10,7 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from utils_calc import normalize_data, get_patient_id
+from util.utils_calc import normalize_data, get_patient_id
 from projects.liver.train.config import window_hu
 
 ### variables ###
@@ -68,23 +68,23 @@ for idx, file_name in enumerate(os.listdir(source_folder)):
         norm_data = np.transpose(norm_data, (2,0,1))
 
     # check if it is a segmentation file and select only the tumor (2) as positive label
-    if file_name[:3] == 'seg': data = (data==LIVER_CLASS).astype(np.uint8)
+    # if file_name[:3] == 'seg': data = (data==LIVER_CLASS).astype(np.uint8)
+    if file_name[:3] == 'seg': data = (data>0).astype(np.uint8)
 
     # transpose so the z-axis (slices) are the first dimension
     data = np.transpose(data, (2, 0, 1))
 
-
-    # loop through the slices
+    # Save images and masks with no norm
     for i, z_slice in enumerate(data):
         # save at new location (train or val)
-        np.save(os.path.join(destination_folder, sub, new_file_name + '_' + str(i)), z_slice)
+        np.save(os.path.join(destination_folder_no_norm, sub, new_file_name + '_' + str(i)), z_slice)
 
-    # Save masks with no norm
+    # Save masks with norm
     if file_name[:3] == 'seg':
         for i, z_slice in enumerate(data):
-            np.save(os.path.join(destination_folder_no_norm, sub, new_file_name + '_' + str(i)), z_slice)
+            np.save(os.path.join(destination_folder, sub, new_file_name + '_' + str(i)), z_slice)
 
-    # Save volumes with no norm
+    # Save volumes with norm
     if file_name[:3] == 'vol':
         for i, z_slice in enumerate(norm_data):
-            np.save(os.path.join(destination_folder_no_norm, sub, new_file_name + '_' + str(i)), z_slice)
+            np.save(os.path.join(destination_folder, sub, new_file_name + '_' + str(i)), z_slice)
