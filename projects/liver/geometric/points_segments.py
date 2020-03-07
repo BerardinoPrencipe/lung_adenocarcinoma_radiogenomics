@@ -84,6 +84,7 @@ from matplotlib import pyplot as plt
 #
 # points = ((0,0),(9,9))
 
+
 def points_to_segment(points, image):
 
     a, b, d = calculate_coefficent(points)
@@ -103,6 +104,50 @@ def points_to_segment(points, image):
     return I
 
 
+def points_to_segment2(points,image):
+
+    image = image.copy()
+    a, b, d = calculate_coefficent(points)
+    m = -a
+    q = -d
+    print("a,b,d: ", a, b, d)
+    p = []
+    # idx_x_s = max(0, round(-(d/a)))
+    # idx_x_e = min(image.shape[0]-1, round(((image.shape[0]-1)-d)/-a))
+    # print("q/m: ", round(-(d/a)))
+    # print("idx_x_s: ",idx_x_s)
+    # print(round(((image.shape[0]-1)-d)/-a))
+    # print("idx_x_e: ",idx_x_e)
+    # if idx_x_s > 0:
+    #     p.extend([(0,0),(idx_x_s,0)])
+    # else:
+    #     p.append((idx_x_s,0))
+    # if idx_x_e != image.shape[0]-1:
+    #     p.extend([(idx_x_e,image.shape[0]-1),(image.shape[1]-1, image.shape[0]-1)])
+    # else:
+    #     p.append((idx_x_e,image.shape[0]-1))
+    #
+    # p.append((image.shape[1]-1,0))
+    # print(p)
+
+    if q > 0:
+        p.extend([(0,0),(0,round(q))])
+    else:
+        p.append((round(-q/m),0))
+    if m*(image.shape[1]-1)+q > image.shape[0]-1:
+        p.extend([(round(((image.shape[1]-1)-q)/m), image.shape[0]-1), (image.shape[1]-1, image.shape[0]-1)])
+    else:
+        p.append((image.shape[0]-1,round(m*(image.shape[1]-1)+q)))
+
+    p.append((image.shape[1] - 1, 0))
+    print(p)
+    I = cv2.fillConvexPoly(img=image, points=np.array(p), color=(255, 0, 0))
+    plt.imshow(I)
+    plt.show()
+    return I
+
+
+
 def calculate_coefficent(points):
     """
     Calculate line coefficents
@@ -111,7 +156,7 @@ def calculate_coefficent(points):
     b = x2-x1
     d = y1x2 - x1y2
     :param points: points where the line passes
-    :return: coefficent of a line in the form ax+by+d
+    :return: coefficent of a line in the form y-mx-q = 0
     """
 
     a = -(points[1][0] - points[0][0])
@@ -120,10 +165,26 @@ def calculate_coefficent(points):
     return a/b, 1, d/b
 
 I = np.zeros((512,512),dtype=np.uint8)
-# start = time.time()
-# cv2.fillConvexPoly( I , np.array([(0,0),(511,511),(0,511)]) , color=(255,0,0))
-# print(time.time()-start)
-# plt.imshow(I); plt.show()
 
-a = points_to_segment(((0,0),(9,9)),I)
-plt.imshow(a); plt.show()
+
+a = points_to_segment2(((0,0),(120,60)),np.zeros((512,512),dtype=np.uint8))
+
+a = points_to_segment2(((0,50),(120,60)),np.zeros((512,512),dtype=np.uint8))
+
+a = points_to_segment2(((0,50),(60,120)),np.zeros((512,512),dtype=np.uint8))
+
+a = points_to_segment2(((30,0),(60,120)),np.zeros((512,512),dtype=np.uint8))
+
+a = points_to_segment2(((30,0),(120,60)),np.zeros((512,512),dtype=np.uint8))
+
+a = points_to_segment2(((0,0),(60,60)),np.zeros((512,512),dtype=np.uint8))
+
+a = points_to_segment2(((0,511),(60,60)),np.zeros((512,512),dtype=np.uint8))
+
+a = points_to_segment2(((0,0),(60,60)),I)
+
+a = points_to_segment2(((0,511),(256,256)),I)
+
+
+# plt.imshow(a); plt.show()
+
