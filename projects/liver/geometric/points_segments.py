@@ -141,12 +141,75 @@ def points_to_segment2(points,image):
 
     p.append((image.shape[1] - 1, 0))
     print(p)
-    I = cv2.fillConvexPoly(img=image, points=np.array(p), color=(255, 0, 0))
+    I = cv2.fillConvexPoly(img=image, pts=np.array(p), color=(255, 0, 0))
     plt.imshow(I)
     plt.show()
     return I
 
 
+def points_to_segments3(points, image):
+
+    a1, _ ,d1 = calculate_coefficent(points[0])
+    m1 = -a1
+    q1 = -d1
+    a2, _, d2 = calculate_coefficent(points[1])
+    m2 = -a2
+    q2 = -d2
+
+    if m1 > 0 and m2>0:
+        pass
+    elif m1 > 0 and m2 < 0:
+        pass
+    elif m1 <0 and m2 > 0:
+        pass
+    elif m1 < 0 and m2 < 0:
+        pass
+
+    # print("m1, q1 :", m1, q1)
+    # print("m2, q2 :", m2, q2)
+    # h, w = image.shape
+    # x = range(w)
+    # y1 = np.array(np.round(np.array(x) * m1 + q1)).astype(np.int32)
+    # y2 = np.array(np.round(np.array(x) * m2 + q2)).astype(np.int32)
+    # idx_cross = round(-((q1-q2)/(m1-m2)))
+    # p = []
+    # if m1 > 0:
+    #     if q1 <= 0:
+    #         p.append((0, q1))
+    #     else:
+    #         p.extend([(0, 0), (0, q1)])
+    # elif m1 < 0:
+    #     if 0 < q1 < h-1:
+    #         p.append((0, q1))
+    #     else:
+    #         p.extend([(0, 0), (0, q1)])
+    # if 0 <= idx_cross < w:
+    #     p.append((idx_cross, y1[idx_cross]))
+    # else:
+    #     p.extend([(round(((h-1) - q1) /m1), h), (round(((h-1) - q2)/m2), h)])
+    # if m2*(w-1)+q2 <= 0:
+    #     p.append((w-1, m2*(w-1)+q2))
+    # else:
+    #     p.extend([(w-1, round(m2*(w-1)+q2)), (w-1, 0)])
+    # p1 = np.array([[[xi, yi]] for xi,yi in zip(x,y1) if 0 <= xi < w and 0 <= yi <h ]).astype(np.int32)
+    # p2 = np.array([[[xi, yi]] for xi,yi in zip(x,y2) if 0 <= xi < w and 0 <= yi < h]).astype(np.int32)
+    # # p2 = np.flipud(p2)
+    # p = np.concatenate((p1,p2), axis=0)
+    # # p = p1
+    a = image.copy()
+    print(p)
+    cv2.fillConvexPoly(a, np.array(p, dtype=np.int32), color=(255,0,0))
+    plt.imshow(a)
+    plt.show()
+    return a,y1,y2,p
+
+
+def draw_line(points, image):
+    a = image.copy()
+    cv2.line(a, points[0], points[1], color=(255,0,0))
+    plt.imshow(a)
+    plt.show()
+    return a
 
 def calculate_coefficent(points):
     """
@@ -164,27 +227,34 @@ def calculate_coefficent(points):
     d = points[0][1] * points[1][0] - points[0][0] * points[1][1]
     return a/b, 1, d/b
 
-I = np.zeros((512,512),dtype=np.uint8)
+# I = np.zeros((512,512),dtype=np.uint8)
+#
+#
+# a = points_to_segment2(((0,0),(120,60)),np.zeros((512,512),dtype=np.uint8))
+#
+# a = points_to_segment2(((0,50),(120,60)),np.zeros((512,512),dtype=np.uint8))
+#
+# a = points_to_segment2(((0,50),(60,120)),np.zeros((512,512),dtype=np.uint8))
+#
+# a = points_to_segment2(((30,0),(60,120)),np.zeros((512,512),dtype=np.uint8))
+#
+# a = points_to_segment2(((30,0),(120,60)),np.zeros((512,512),dtype=np.uint8))
+#
+# a = points_to_segment2(((0,0),(60,60)),np.zeros((512,512),dtype=np.uint8))
+#
+# a = points_to_segment2(((0,511),(60,60)),np.zeros((512,512),dtype=np.uint8))
+#
+# a = points_to_segment2(((0,0),(60,60)),I)
+#
+# a = points_to_segment2(((0,511),(256,256)),I)
 
+# a = points_to_segments3([[(0,0),(511,170)],[(0,511),(511,400)]],np.zeros((512,512),dtype=np.uint8))
+#
+# a = points_to_segments3([[(0,511),(511,400)],[(0,0),(511,170)]],np.zeros((512,512),dtype=np.uint8))
 
-a = points_to_segment2(((0,0),(120,60)),np.zeros((512,512),dtype=np.uint8))
+# a = points_to_segments3([[(0,100),(511,0)],[(0,511),(511,400)]],np.zeros((512,512),dtype=np.uint8))
 
-a = points_to_segment2(((0,50),(120,60)),np.zeros((512,512),dtype=np.uint8))
-
-a = points_to_segment2(((0,50),(60,120)),np.zeros((512,512),dtype=np.uint8))
-
-a = points_to_segment2(((30,0),(60,120)),np.zeros((512,512),dtype=np.uint8))
-
-a = points_to_segment2(((30,0),(120,60)),np.zeros((512,512),dtype=np.uint8))
-
-a = points_to_segment2(((0,0),(60,60)),np.zeros((512,512),dtype=np.uint8))
-
-a = points_to_segment2(((0,511),(60,60)),np.zeros((512,512),dtype=np.uint8))
-
-a = points_to_segment2(((0,0),(60,60)),I)
-
-a = points_to_segment2(((0,511),(256,256)),I)
-
+g = draw_line([(100,0),(0,511)],np.zeros((512,512),dtype=np.uint8))
 
 # plt.imshow(a); plt.show()
 
