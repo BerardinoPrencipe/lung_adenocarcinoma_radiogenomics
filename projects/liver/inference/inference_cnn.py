@@ -25,7 +25,8 @@ test_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Volumes')
 result_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Results')
 gt_mask_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/GroundTruth')
 
-alpha_beta = 'a5_b5'
+# alpha_beta = 'a5_b5'
+alpha_beta = 'augm'
 # alpha_beta = 'a3_b7'
 method = 'CNN'
 result_folder = os.path.join(result_folder, method, alpha_beta)
@@ -52,7 +53,8 @@ use_multi_gpu = True
 
 # net_path = 'logs/liver/model_25D__2020-01-22__14_00_38.pht'
 # net_path = os.path.join(logs_dir, 'model_25D__2020-01-24__11_34_49.pht')
-net_path = os.path.join('logs/liver_no_norm/model_25D__2020-03-05__11_22_13.pht')
+# net_path = os.path.join('logs/liver_no_norm/model_25D__2020-03-05__11_22_13.pht')
+net_path = os.path.join('logs/liver/model_25D__2020-03-07__23_45_50.pht')
 if isLinux:
     net_path = os.path.join(logs_dir, 'model_25D__2020-01-27__18_50_10.pht')
     # net_path = os.path.join(logs_dir, max(os.listdir(logs_dir)))
@@ -77,7 +79,7 @@ net.eval()
 eval_net_volumes = True
 
 if eval_net_volumes:
-    for idx, file_name_prediction in enumerate(files_test_volumes[:1]):
+    for idx, file_name_prediction in enumerate(files_test_volumes):
         print("Iter {} on {}".format(idx, len(files_test_volumes)-1))
 
         # load file
