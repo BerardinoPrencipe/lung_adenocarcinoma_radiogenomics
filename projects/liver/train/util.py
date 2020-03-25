@@ -10,7 +10,7 @@ LEARNING_RATE_REDUCTION_FACTOR = 10
 #######################
 ### MULTI DICE LOSS ###
 #######################
-use_multi_dice = False
+use_multi_dice = True
 print(f'use_multi_dice = {use_multi_dice}')
 if use_multi_dice:
     weights_balancing_path = 'logs/segments/weights.pt'

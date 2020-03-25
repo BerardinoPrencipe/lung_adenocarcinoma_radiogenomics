@@ -21,15 +21,18 @@ folders_patients_test = os.listdir(folder_test_dataset)
 folders_patients_test = [folder for folder in folders_patients_test
                          if os.path.isdir(os.path.join(folder_test_dataset, folder))]
 
-path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
+# path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
+path_net = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
 # Load net
 net = torch.load(path_net)
+cuda_device = torch.device('cuda:1')
+net.to(cuda_device)
 
 # Start iteration over val set
-for folder_patient_test in folders_patients_test:
-
+for idx, folder_patient_test in enumerate(folders_patients_test):
+    print('Starting iter {} on {}'.format(idx+1,len(folders_patients_test)))
     print('Processing ', folder_patient_test)
-    path_test_pred = os.path.join(folder_test_dataset, folder_patient_test + ".nii")
+    path_test_pred = os.path.join(folder_test_dataset, folder_patient_test + ".nii.gz")
     path_test_folder = os.path.join(folder_test_dataset, folder_patient_test)
 
     reader = sitk.ImageSeriesReader()
@@ -49,7 +52,7 @@ for folder_patient_test in folders_patients_test:
     # transpose so the z-axis (slices) are the first dimension
     data = np.transpose(data, (0, 2, 1))
     # CNN
-    output = perform_inference_volumetric_image(net, data, context=2, do_round=True)
+    output = perform_inference_volumetric_image(net, data, context=2, do_round=True, cuda_dev=cuda_device)
     output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
 
     n_nonzero = np.count_nonzero(output)

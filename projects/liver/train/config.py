@@ -49,7 +49,7 @@ else:
 def get_criterion(dataset):
     return None
 
-epochs  = 2001
+epochs  = 4001
 use_3d  = False
 p = 0.25
 do_normalize = False
