@@ -8,24 +8,21 @@ from utils_calc import normalize_data
 from projects.liver.util.inference import perform_inference_volumetric_image
 from projects.liver.train.config import window_hu
 
-val_list = ["{:02d}".format(idx) for idx in range(1,3)]
-val_list.append("10")
-
-folder_dataset = 'datasets/ircadb'
-folders_patients = os.listdir(folder_dataset)
-folders_patients_train = [folder for folder in folders_patients if not any(val_el in folder for val_el in val_list)]
-folders_patients_valid = [folder for folder in folders_patients if any(val_el in folder for val_el in val_list)]
-
-folder_test_dataset = 'E:/Datasets/LiverScardapane'
+use_in_lab = False
+if use_in_lab:
+    folder_test_dataset = 'E:/Datasets/LiverScardapane'
+else:
+    folder_test_dataset = 'H:/Datasets/Liver/LiverScardapane'
 folders_patients_test = os.listdir(folder_test_dataset)
 folders_patients_test = [folder for folder in folders_patients_test
                          if os.path.isdir(os.path.join(folder_test_dataset, folder))]
 
 # path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
-path_net = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
+# path_net = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
+path_net = 'logs/vessels_scardapane/model_25D__2020-03-27__07_11_38.pht'
 # Load net
 net = torch.load(path_net)
-cuda_device = torch.device('cuda:1')
+cuda_device = torch.device('cuda:0')
 net.to(cuda_device)
 
 # Start iteration over val set

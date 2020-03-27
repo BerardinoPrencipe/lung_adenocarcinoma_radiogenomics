@@ -21,7 +21,8 @@ else:
     isLinux = False
 
 # The dataset to use!
-datasets = ["liver", "liver_no_norm", "vessels", "vessels_no_norm", "segments", "vessels_tumors"]
+datasets = ["liver", "liver_no_norm", "vessels", "vessels_no_norm", "segments",
+            "vessels_tumors", "vessels_scardapane", "vessels_scardapane_one_class"]
 dataset = datasets[-1]
 use_masked_dataset = False
 
@@ -49,7 +50,7 @@ else:
 def get_criterion(dataset):
     return None
 
-epochs  = 4001
+epochs  = 1001
 use_3d  = False
 p = 0.25
 do_normalize = False
@@ -89,7 +90,9 @@ config = {
 def get_num_outs(dataset):
     num_outs = 2
     if dataset == 'vessels_tumors':
-        num_outs = 3
+        num_outs = 3 # Background, Vessels, Tumors
+    elif dataset == 'vessels_scardapane':
+        num_outs = 3 # Background, HV, PV
     elif dataset == 'segments':
         num_outs = 9
     return num_outs
@@ -127,6 +130,14 @@ def get_train_val_folders(dataset):
         npy_folder = "npy_vessels" if not use_masked_dataset else "npy_vessels_masked"
         train_folder = os.path.join(current_path_abs, 'datasets/LiverDecathlon', npy_folder, 'train')
         val_folder   = os.path.join(current_path_abs, 'datasets/LiverDecathlon', npy_folder, 'val')
+    elif dataset == "vessels_scardapane":
+        dataset_path = 'H:/Datasets/Liver/LiverScardapaneNew/npy'
+        train_folder = os.path.join(dataset_path, 'train')
+        val_folder = os.path.join(dataset_path, 'val')
+    elif dataset == "vessels_scardapane_one_class":
+        dataset_path = 'H:/Datasets/Liver/LiverScardapaneNew/npy_one_class'
+        train_folder = os.path.join(dataset_path, 'train')
+        val_folder = os.path.join(dataset_path, 'val')
 
     return train_folder, val_folder
 
