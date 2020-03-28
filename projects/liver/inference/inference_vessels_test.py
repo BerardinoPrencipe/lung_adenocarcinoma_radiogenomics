@@ -13,13 +13,28 @@ if use_in_lab:
     folder_test_dataset = 'E:/Datasets/LiverScardapane'
 else:
     folder_test_dataset = 'H:/Datasets/Liver/LiverScardapane'
-folders_patients_test = os.listdir(folder_test_dataset)
+folder_test_images = os.path.join(folder_test_dataset, 'ct_scans')
+folders_patients_test = os.listdir(folder_test_images)
 folders_patients_test = [folder for folder in folders_patients_test
-                         if os.path.isdir(os.path.join(folder_test_dataset, folder))]
+                         if os.path.isdir(os.path.join(folder_test_images, folder))]
 
-# path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
-# path_net = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
-path_net = 'logs/vessels_scardapane/model_25D__2020-03-27__07_11_38.pht'
+path_net = None
+do_round = True
+do_argmax = False
+model_to_use = "s_multi"
+folder_test_pred = os.path.join(folder_test_dataset, model_to_use)
+if not os.path.exists(folder_test_pred):
+    os.makedirs(folder_test_pred)
+
+if model_to_use == "ircadb":
+    # path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
+    path_net = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
+elif model_to_use == "s_multi":
+    path_net = 'logs/vessels_scardapane/model_25D__2020-03-27__07_11_38.pht'
+    do_round = False
+    do_argmax = True
+elif model_to_use == "s_single":
+    path_net = 'logs/vessels_scardapane_one_class/model_25D__2020-03-28__04_43_26.pht'
 # Load net
 net = torch.load(path_net)
 cuda_device = torch.device('cuda:0')
@@ -29,8 +44,8 @@ net.to(cuda_device)
 for idx, folder_patient_test in enumerate(folders_patients_test):
     print('Starting iter {} on {}'.format(idx+1,len(folders_patients_test)))
     print('Processing ', folder_patient_test)
-    path_test_pred = os.path.join(folder_test_dataset, folder_patient_test + ".nii.gz")
-    path_test_folder = os.path.join(folder_test_dataset, folder_patient_test)
+    path_test_pred = os.path.join(folder_test_pred, folder_patient_test + ".nii.gz")
+    path_test_folder = os.path.join(folder_test_images, folder_patient_test)
 
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(path_test_folder)
@@ -42,14 +57,14 @@ for idx, folder_patient_test in enumerate(folders_patients_test):
     image_data = sitk.GetArrayFromImage(image)
 
     # normalize data
-    # data = normalize_data(image_data, dmin=window_hu[0], dmax=window_hu[1])
     data = normalize_data(image_data, window_hu)
-    data = (data * 255).astype(np.uint8)
 
     # transpose so the z-axis (slices) are the first dimension
     data = np.transpose(data, (0, 2, 1))
     # CNN
-    output = perform_inference_volumetric_image(net, data, context=2, do_round=True, cuda_dev=cuda_device)
+    output = perform_inference_volumetric_image(net, data, context=2,
+                                                do_round=do_round, do_argmax=do_argmax,
+                                                cuda_dev=cuda_device)
     output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
 
     n_nonzero = np.count_nonzero(output)
