@@ -23,25 +23,7 @@ def get_largest_cc(image):
     return largest_conn_comp
 
 def post_process_liver(output, vector_radius=(25, 25, 25), kernel=sitk.sitkBall):
-    '''
-    # Get connected components
-    ccif = sitk.ConnectedComponentImageFilter()
-    sitk_output = sitk.GetImageFromArray(output)
-    conn_comps = ccif.Execute(sitk_output)
-    conn_comps_np = sitk.GetArrayFromImage(conn_comps)
-
-    unique_values = np.unique(conn_comps_np)
-    n_uniques = len(unique_values)
-    counter_uniques = np.zeros(n_uniques)
-    for i in range(1, max(unique_values) + 1):
-        counter_uniques[i] = (conn_comps_np == i).sum()
-    biggest_region_value = np.argmax(counter_uniques)
-
-    # Get largest connected component
-    largest_conn_comp = np.zeros(conn_comps_np.shape, dtype=np.uint8)
-    largest_conn_comp[conn_comps_np == biggest_region_value] = 1
-    '''
-
+    # Get Largest CC
     largest_conn_comp = get_largest_cc(output)
 
     # Morphological Closing
