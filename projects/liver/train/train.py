@@ -65,6 +65,8 @@ def run(config, dataset):
 # python projects/liver/train/train.py --dataset=pv
 # python projects/liver/train/train.py --dataset=segments
 # python projects/liver/train/train.py --dataset=vessels_tumors
+# python projects/liver/train/train.py --dataset=vessels_scardapane
+# python projects/liver/train/train.py --dataset=vessels_scardapane_one_class
 
 import argparse
 
@@ -130,8 +132,10 @@ if __name__ == "__main__":
         else:
             config[key] = dict_args[key]
 
-    config['low_lr_epoch'] = config['epochs'] // 6
-    config['val_epochs']   = config['epochs'] // 6
+    VAL_FRACTION = 6
+
+    config['low_lr_epoch'] = config['epochs'] // VAL_FRACTION
+    config['val_epochs']   = config['epochs'] // VAL_FRACTION
 
 
     run(config, dataset)

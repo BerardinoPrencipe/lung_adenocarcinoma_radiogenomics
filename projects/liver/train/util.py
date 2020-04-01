@@ -2,55 +2,9 @@ import torch
 import time
 import os
 import numpy as np
-from semseg.loss import dice as dice_loss, tversky, dice_n_classes, focal_dice_n_classes
 
-eps = 1e-5
-LEARNING_RATE_REDUCTION_FACTOR = 10
-
-#######################
-### MULTI DICE LOSS ###
-#######################
-use_multi_dice = True
-print(f'use_multi_dice = {use_multi_dice}')
-if use_multi_dice:
-    weights_balancing_path = 'logs/segments/weights.pt'
-    # weights_balancing_path = 'logs/vessels_tumors/weights.pt'
-    torch_balancing_weights = torch.load(weights_balancing_path)
-    print('Torch Balancing Weights = {}'.format(torch_balancing_weights))
-    # gamma = 2.
-    gamma = 1.5
-
-###############
-### TVERSKY ###
-###############
-use_tversky = False
-alpha, beta = 0.3, 0.7
-
-
-if use_tversky:
-    print('Use Tversky: ', use_tversky)
-    print('alpha = ', alpha, ' beta = ', beta)
-
-def get_tversky_loss(outputs, labels):
-    outputs = outputs[:, 1].unsqueeze(dim=1)
-    loss = tversky(outputs, labels, alpha=alpha, beta=beta)
-    return loss
-
-def get_multi_dice_loss(outputs, labels, device=None):
-    labels = labels[:, 0]
-    # loss = dice_n_classes(outputs, labels, do_one_hot=True, get_list=False, device=device)
-    loss = focal_dice_n_classes(outputs, labels, gamma=gamma, weights=torch_balancing_weights,
-                                do_one_hot=True, get_list=False, device=device)
-    return loss
-
-def get_loss(outputs, labels, criterion):
-    if criterion is None:
-        outputs = outputs[:, 1].unsqueeze(dim=1)
-        loss = dice_loss(outputs, labels)
-    else:
-        labels = labels.squeeze(dim=1)
-        loss = criterion(outputs, labels)
-    return loss
+from projects.liver.train.config_loss import eps, LEARNING_RATE_REDUCTION_FACTOR, use_multi_dice, \
+                                             get_multi_dice_loss, get_loss
 
 
 def train_model(net, optimizer, train_data, config, device=None,
@@ -188,7 +142,7 @@ def train_model(net, optimizer, train_data, config, device=None,
             print('    Val Accuracy: {:.4f} - Time: {:.1f}'
                   .format(np.mean(all_accuracy), eval_elapsed_time))
             for cls in range(0, config['num_outs']):
-                dice_cls = 1 - (2 * intersect[cls] + eps) / (union[cls]  + eps)
+                dice_cls = 1 - (2 * intersect[cls] + eps) / (union[cls] + eps)
                 print('      Class [{:02d}] - Dice Loss = {:.4f}'.format(cls, dice_cls))
         else:
             print('    Val Dice Loss: {:.4f} - Val Accuracy: {:.4f} - Time: {:.1f}'
