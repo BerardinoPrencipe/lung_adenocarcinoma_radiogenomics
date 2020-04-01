@@ -19,10 +19,11 @@ from projects.liver.util.inference import perform_inference_volumetric_image, ma
 from projects.liver.train.config import window_hu
 from semseg.models.vnet_v2 import VXNet
 
-do_mask_liver      = False
-inference_vessels  = False
-inference_segments = True
-use_state_dict     = False
+do_use_spacing_context  = False
+do_mask_liver           = False
+inference_vessels       = False
+inference_segments      = True
+use_state_dict          = False
 
 # Load net
 if inference_segments:
@@ -36,11 +37,11 @@ if inference_segments:
 
         else:
             # NO AUGMENTATIONS
-            # model = 'model_25D__2020-02-19__07_13_36.pht'
+            model = 'model_25D__2020-02-19__07_13_36.pht'
             # AUGMENTATIONS
             # model = 'model_25D__2020-02-28__11_42_39.pht'
             # model = 'model_25D__2020-02-29__12_28_14.pht'
-            model = 'model_25D__2020-03-18__07_44_49.pht'
+            # model = 'model_25D__2020-03-18__07_44_49.pht'
         path_net_segments = os.path.join(current_path_abs, 'logs/segments', model)
 
         net_segments = torch.load(path_net_segments)
@@ -123,7 +124,10 @@ for idx, image_path in enumerate(image_paths):
 
     # CNN
     if inference_segments:
-        spacing_context = map_thickness_to_spacing_context(thickness)
+        if do_use_spacing_context:
+            spacing_context = map_thickness_to_spacing_context(thickness)
+        else:
+            spacing_context = 1
         print('Thickness = {} Spacing Context = {}'.format(thickness, spacing_context))
         output_segments_before = perform_inference_volumetric_image(net_segments, data, context=2,
                                                                     spacing_context=spacing_context,
@@ -263,6 +267,8 @@ metrics = {
     'AccuracyAfter'  : accuracy_after,
     'AvgDiceBefore'  : avg_dice_before,
     'AvgDiceAfter'   : avg_dice_after,
+    'DiceClsBefore'  : list(dice_cls_before),
+    'DiceClsAfter'   : list(dice_cls_after),
 }
 
 import json
