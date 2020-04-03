@@ -30,7 +30,8 @@ if inference_segments:
         net_segments = VXNet(dropout=True, context=2, num_outs=9, no_softmax=False)
         net_segments.load_state_dict(torch.load(path_net_segments))
     else:
-        path_net_segments = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-19__07_13_36.pht')
+        path_net_segments = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-03-07__23_45_50.pht')
+        #path_net_segments = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-19__07_13_36.pht')
         net_segments = torch.load(path_net_segments)
     print('Network Path Segments = {}'.format(path_net_segments))
 
