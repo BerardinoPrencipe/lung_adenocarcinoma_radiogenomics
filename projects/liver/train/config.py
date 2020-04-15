@@ -6,7 +6,7 @@ import torch.nn as nn
 import cv2
 from albumentations import (
     GaussianBlur, ElasticTransform, MultiplicativeNoise, Rotate,
-    Compose
+    Compose, CLAHE, RandomBrightnessContrast
 )
 
 current_path_abs = os.path.abspath('.')
@@ -21,8 +21,11 @@ else:
     isLinux = False
 
 # The dataset to use!
-datasets = ["liver", "liver_no_norm", "vessels", "vessels_no_norm", "segments",
-            "vessels_tumors", "vessels_scardapane", "vessels_scardapane_one_class"]
+datasets = ["liver", "liver_no_norm",
+            "vessels", "vessels_no_norm",
+            "segments",
+            "vessels_tumors", "vessels_only",
+            "vessels_scardapane", "vessels_scardapane_one_class"]
 dataset = datasets[-1]
 use_masked_dataset = False
 
@@ -52,7 +55,7 @@ def get_criterion(dataset):
 
 epochs  = 1001
 use_3d  = False
-p = 0.25
+p = 0.1
 do_normalize = False
 
 augmentation = Compose([
@@ -60,6 +63,7 @@ augmentation = Compose([
         ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=p),
         MultiplicativeNoise(multiplier=(0.97,1.03), per_channel=False, elementwise=True, p=p),
         Rotate(limit=(-10,10),border_mode=cv2.BORDER_CONSTANT,value=0,mask_value=0, p=p),
+        RandomBrightnessContrast(contrast_limit=0.15, brightness_limit=0.15, p=p)
     ]
 )
 
@@ -130,6 +134,9 @@ def get_train_val_folders(dataset):
         npy_folder = "npy_vessels" if not use_masked_dataset else "npy_vessels_masked"
         train_folder = os.path.join(current_path_abs, 'datasets/LiverDecathlon', npy_folder, 'train')
         val_folder   = os.path.join(current_path_abs, 'datasets/LiverDecathlon', npy_folder, 'val')
+    elif dataset == "vessels_only":
+        train_folder = os.path.join(current_path_abs, 'datasets/LiverDecathlon', 'npy_vessels_only','train')
+        val_folder = os.path.join(current_path_abs, 'datasets/LiverDecathlon', 'npy_vessels_only','val')
     elif dataset == "vessels_scardapane":
         dataset_path = 'H:/Datasets/Liver/LiverScardapaneNew/npy'
         train_folder = os.path.join(dataset_path, 'train')

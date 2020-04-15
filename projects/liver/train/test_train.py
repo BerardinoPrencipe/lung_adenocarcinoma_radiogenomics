@@ -19,14 +19,16 @@ from projects.liver.train.config import *
 
 from albumentations import (
     GaussianBlur, ElasticTransform, MultiplicativeNoise, Rotate,
-    Compose
+    Compose, CLAHE, RandomContrast, RandomBrightnessContrast
 )
 
+p=0.1
 augmentation = Compose([
-        GaussianBlur(p=1.),
-        ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=1.),
-        MultiplicativeNoise(multiplier=(0.90,1.10), per_channel=False, elementwise=True),
-        Rotate(limit=(-45,45),border_mode=cv2.BORDER_CONSTANT,value=0,mask_value=0,p=1.),
+        GaussianBlur(p=p),
+        ElasticTransform(alpha=2, sigma=3, alpha_affine=0, p=p),
+        MultiplicativeNoise(multiplier=(0.97,1.03), per_channel=False, elementwise=True, p=p),
+        Rotate(limit=(-10,10),border_mode=cv2.BORDER_CONSTANT,value=0,mask_value=0, p=p),
+        RandomBrightnessContrast(contrast_limit=0.15, brightness_limit=0.15, p=p)
     ]
 )
 # augmentation = None
@@ -34,7 +36,9 @@ augmentation = Compose([
 config['augmentation'] = augmentation
 
 # dataset = 'vessels_no_norm'
-dataset = 'liver'
+# dataset = 'liver'
+# dataset = 'vessels'
+dataset = 'vessels_only'
 # dataset = 'liver_no_norm'
 logs_folder = get_logs_folder(dataset)
 train_folder, val_folder = get_train_val_folders(dataset)

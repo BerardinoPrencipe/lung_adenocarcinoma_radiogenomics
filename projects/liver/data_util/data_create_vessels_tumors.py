@@ -21,7 +21,7 @@ else:
 ############################
 ### SOURCE DATASET (nii) ###
 ############################
-dataset_path_base = 'E:/Datasets/LiverDecathlon'
+dataset_path_base = os.path.join(current_path_abs, 'datasets', 'LiverDecathlon')
 dataset_path_nii = os.path.join(dataset_path_base, 'nii')
 source_images_folder = os.path.join(dataset_path_nii, 'images')
 source_labels_vessels_tumors_folder = os.path.join(dataset_path_nii, 'labels_vessels_tumors')
@@ -105,7 +105,7 @@ for idx, label_path in enumerate(label_paths):
     label_vessels_only_data = (label_data == 1).astype(np.uint8)
 
     print('Unique values of label (Vessels and Tumors) data = {}'.format(np.unique(label_data)))
-    print('Unique values of label (Vessels Only)       data = {}'.format(np.unique(label_data)))
+    print('Unique values of label (Vessels Only)       data = {}'.format(np.unique(label_vessels_only_data)))
     print('Unique values of liver data = {}'.format(np.unique(liver_data)))
 
     # transpose so the z-axis (slices) are the first dimension
