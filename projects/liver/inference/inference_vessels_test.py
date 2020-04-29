@@ -21,10 +21,12 @@ folders_patients_test = [folder for folder in folders_patients_test
 path_net = None
 do_round = True
 do_argmax = False
-model_to_use = "s_multi"
+model_to_use = "ircadb"
 folder_test_pred = os.path.join(folder_test_dataset, model_to_use)
 if not os.path.exists(folder_test_pred):
     os.makedirs(folder_test_pred)
+
+path_net_vessels_tumors = 'logs/vessels_tumors/model_25D__2020-02-20__06_53_17.pht'
 
 if model_to_use == "ircadb":
     # path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
@@ -66,6 +68,9 @@ for idx, folder_patient_test in enumerate(folders_patients_test):
                                                 do_round=do_round, do_argmax=do_argmax,
                                                 cuda_dev=cuda_device)
     output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
+
+    # CNN Vessels Tumors
+    # TODO: process with vessels-tumors net and then take the OR between this and vessels net
 
     n_nonzero = np.count_nonzero(output)
     print("Non-zero elements = ", n_nonzero)
