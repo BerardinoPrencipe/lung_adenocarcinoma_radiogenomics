@@ -7,7 +7,7 @@ use_multi_dice = False
 use_focal_dice = True
 use_vessels_weights = False
 use_segments_weights = False
-use_tversky = False
+use_tversky = True
 
 
 #######################
@@ -15,8 +15,10 @@ use_tversky = False
 #######################
 def get_loss(outputs, labels, criterion):
     if criterion is None:
-        outputs = outputs[:, 1].unsqueeze(dim=1)
-        loss = dice_loss(outputs, labels)
+        if use_tversky:
+            loss = get_tversky_loss(outputs, labels)
+        else:
+            loss = get_dice_loss(outputs, labels)
     else:
         labels = labels.squeeze(dim=1)
         loss = criterion(outputs, labels)
@@ -56,12 +58,18 @@ def get_multi_dice_loss(outputs, labels, device=None):
 ### TVERSKY ###
 ###############
 alpha, beta = 0.3, 0.7
+print('Use Tversky: ', use_tversky)
 if use_tversky:
-    print('Use Tversky: ', use_tversky)
     print('alpha = ', alpha, ' beta = ', beta)
 
 
 def get_tversky_loss(outputs, labels):
     outputs = outputs[:, 1].unsqueeze(dim=1)
     loss = tversky(outputs, labels, alpha=alpha, beta=beta)
+    return loss
+
+
+def get_dice_loss(outputs, labels):
+    outputs = outputs[:, 1].unsqueeze(dim=1)
+    loss = dice_loss(outputs, labels)
     return loss
