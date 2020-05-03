@@ -70,6 +70,11 @@ print('Source Vessels Tumors  Folder = {}'.format(source_labels_vessels_tumors_f
 label_paths = os.listdir(source_labels_vessels_tumors_folder)
 label_paths.sort()
 
+label_paths_train = [label_path for label_path in label_paths if int(get_num_from_path(label_path)) < VAL_INT_NUM]
+label_paths_val = [label_path for label_path in label_paths if int(get_num_from_path(label_path)) >= VAL_INT_NUM]
+print('Len Train Set = ', len(label_paths_train))
+print('Len Val   Set = ', len(label_paths_val))
+
 for idx, label_path in enumerate(label_paths):
 
     print('Index {} on {}'.format(idx, len(label_paths)-1))
