@@ -19,7 +19,7 @@ folders_patients_test = os.listdir(folder_test_images)
 folders_patients_test = [folder for folder in folders_patients_test
                          if os.path.isdir(os.path.join(folder_test_images, folder))]
 
-folders_patients_test = folders_patients_test[1:4]
+folders_patients_test = folders_patients_test[0:4]
 
 path_net = None
 do_round = True
