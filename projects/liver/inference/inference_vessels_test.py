@@ -9,6 +9,8 @@ from utils_calc import normalize_data
 from projects.liver.util.inference import perform_inference_volumetric_image
 from projects.liver.train.config import window_hu
 
+folder_logs = 'logs'
+
 use_in_lab = False
 if use_in_lab:
     folder_test_dataset = 'E:/Datasets/LiverScardapane'
@@ -34,6 +36,7 @@ path_net_vessels_tumors = 'logs/vessels_tumors/model_25D__2020-02-20__06_53_17.p
 if model_to_use == "ircadb":
     # path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
     path_net = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
+    # path_net = 'logs/vessels/model_25D__2020-05-04__09_55_18.pht'
 elif model_to_use == "s_multi":
     path_net = 'logs/vessels_scardapane/model_25D__2020-03-27__07_11_38.pht'
     do_round = False
@@ -131,3 +134,21 @@ print('Average Accuracy  = {}'.format(avg_acc))
 print('Average Precision = {}'.format(avg_prec))
 print('Average Recall    = {}'.format(avg_recall))
 print('Average Specif    = {}'.format(avg_spec))
+
+metrics = {
+    'AvgDice'       : avg_dice,
+    'AvgAcc'        : avg_acc,
+    'AvgPrecision'  : avg_prec,
+    'AvgRecall'     : avg_recall,
+    'AvgSpecif'     : avg_spec,
+    'Dices'         : dices,
+    'Accs'          : accs,
+    'Recalls'       : recalls,
+    'Precisions'    : precs,
+    'Specifs'       : specs,
+}
+
+import json
+json_path = os.path.join(folder_logs, 'metrics_{}.json'.format(path_net.split('/')[-1]))
+with open(json_path, 'w') as fp:
+    json.dump(metrics, fp)
