@@ -69,8 +69,6 @@ for idx, folder_patient_test in enumerate(folders_patients_test):
     spacings.append(spacing)
     print("Image spacing: ", spacing)
 
-    continue
-
     image_data = sitk.GetArrayFromImage(image)
     # normalize data
     data = normalize_data(image_data, window_hu)
