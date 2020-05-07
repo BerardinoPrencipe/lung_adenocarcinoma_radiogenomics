@@ -23,6 +23,7 @@ else:
 # The dataset to use!
 datasets = ["liver", "liver_no_norm",
             "vessels", "vessels_no_norm",
+            "vessels_crossval_00", "vessels_crossval_01", "vessels_crossval_02", "vessels_crossval_03",
             "segments",
             "vessels_tumors", "vessels_only",
             "vessels_scardapane", "vessels_scardapane_one_class"]
@@ -53,7 +54,7 @@ else:
 def get_criterion(dataset):
     return None
 
-epochs  = 2001
+epochs  = 1001
 use_3d  = False
 p = 0.1
 do_normalize = False
@@ -117,6 +118,18 @@ def get_train_val_folders(dataset):
     if dataset == "vessels":
         train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy/train')
         val_folder   = os.path.join(current_path_abs, 'datasets/ircadb/npy/val')
+    elif dataset == "vessels_crossval_00":
+        train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_00/train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_00/val')
+    elif dataset == "vessels_crossval_01":
+        train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_01/train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_01/val')
+    elif dataset == "vessels_crossval_02":
+        train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_02/train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_02/val')
+    elif dataset == "vessels_crossval_03":
+        train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_03/train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_03/val')
     elif dataset == "vessels_no_norm":
         train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_no_norm/train')
         val_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_no_norm/val')

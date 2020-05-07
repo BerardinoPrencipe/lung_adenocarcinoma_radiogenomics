@@ -35,8 +35,9 @@ path_net_vessels_tumors = 'logs/vessels_tumors/model_25D__2020-02-20__06_53_17.p
 
 if model_to_use == "ircadb":
     # path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
-    path_net = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
+    # path_net = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
     # path_net = 'logs/vessels/model_25D__2020-05-04__09_55_18.pht'
+    path_net = 'logs/vessels/model_25D__2020-05-07__09_09_33.pht'
 elif model_to_use == "s_multi":
     path_net = 'logs/vessels_scardapane/model_25D__2020-03-27__07_11_38.pht'
     do_round = False
