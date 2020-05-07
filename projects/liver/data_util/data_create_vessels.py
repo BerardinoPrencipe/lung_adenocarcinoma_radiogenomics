@@ -18,6 +18,7 @@ else:
     isLinux = False
 
 ### variables ###
+do_mask_with_liver = True
 cross_val_steps = 4
 trainval_images = 16
 test_img = "02"
@@ -107,8 +108,21 @@ for idx_crossval in range(cross_val_steps):
 
             # transpose so the z-axis (slices) are the first dimension
             image_data_norm    = np.transpose(image_data_norm, (2,0,1))
-            image_data_no_norm = np.transpose(image_data_no_norm, (2, 0, 1))
+            image_data_no_norm = np.transpose(image_data_no_norm, (2,0,1))
             mask_data          = np.transpose(mask_data, (2,0,1))
+
+            if do_mask_with_liver:
+                # Load Liver Mask
+                mask_liver_filename = os.path.join(mask_folder, 'liver_closed.nii')
+                mask_liver_data = nib.load(mask_liver_filename)
+                mask_liver_data = mask_liver_data.get_data()
+                mask_liver_data = np.transpose(mask_liver_data, (2,0,1))
+
+                # Mask Image and Label with Liver Mask
+                i_dtype = image_data_norm.dtype
+                m_dtype = mask_data.dtype
+                image_data_norm = (image_data_norm * mask_liver_data).astype(i_dtype)
+                mask_data = (mask_data * mask_liver_data).astype(m_dtype)
 
             print(f'[  Norm   ] Max = {image_data_norm.max()} - Min = {image_data_norm.min()}')
             print(f'[ No Norm ] Max = {image_data_no_norm.max()} - Min = {image_data_no_norm.min()}')
