@@ -23,7 +23,7 @@ else:
 # The dataset to use!
 datasets = ["liver", "liver_no_norm",
             "vessels", "vessels_no_norm",
-            "vessels_crossval_00", "vessels_crossval_01", "vessels_crossval_02", "vessels_crossval_03",
+            "vessels_crossval_00", "vessels_crossval_01", "vessels_crossval_02", "vessels_crossval_03", "vessels_crossval_04",
             "segments",
             "vessels_tumors", "vessels_only",
             "vessels_scardapane", "vessels_scardapane_one_class"]
@@ -130,6 +130,9 @@ def get_train_val_folders(dataset):
     elif dataset == "vessels_crossval_03":
         train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_03/train')
         val_folder   = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_03/val')
+    elif dataset == "vessels_crossval_04":
+        train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_04/train')
+        val_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_04/val')
     elif dataset == "vessels_no_norm":
         train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_no_norm/train')
         val_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_no_norm/val')
