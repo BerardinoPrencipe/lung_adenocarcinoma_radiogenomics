@@ -18,6 +18,7 @@ else:
     isLinux = False
 
 ### variables ###
+do_only_final_cross_val = True
 do_mask_with_liver = True
 cross_val_steps = 4
 trainval_images = 16
@@ -47,10 +48,15 @@ rand_perm_val = [ 7, 12,  8, 11,
 print("Rand Perm Val = ", rand_perm_val)
 
 # validation list
-for idx_crossval in range(cross_val_steps):
-    rand_perm_val_list = ["{:02d}".format(idx+1) for idx in rand_perm_val]
-    val_list = rand_perm_val_list[idx_crossval*(trainval_images//cross_val_steps):
-                                  (idx_crossval+1)*(trainval_images//cross_val_steps)]
+for idx_crossval in range(cross_val_steps+1):
+    if idx_crossval == cross_val_steps:
+        val_list = [test_img,]
+    else:
+        if do_only_final_cross_val:
+            continue
+        rand_perm_val_list = ["{:02d}".format(idx+1) for idx in rand_perm_val]
+        val_list = rand_perm_val_list[idx_crossval*(trainval_images//cross_val_steps):
+                                      (idx_crossval+1)*(trainval_images//cross_val_steps)]
     print("Iter ", idx_crossval)
     print("Val List = ", val_list)
 
@@ -88,7 +94,7 @@ for idx_crossval in range(cross_val_steps):
         new_image_filename = "volume-{}".format(id_patient)
         new_mask_filename = "segmentation-{}".format(id_patient)
 
-        if id_patient in exclude_list:
+        if id_patient in exclude_list and id_patient not in val_list:
             print('Excluding patient {}'.format(id_patient))
         else:
             # decide whether it will go to the train or val folder
