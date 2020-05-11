@@ -40,10 +40,10 @@ exclude_list = ["10","12","20"]
 dataset_folder = os.path.join(current_path_abs, 'datasets/ircadb')
 source_folder = os.path.join(dataset_folder, 'nii')
 
-source_subolders = os.listdir(source_folder)
-source_subolders.sort()
+source_subfolders = os.listdir(source_folder)
+source_subfolders.sort()
 print('Source Folder  = {}'.format(source_folder))
-print('Source SubDirs = {}'.format(source_subolders))
+print('Source SubDirs = {}'.format(source_subfolders))
 
 LIVER_CLASS = (1,)
 VESSELS_CLASS = (2, 3)
@@ -100,8 +100,14 @@ for idx_crossval in range(cross_val_steps+1):
     mccs = np.zeros(len(val_list))
     tps, tns, fps, fns = 0, 0, 0, 0
 
-    for idx, subfolder_source in enumerate(source_subolders):
-        print('Index {} on {}'.format(idx, len(os.listdir(source_folder)) - 1))
+    for idx, subfolder_source in enumerate(source_subfolders):
+        print('Index {} on {}'.format(idx+1, len(os.listdir(source_folder))))
+        id_patient = subfolder_source[-2:]
+        if id_patient not in val_list:
+            print(id_patient, "is not in val list")
+            continue
+        else:
+            print(id_patient, "is in val list")
 
         image_folder = os.path.join(source_folder, subfolder_source, 'image')
         mask_folder = os.path.join(source_folder, subfolder_source, 'mask')
