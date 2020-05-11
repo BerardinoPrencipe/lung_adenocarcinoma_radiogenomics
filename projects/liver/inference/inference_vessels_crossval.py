@@ -81,6 +81,8 @@ for idx_crossval in range(cross_val_steps+1):
     path_net = models_paths_list[idx_crossval]
     print("Using Model with path = ", path_net)
     net = torch.load(path_net)
+    net = net.cuda(cuda_dev)
+    net.eval()
 
     # Initializing arrays for metrics
     ious = np.zeros(len(val_list))
