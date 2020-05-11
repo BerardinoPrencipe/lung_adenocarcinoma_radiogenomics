@@ -50,10 +50,10 @@ VESSELS_CLASS = (2, 3)
 ARTERY_CLASS = (4,)
 
 # rand_perm_val = np.random.permutation(trainval_images)
-rand_perm_val = [ 7, 12,  8, 11,
-                  1,  4, 10,  9,
-                  5,  0,  3, 13,
-                 14,  6,  2, 15]
+rand_perm_val = [15, 19,  5,  4,
+                  6, 16, 14,  9,
+                 13,  8,  7, 11,
+                  3, 17,  1, 18]
 print("Rand Perm Val = ", rand_perm_val)
 
 models_paths_list = [
@@ -71,7 +71,7 @@ for idx_crossval in range(cross_val_steps+1):
     if idx_crossval == cross_val_steps:
         val_list = [test_img,]
     else:
-        rand_perm_val_list = ["{:02d}".format(idx+1) for idx in rand_perm_val]
+        rand_perm_val_list = ["{:02d}".format(idx) for idx in rand_perm_val]
         val_list = rand_perm_val_list[idx_crossval*(trainval_images//cross_val_steps):
                                       (idx_crossval+1)*(trainval_images//cross_val_steps)]
         val_list.append(test_img)
