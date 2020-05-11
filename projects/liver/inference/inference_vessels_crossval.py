@@ -100,6 +100,8 @@ for idx_crossval in range(cross_val_steps+1):
     mccs = np.zeros(len(val_list))
     tps, tns, fps, fns = 0, 0, 0, 0
 
+    idx_val_in_dataset = -1
+
     for idx, subfolder_source in enumerate(source_subfolders):
         print('Index {} on {}'.format(idx+1, len(os.listdir(source_folder))))
         id_patient = subfolder_source[-2:]
@@ -108,6 +110,7 @@ for idx_crossval in range(cross_val_steps+1):
             continue
         else:
             print(id_patient, "is in val list")
+            idx_val_in_dataset += 1
 
         image_folder = os.path.join(source_folder, subfolder_source, 'image')
         mask_folder = os.path.join(source_folder, subfolder_source, 'mask')
@@ -149,8 +152,7 @@ for idx_crossval in range(cross_val_steps+1):
         output = perform_inference_volumetric_image(net, image_data_norm,
                                                     context=2, do_round=True, cuda_dev=cuda_dev)
 
-
-        ## Metrics
+        # Metrics
         iou = mmb.jc(output, mask_data)
         dice = mmb.dc(output, mask_data)
         prec = mmb.precision(output, mask_data)
@@ -169,13 +171,13 @@ for idx_crossval in range(cross_val_steps+1):
         print('ASSD      = ', assd)
         print('HD        = ', hd)
 
-        ious[idx] = iou
-        precisions[idx] = prec
-        recalls[idx] = recall
-        dices[idx] = dice
-        rvds[idx] = rvd
-        assds[idx] = assd
-        hds[idx] = hd
+        ious[idx_val_in_dataset] = iou
+        precisions[idx_val_in_dataset] = prec
+        recalls[idx_val_in_dataset] = recall
+        dices[idx_val_in_dataset] = dice
+        rvds[idx_val_in_dataset] = rvd
+        assds[idx_val_in_dataset] = assd
+        hds[idx_val_in_dataset] = hd
 
         # CONFUSION MATRIX
         tn, fp, fn, tp = confusion_matrix(y_true=mask_data.flatten(), y_pred=output.flatten()).ravel()
@@ -190,10 +192,10 @@ for idx_crossval in range(cross_val_steps+1):
         fns += fn
         tns += tn
 
-        accs[idx] = acc
-        senss[idx] = sens
-        specs[idx] = spec
-        mccs[idx] = mcc
+        accs[idx_val_in_dataset] = acc
+        senss[idx_val_in_dataset] = sens
+        specs[idx_val_in_dataset] = spec
+        mccs[idx_val_in_dataset] = mcc
 
         print('\nConfusion Matrix Metrics')
         print('Accuracy  = {}'.format(acc))
