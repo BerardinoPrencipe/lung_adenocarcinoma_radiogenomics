@@ -57,11 +57,11 @@ rand_perm_val = [ 7, 12,  8, 11,
 print("Rand Perm Val = ", rand_perm_val)
 
 models_paths_list = [
-    "dummy1",
-    "dummy2",
-    "dummy3",
-    "dummy4",
-    "dummy5",
+    "logs/vessels_crossval_00/model_25D__2020-05-08__08_08_33.pht",
+    "logs/vessels_crossval_01/model_25D__2020-05-08__20_26_42.pht",
+    "logs/vessels_crossval_02/model_25D__2020-05-09__08_49_04.pht",
+    "logs/vessels_crossval_03/model_25D__2020-05-09__21_02_15.pht",
+    "logs/vessels_crossval_04/model_25D__2020-05-11__02_19_23.pht",
 ]
 
 metrics = {key : dict() for key in models_paths_list}
