@@ -42,6 +42,7 @@ ARTERY_CLASS = (4,)
 
 images_list = [idx for idx in range(1,21)]
 images_list_not_excluded = [idx for idx in images_list if "{:02d}".format(idx) not in exclude_list]
+images_list_not_excluded = ["{:02d}".format(idx) for idx in images_list_not_excluded]
 
 # rand_perm_val = np.random.permutation(images_list_excluded)
 rand_perm_val = [15, 19,  5,  4,
