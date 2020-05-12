@@ -106,7 +106,7 @@ for path_net in models_paths:
         path_test_gt = os.path.join(folder_test_images, folder_patient_test, "mask.nii.gz")
 
         gt_vessels_mask = nib.load(path_test_gt)
-        voxel_spacing = gt_vessels_mask.get_header().get_zooms()
+        voxel_spacing = gt_vessels_mask.header.get_zooms()
         gt_vessels_mask = gt_vessels_mask.get_data()
         gt_vessels_mask = 1*(gt_vessels_mask>0)
         output = nib.load(path_test_pred)
