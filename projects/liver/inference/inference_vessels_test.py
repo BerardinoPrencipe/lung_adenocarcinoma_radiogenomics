@@ -8,6 +8,7 @@ from sklearn.metrics import confusion_matrix, matthews_corrcoef
 from utils_calc import normalize_data
 from projects.liver.util.inference import perform_inference_volumetric_image
 from projects.liver.train.config import window_hu
+import json
 
 folder_logs = 'logs'
 
@@ -31,123 +32,153 @@ folder_test_pred = os.path.join(folder_test_dataset, model_to_use)
 if not os.path.exists(folder_test_pred):
     os.makedirs(folder_test_pred)
 
-path_net_vessels_tumors = 'logs/vessels_tumors/model_25D__2020-02-20__06_53_17.pht'
+# path_net_vessels_tumors = 'logs/vessels_tumors/model_25D__2020-02-20__06_53_17.pht'
+# path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
 
-if model_to_use == "ircadb":
-    # path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
-    # path_net = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
-    # path_net = 'logs/vessels/model_25D__2020-05-04__09_55_18.pht'
-    path_net = 'logs/vessels/model_25D__2020-05-07__09_09_33.pht'
-elif model_to_use == "s_multi":
-    path_net = 'logs/vessels_scardapane/model_25D__2020-03-27__07_11_38.pht'
-    do_round = False
-    do_argmax = True
-elif model_to_use == "s_single":
-    path_net = 'logs/vessels_scardapane_one_class/model_25D__2020-03-28__04_43_26.pht'
-# Load net
-net = torch.load(path_net)
-cuda_device = torch.device('cuda:0')
-net.to(cuda_device)
+models_paths = [
+    'logs/vessels/model_25D__2020-03-12__10_37_59.pht',
+    'logs/vessels/model_25D__2020-05-04__09_55_18.pht',
+    'logs/vessels/model_25D__2020-05-07__09_09_33.pht'
+]
 
-sizes = []
-spacings = []
+for path_net in models_paths:
 
-#%% Start iteration over val set
-for idx, folder_patient_test in enumerate(folders_patients_test):
-    print('Starting iter {} on {}'.format(idx+1,len(folders_patients_test)))
-    print('Processing ', folder_patient_test)
-    path_test_pred = os.path.join(folder_test_pred, folder_patient_test + ".nii.gz")
-    path_test_folder = os.path.join(folder_test_images, folder_patient_test)
+    # Load net
+    net = torch.load(path_net)
+    cuda_device = torch.device('cuda:0')
+    net.to(cuda_device)
 
-    reader = sitk.ImageSeriesReader()
-    dicom_names = reader.GetGDCMSeriesFileNames(path_test_folder)
-    reader.SetFileNames(dicom_names)
-    image = reader.Execute()
-    size = image.GetSize()
-    sizes.append(size)
-    print("Image size   : ", size[0], size[1], size[2])
-    spacing = image.GetSpacing()
-    spacings.append(spacing)
-    print("Image spacing: ", spacing)
+    sizes = []
+    spacings = []
 
-    image_data = sitk.GetArrayFromImage(image)
-    # normalize data
-    data = normalize_data(image_data, window_hu)
+    #%% Start iteration over val set
+    for idx, folder_patient_test in enumerate(folders_patients_test):
+        print('Starting iter {} on {}'.format(idx+1,len(folders_patients_test)))
+        print('Processing ', folder_patient_test)
+        path_test_pred = os.path.join(folder_test_pred, folder_patient_test + ".nii.gz")
+        path_test_folder = os.path.join(folder_test_images, folder_patient_test)
 
-    # transpose so the z-axis (slices) are the first dimension
-    data = np.transpose(data, (0, 2, 1))
-    # CNN
-    output = perform_inference_volumetric_image(net, data, context=2,
-                                                do_round=do_round, do_argmax=do_argmax,
-                                                cuda_dev=cuda_device)
-    output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
+        reader = sitk.ImageSeriesReader()
+        dicom_names = reader.GetGDCMSeriesFileNames(path_test_folder)
+        reader.SetFileNames(dicom_names)
+        image = reader.Execute()
+        size = image.GetSize()
+        sizes.append(size)
+        print("Image size   : ", size[0], size[1], size[2])
+        spacing = image.GetSpacing()
+        spacings.append(spacing)
+        print("Image spacing: ", spacing)
 
-    n_nonzero = np.count_nonzero(output)
-    print("Non-zero elements = ", n_nonzero)
+        image_data = sitk.GetArrayFromImage(image)
+        # normalize data
+        data = normalize_data(image_data, window_hu)
 
-    output_nib_pre = nib.Nifti1Image(output, affine=None)
-    nib.save(output_nib_pre, path_test_pred)
+        # transpose so the z-axis (slices) are the first dimension
+        data = np.transpose(data, (0, 2, 1))
+        # CNN
+        output = perform_inference_volumetric_image(net, data, context=2,
+                                                    do_round=do_round, do_argmax=do_argmax,
+                                                    cuda_dev=cuda_device)
+        output = np.transpose(output, (1, 2, 0)).astype(np.uint8)
+
+        n_nonzero = np.count_nonzero(output)
+        print("Non-zero elements = ", n_nonzero)
+
+        output_nib_pre = nib.Nifti1Image(output, affine=None)
+        nib.save(output_nib_pre, path_test_pred)
 
 
-#%% Compute metrics
-dices = []
-precs = []
-recalls = []
-accs = []
-specs = []
+    #%% Compute metrics
+    dices = []
+    precs = []
+    recalls = []
+    accs = []
+    specs = []
+    assds = []
+    hds = []
 
-for idx, folder_patient_test in enumerate(folders_patients_test):
-    print('Starting iter {} on {}'.format(idx+1,len(folders_patients_test)))
-    print('Processing ', folder_patient_test)
-    path_test_pred = os.path.join(folder_test_pred, folder_patient_test + ".nii.gz")
-    path_test_gt = os.path.join(folder_test_images, folder_patient_test, "mask.nii.gz")
+    for idx, folder_patient_test in enumerate(folders_patients_test):
+        print('Starting iter {} on {}'.format(idx+1,len(folders_patients_test)))
+        print('Processing ', folder_patient_test)
+        path_test_pred = os.path.join(folder_test_pred, folder_patient_test + ".nii.gz")
+        path_test_gt = os.path.join(folder_test_images, folder_patient_test, "mask.nii.gz")
 
-    gt_vessels_mask = nib.load(path_test_gt)
-    gt_vessels_mask = gt_vessels_mask.get_data()
-    gt_vessels_mask = 1*(gt_vessels_mask>0)
-    output = nib.load(path_test_pred)
-    output = output.get_data()
+        gt_vessels_mask = nib.load(path_test_gt)
+        voxel_spacing = gt_vessels_mask.get_zooms()
+        gt_vessels_mask = gt_vessels_mask.get_data()
+        gt_vessels_mask = 1*(gt_vessels_mask>0)
+        output = nib.load(path_test_pred)
+        output = output.get_data()
 
-    dice = mmb.dc(output, gt_vessels_mask)
-    prec = mmb.precision(output, gt_vessels_mask)
-    recall = mmb.recall(output, gt_vessels_mask)
+        dice = mmb.dc(output, gt_vessels_mask)
+        prec = mmb.precision(output, gt_vessels_mask)
+        recall = mmb.recall(output, gt_vessels_mask)
 
-    tn, fp, fn, tp = confusion_matrix(y_true=gt_vessels_mask.flatten(), y_pred=output.flatten()).ravel()
-    acc  = (tp+tn) / (tp+tn+fp+fn)
-    spec = tn / (tn+fp)
+        assd = mmb.assd(output, gt_vessels_mask, voxelspacing=voxel_spacing)
+        hd = mmb.hd(output, gt_vessels_mask, voxelspacing=voxel_spacing)
 
-    accs.append(acc)
-    specs.append(spec)
-    dices.append(dice)
-    precs.append(prec)
-    recalls.append(recall)
+        tn, fp, fn, tp = confusion_matrix(y_true=gt_vessels_mask.flatten(), y_pred=output.flatten()).ravel()
+        acc  = (tp+tn) / (tp+tn+fp+fn)
+        spec = tn / (tn+fp)
 
-avg_dice   = np.mean(dices)
-avg_acc    = np.mean(accs)
-avg_recall = np.mean(recalls)
-avg_spec   = np.mean(specs)
-avg_prec   = np.mean(precs)
+        accs.append(acc)
+        specs.append(spec)
+        dices.append(dice)
+        precs.append(prec)
+        recalls.append(recall)
+        assds.append(assd)
+        hds.append(hd)
 
-print('Average Dice      = {}'.format(avg_dice))
-print('Average Accuracy  = {}'.format(avg_acc))
-print('Average Precision = {}'.format(avg_prec))
-print('Average Recall    = {}'.format(avg_recall))
-print('Average Specif    = {}'.format(avg_spec))
+    avg_dice   = np.mean(dices)
+    avg_acc    = np.mean(accs)
+    avg_recall = np.mean(recalls)
+    avg_spec   = np.mean(specs)
+    avg_prec   = np.mean(precs)
+    avg_assd   = np.mean(assds)
+    avg_hd     = np.mean(hds)
 
-metrics = {
-    'AvgDice'       : avg_dice,
-    'AvgAcc'        : avg_acc,
-    'AvgPrecision'  : avg_prec,
-    'AvgRecall'     : avg_recall,
-    'AvgSpecif'     : avg_spec,
-    'Dices'         : dices,
-    'Accs'          : accs,
-    'Recalls'       : recalls,
-    'Precisions'    : precs,
-    'Specifs'       : specs,
-}
+    std_dice   = np.std(dices)
+    std_acc    = np.std(accs)
+    std_recall = np.std(recalls)
+    std_spec   = np.std(specs)
+    std_prec   = np.std(precs)
+    std_assd   = np.std(assds)
+    std_hd     = np.std(hds)
 
-import json
-json_path = os.path.join(folder_logs, 'metrics_{}.json'.format(path_net.split('/')[-1]))
-with open(json_path, 'w') as fp:
-    json.dump(metrics, fp)
+    print('Avg +/- Std Dice      = {} +/- {}'.format(avg_dice, std_dice))
+    print('Avg +/- Std Accuracy  = {} +/- {}'.format(avg_acc, std_acc))
+    print('Avg +/- Std Precision = {} +/- {}'.format(avg_prec, std_prec))
+    print('Avg +/- Std Recall    = {} +/- {}'.format(avg_recall, std_recall))
+    print('Avg +/- Std Specif    = {} +/- {}'.format(avg_spec, std_spec))
+    print('Avg +/- Std ASSD      = {} +/- {}'.format(avg_assd, std_assd))
+    print('Avg +/- Std HD        = {} +/- {}'.format(avg_hd, std_hd))
+
+    metrics = {
+        'AvgDice'       : avg_dice,
+        'AvgAcc'        : avg_acc,
+        'AvgPrecision'  : avg_prec,
+        'AvgRecall'     : avg_recall,
+        'AvgSpecif'     : avg_spec,
+        'AvgASSD'       : avg_assd,
+        'AvgHD'         : avg_hd,
+
+        'StdDice'       : std_dice,
+        'StdAcc'        : std_acc,
+        'StdPrecision'  : std_prec,
+        'StdRecall'     : std_recall,
+        'StdSpecif'     : std_spec,
+        'StdASSD'       : std_assd,
+        'StdHD'         : std_hd,
+
+        'Dices'         : dices,
+        'Accs'          : accs,
+        'Recalls'       : recalls,
+        'Precisions'    : precs,
+        'Specifs'       : specs,
+        'ASSDs'         : assds,
+        'HDs'           : hds
+    }
+
+    json_path = os.path.join(folder_logs, 'metrics_{}.json'.format(path_net.split('/')[-1]))
+    with open(json_path, 'w') as fp:
+        json.dump(metrics, fp)
