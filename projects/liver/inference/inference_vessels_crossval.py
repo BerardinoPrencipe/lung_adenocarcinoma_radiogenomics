@@ -61,7 +61,7 @@ models_paths_list = [
     "logs/vessels_crossval_01/model_25D__2020-05-12__19_31_15.pht",
     "logs/vessels_crossval_02/model_25D__2020-05-13__07_45_28.pht",
     "logs/vessels_crossval_03/model_25D__2020-05-13__20_10_37.pht",
-    "logs/vessels_crossval_04/model_25D__2020-05-14__08_26_35.phtt",
+    "logs/vessels_crossval_04/model_25D__2020-05-14__08_26_35.pht",
 ]
 
 metrics = {key : dict() for key in models_paths_list}
