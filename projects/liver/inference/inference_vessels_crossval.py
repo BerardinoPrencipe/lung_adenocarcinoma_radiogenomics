@@ -56,6 +56,7 @@ rand_perm_val = [15, 19,  5,  4,
                   3, 17,  1, 18]
 print("Rand Perm Val = ", rand_perm_val)
 
+beta = '09'
 models_paths_list = [
     "logs/vessels_crossval_00/model_25D__2020-05-12__07_16_11.pht",
     "logs/vessels_crossval_01/model_25D__2020-05-12__19_31_15.pht",
@@ -227,7 +228,7 @@ for idx_crossval in range(cross_val_steps+1):
     metrics[path_net] = data
 
 import json
-json_path = os.path.join(current_path_abs, 'datasets/ircadb_crossval_metrics.json')
+json_path = os.path.join(current_path_abs, 'datasets/ircadb_crossval_metrics_{}.json'.format(beta))
 print('JSON Path = {}'.format(json_path))
 
 with open(json_path, 'w') as f:
