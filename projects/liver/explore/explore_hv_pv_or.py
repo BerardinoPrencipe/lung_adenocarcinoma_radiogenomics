@@ -2,7 +2,12 @@ import SimpleITK as sitk
 import numpy as np
 import os
 
-folder = "datasets\\ircadb\\nii"
+use_from_home = True
+
+if use_from_home:
+    folder = 'H:\\Datasets\\Liver\\3Dircadb1_nifti'
+else:
+    folder = "datasets\\ircadb\\nii"
 
 pat = ["patient-01", "patient-02", "patient-03", "patient-04"]
 

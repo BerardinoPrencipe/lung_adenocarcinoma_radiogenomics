@@ -29,6 +29,8 @@ path_final_model = 'logs/liver/model_25D__2020-03-07__23_45_50.pht'
 
 path_final_model = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
 
+path_final_model = 'logs/vessels_crossval_04/model_25D__2020-05-14__08_26_35.pht'
+
 net_input_shape = (1,5,512,512)
 
 #%%
