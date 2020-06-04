@@ -123,12 +123,14 @@ val_list = [idx for idx in range(1, 21)]
 ious_pre   = np.zeros(len(val_list))
 ious_post  = np.zeros(len(val_list))
 
+voe_pre = np.zeros(len(val_list))
+voe_post = np.zeros(len(val_list))
+
 dices_pre  = np.zeros(len(val_list))
 dices_post = np.zeros(len(val_list))
 
 rvds_pre   = np.zeros(len(val_list))
 rvds_post  = np.zeros(len(val_list))
-
 
 assds_pre  = np.zeros(len(val_list))
 assds_post = np.zeros(len(val_list))
@@ -170,6 +172,9 @@ for p_id, (path_prediction_pre, path_prediction_post,
         ious_pre[p_id]   = mmb.jc(prediction_mask_pre, ground_truth_mask)
         ious_post[p_id]  = mmb.jc(prediction_mask_post, ground_truth_mask)
 
+        voe_pre[p_id] = 1 - ious_pre[p_id]
+        voe_post[p_id] = 1 - ious_post[p_id]
+
         dices_pre[p_id]  = mmb.dc(prediction_mask_pre, ground_truth_mask)
         dices_post[p_id] = mmb.dc(prediction_mask_post, ground_truth_mask)
 
@@ -187,21 +192,61 @@ for p_id, (path_prediction_pre, path_prediction_post,
 avg_iou_pre  = np.mean(ious_pre)
 avg_iou_post = np.mean(ious_post)
 
+std_iou_pre = np.std(ious_pre)
+std_iou_post = np.std(ious_post)
+
+avg_voe_pre = np.mean(voe_pre)
+avg_voe_post = np.mean(voe_post)
+
+std_voe_pre = np.std(voe_pre)
+std_voe_post = np.std(voe_post)
+
 avg_dice_pre  = np.mean(dices_pre)
 avg_dice_post = np.mean(dices_post)
+
+std_dice_pre = np.std(dices_pre)
+std_dice_post = np.std(dices_post)
 
 avg_rvd_pre  = np.mean(rvds_pre)
 avg_rvd_post = np.mean(rvds_post)
 
+std_rvd_pre = np.std(rvds_pre)
+std_rvd_post = np.std(rvds_post)
+
 avg_assd_pre  = np.mean(assds_pre)
 avg_assd_post = np.mean(assds_post)
+
+std_assd_pre = np.std(assds_pre)
+std_assd_post = np.std(assds_post)
 
 avg_hd_pre  = np.mean(hds_pre)
 avg_hd_post = np.mean(hds_post)
 
-print("Average IoU  pre = {:.4f} post = {:.4f} ".format(avg_iou_pre, avg_iou_post))
-print("Average Dice pre = {:.4f} post = {:.4f}".format(avg_dice_pre, avg_dice_post))
-print("Average RVD  pre = {:+.3f} post = {:+.3f}".format(avg_rvd_pre, avg_rvd_post))
-print("Average ASSD pre = {:.4f} post = {:.4f}".format(avg_assd_pre, avg_assd_post))
-print("Average HD   pre = {:.4f} post = {:.4f}".format(avg_hd_pre, avg_hd_post))
+std_hd_pre = np.std(hds_pre)
+std_hd_post = np.std(hds_post)
 
+str_to_print = ""
+
+str_to_print += "Average IoU  pre = {:.4f} post = {:.4f}\n".format(avg_iou_pre, avg_iou_post)
+str_to_print += "STD     IoU  pre = {:.4f} post = {:.4f}\n".format(std_iou_pre, std_iou_post)
+
+str_to_print += "Average VOE  pre = {:.4f} post = {:.4f}\n".format(avg_voe_pre, avg_voe_post)
+str_to_print += "STD     VOE  pre = {:.4f} post = {:.4f}\n".format(std_voe_pre, std_voe_post)
+
+str_to_print += "Average Dice pre = {:.4f} post = {:.4f}\n".format(avg_dice_pre, avg_dice_post)
+str_to_print += "STD     Dice pre = {:.4f} post = {:.4f}\n".format(std_dice_pre, std_dice_post)
+
+str_to_print += "Average RVD  pre = {:+.3f} post = {:+.3f}\n".format(avg_rvd_pre, avg_rvd_post)
+str_to_print += "STD     RVD  pre = {:+.3f} post = {:+.3f}\n".format(std_rvd_pre, std_rvd_post)
+
+str_to_print += "Average ASSD pre = {:.4f} post = {:.4f}\n".format(avg_assd_pre, avg_assd_post)
+str_to_print += "STD     ASSD pre = {:.4f} post = {:.4f}\n".format(std_assd_pre, std_assd_post)
+
+str_to_print += "Average HD   pre = {:.4f} post = {:.4f}\n".format(avg_hd_pre, avg_hd_post)
+str_to_print += "STD     HD   pre = {:.4f} post = {:.4f}\n".format(std_hd_pre, std_hd_post)
+
+print(str_to_print)
+
+import sys
+sys.stdout = open('logs/liver_icic.txt', 'w')
+print(str_to_print)
