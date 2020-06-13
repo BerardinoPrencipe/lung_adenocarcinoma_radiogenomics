@@ -49,12 +49,13 @@ else:
     if isLinux:
         batch_size = 8
     else:
-        batch_size = 2
+        # batch_size = 2
+        batch_size = 4
 
 def get_criterion(dataset):
     return None
 
-epochs  = 1001
+epochs  = 2001
 use_3d  = False
 p = 0.1
 do_normalize = False
@@ -72,7 +73,7 @@ config = {
     'model_name'    : '25D' if not use_3d else '3D',
     'augmentation'  : augmentation,
     'do_normalize'  : do_normalize,
-    'dropout'       : True,
+    'dropout'       : False,
     'cuda'          : cuda,
     'use_multi_gpu' : use_multi_gpu,
     'context'       : 2,                      # how many slices of context (2.5D)

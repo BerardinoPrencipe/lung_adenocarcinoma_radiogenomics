@@ -62,6 +62,7 @@ def run(config, dataset):
 
 
 # python projects/liver/train/train.py
+# python projects/liver/train/train.py --dataset=liver
 # python projects/liver/train/train.py --dataset=pv
 # python projects/liver/train/train.py --dataset=segments
 # python projects/liver/train/train.py --dataset=vessels
