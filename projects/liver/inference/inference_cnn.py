@@ -51,9 +51,14 @@ logs_dir = os.path.join(current_path_abs, 'logs/liver')
 cuda = torch.cuda.is_available()
 use_multi_gpu = False
 
+# 2000 Epochs - Liver - With dropout - With Data Augmentation
 net_path = os.path.join('logs/liver/model_25D__2020-03-07__23_45_50.pht')
-if isLinux:
-    net_path = os.path.join(logs_dir, 'model_25D__2020-01-27__18_50_10.pht')
+
+# 2000 Epochs - Liver - No dropout - With Data Augmentation
+# TO_TRAIN
+
+# if isLinux:
+#    net_path = os.path.join(logs_dir, 'model_25D__2020-01-27__18_50_10.pht')
 print('Net Path = {}'.format(net_path))
 
 if torch.cuda.device_count() > 1:
@@ -65,6 +70,8 @@ print('Device Count = {}, using CUDA Device = {}'.format(torch.cuda.device_count
 use_state_dict = False
 
 if use_state_dict:
+    # 2000 Epochs - Liver - With Dropout - With Data Augmentation
+    net_path = "logs/liver/model_epoch_1998.pht"
     net = VXNet(dropout=True,context=2,num_outs=2)
     net.load_state_dict(torch.load(net_path))
 else:
@@ -244,6 +251,6 @@ str_to_print += "STD     HD   pre = {:.2f} post = {:.2f}\n\n".format(std_hd_pre,
 print(str_to_print)
 
 import sys
-sys.stdout = open('logs/liver_icic.txt', 'w')
+sys.stdout = open('logs/liver_icic_2000_epochs_with_dropout.txt', 'w')
 print(str_to_print)
 sys.stdout = sys.__stdout__
