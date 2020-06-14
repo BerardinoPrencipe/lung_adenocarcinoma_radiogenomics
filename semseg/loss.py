@@ -74,7 +74,7 @@ def dice_n_classes(outputs, labels, do_one_hot=False, get_list=False, device=Non
     if get_list:
         return dices
     else:
-        return sum(dices) / num_classes
+        return sum(dices) / (num_classes - 1)
 
 def focal_dice_n_classes(outputs, labels, gamma=2., start_cls=0, weights=None,
                          do_one_hot=False, get_list=False, device=None):
@@ -114,4 +114,4 @@ def focal_dice_n_classes(outputs, labels, gamma=2., start_cls=0, weights=None,
     if get_list:
         return dices
     else:
-        return sum(dices) / num_classes
+        return sum(dices) / (num_classes - 1)
