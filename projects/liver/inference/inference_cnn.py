@@ -52,10 +52,10 @@ cuda = torch.cuda.is_available()
 use_multi_gpu = False
 
 # 2000 Epochs - Liver - With dropout - With Data Augmentation
-net_path = os.path.join('logs/liver/model_25D__2020-03-07__23_45_50.pht')
+net_path = 'logs/liver/model_25D__2020-03-07__23_45_50.pht'
 
 # 2000 Epochs - Liver - No dropout - With Data Augmentation
-# TO_TRAIN
+net_path = 'logs/liver/model_25D__2020-06-14__21_13_44.pht'
 
 # if isLinux:
 #    net_path = os.path.join(logs_dir, 'model_25D__2020-01-27__18_50_10.pht')
@@ -251,6 +251,6 @@ str_to_print += "STD     HD   pre = {:.2f} post = {:.2f}\n\n".format(std_hd_pre,
 print(str_to_print)
 
 import sys
-sys.stdout = open('logs/liver_icic_2000_epochs_with_dropout.txt', 'w')
+sys.stdout = open('logs/liver_icic_2000_epochs_without_dropout.txt', 'w')
 print(str_to_print)
 sys.stdout = sys.__stdout__
