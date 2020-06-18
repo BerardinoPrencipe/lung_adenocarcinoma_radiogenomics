@@ -35,11 +35,23 @@ if not os.path.exists(folder_test_pred):
 # path_net_vessels_tumors = 'logs/vessels_tumors/model_25D__2020-02-20__06_53_17.pht'
 # path_net = 'logs/vessels/model_25D__2020-01-15__08_28_39.pht'
 
+# MODELS WITH DROPOUT
+# Dice / Tversky 0.7 / Tversky 0.9
 models_paths = [
     'logs/vessels/model_25D__2020-03-12__10_37_59.pht',
     'logs/vessels/model_25D__2020-05-04__09_55_18.pht',
     'logs/vessels/model_25D__2020-05-07__09_09_33.pht'
 ]
+
+# MODELS WITHOUT DROPOUT
+# Dice / Tversky 0.7 / Tversky 0.9
+""" 
+model_paths = [
+    'logs/vessels/model_25D__2020-06-18__12_54_58.pht',
+    '
+    '
+]
+"""
 
 for path_net in models_paths:
 
