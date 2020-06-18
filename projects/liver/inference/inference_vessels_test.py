@@ -159,13 +159,13 @@ for path_net in models_paths:
     std_assd   = np.std(assds)
     std_hd     = np.std(hds)
 
-    print('Avg +/- Std Dice      = {} +/- {}'.format(avg_dice, std_dice))
-    print('Avg +/- Std Accuracy  = {} +/- {}'.format(avg_acc, std_acc))
-    print('Avg +/- Std Precision = {} +/- {}'.format(avg_prec, std_prec))
-    print('Avg +/- Std Recall    = {} +/- {}'.format(avg_recall, std_recall))
-    print('Avg +/- Std Specif    = {} +/- {}'.format(avg_spec, std_spec))
-    print('Avg +/- Std ASSD      = {} +/- {}'.format(avg_assd, std_assd))
-    print('Avg +/- Std HD        = {} +/- {}'.format(avg_hd, std_hd))
+    print('Avg +/- Std Dice      = {:.2f} +/- {:.2f}'.format(avg_dice * 100, std_dice * 100))
+    print('Avg +/- Std Accuracy  = {:.2f} +/- {:.2f}'.format(avg_acc * 100, std_acc * 100))
+    print('Avg +/- Std Precision = {:.2f} +/- {:.2f}'.format(avg_prec * 100, std_prec * 100))
+    print('Avg +/- Std Recall    = {:.2f} +/- {:.2f}'.format(avg_recall * 100, std_recall * 100))
+    print('Avg +/- Std Specif    = {:.2f} +/- {:.2f}'.format(avg_spec * 100, std_spec * 100))
+    print('Avg +/- Std ASSD      = {:.2f} +/- {:.2f}'.format(avg_assd, std_assd))
+    print('Avg +/- Std HD        = {:.2f} +/- {:.2f}'.format(avg_hd, std_hd))
 
     metrics = {
         'AvgDice'       : avg_dice,
