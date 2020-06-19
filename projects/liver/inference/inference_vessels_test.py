@@ -48,7 +48,7 @@ models_paths = [
 """ 
 model_paths = [
     'logs/vessels/model_25D__2020-06-18__12_54_58.pht',
-    '
+    'logs/vessels/model_25D__2020-06-19__10_22_00.pht',
     '
 ]
 """
