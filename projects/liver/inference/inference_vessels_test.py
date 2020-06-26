@@ -37,21 +37,21 @@ if not os.path.exists(folder_test_pred):
 
 # MODELS WITH DROPOUT
 # Dice / Tversky 0.7 / Tversky 0.9
+"""
 models_paths = [
     'logs/vessels/model_25D__2020-03-12__10_37_59.pht',
     'logs/vessels/model_25D__2020-05-04__09_55_18.pht',
     'logs/vessels/model_25D__2020-05-07__09_09_33.pht'
 ]
+"""
 
 # MODELS WITHOUT DROPOUT
 # Dice / Tversky 0.7 / Tversky 0.9
-""" 
-model_paths = [
+models_paths = [
     'logs/vessels/model_25D__2020-06-18__12_54_58.pht',
     'logs/vessels/model_25D__2020-06-19__10_22_00.pht',
-    '
+    'logs/vessels/model_25D__2020-06-26__13_48_04.pht'
 ]
-"""
 
 for path_net in models_paths:
 
