@@ -58,8 +58,8 @@ def get_multi_dice_loss(outputs, labels, device=None):
 ###############
 ### TVERSKY ###
 ###############
-alpha, beta = 0.1, 0.9
-# alpha, beta = 0.3, 0.7
+# alpha, beta = 0.1, 0.9
+alpha, beta = 0.3, 0.7
 # alpha, beta = 0.5, 0.5
 print('Use Tversky: ', use_tversky)
 if use_tversky:

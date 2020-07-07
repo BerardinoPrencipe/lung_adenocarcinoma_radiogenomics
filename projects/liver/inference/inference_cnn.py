@@ -51,11 +51,14 @@ logs_dir = os.path.join(current_path_abs, 'logs/liver')
 cuda = torch.cuda.is_available()
 use_multi_gpu = False
 
-# 2000 Epochs - Liver - With dropout - With Data Augmentation
+# 2000 Epochs - Liver - With dropout - With Data Augmentation - Dice Loss
 net_path = 'logs/liver/model_25D__2020-03-07__23_45_50.pht'
 
-# 2000 Epochs - Liver - No dropout - With Data Augmentation
+# 2000 Epochs - Liver - No dropout - With Data Augmentation - Dice Loss
 net_path = 'logs/liver/model_25D__2020-06-14__21_13_44.pht'
+
+# 2000 Epochs - Liver - No dropout - With Data Augmentation - Tversky 0.7
+
 
 # if isLinux:
 #    net_path = os.path.join(logs_dir, 'model_25D__2020-01-27__18_50_10.pht')
