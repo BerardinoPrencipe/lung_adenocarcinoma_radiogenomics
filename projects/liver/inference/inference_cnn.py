@@ -58,6 +58,9 @@ net_path = 'logs/liver/model_25D__2020-03-07__23_45_50.pht'
 net_path = 'logs/liver/model_25D__2020-06-14__21_13_44.pht'
 
 # 2000 Epochs - Liver - No dropout - With Data Augmentation - Tversky 0.7
+net_path = 'logs/liver/model_25D__2020-07-08__20_40_21.pht'
+
+# 2000 Epochs - Liver - No dropout - With Data Augmentation - Tversky 0.9
 
 
 # if isLinux:
@@ -254,6 +257,6 @@ str_to_print += "STD     HD   pre = {:.2f} post = {:.2f}\n\n".format(std_hd_pre,
 print(str_to_print)
 
 import sys
-sys.stdout = open('logs/liver_icic_2000_epochs_without_dropout.txt', 'w')
+sys.stdout = open('logs/liver_icic_2000_epochs_without_dropout_tversky_07.txt', 'w')
 print(str_to_print)
 sys.stdout = sys.__stdout__
