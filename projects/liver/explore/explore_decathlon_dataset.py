@@ -80,6 +80,8 @@ images_filtered_by_vessels  = [image_path for image_path in images_list_paths
                                if get_num_from_path(image_path) in labels_vessels_tumors_nums]
 print('Len Images(Vessels)  = {}'.format(len(images_filtered_by_vessels)))
 
+print('Len (Segments - VesselsAndTumors) = {}'.format(len(set(labels_segments_nums) - set(labels_vessels_tumors_nums))))
+
 ################################
 ### GET WEIGHTS FOR SEGMENTS ###
 ################################

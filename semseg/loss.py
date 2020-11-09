@@ -5,6 +5,7 @@ import numpy as np
 from torch.autograd import Variable
 from torch.autograd.function import Function
 
+
 def dice(outputs, labels):
     eps = 1e-5
     outputs, labels = outputs.float(), labels.float()
@@ -14,6 +15,7 @@ def dice(outputs, labels):
     dice_coeff = (2 * intersect + eps) / (union + eps)
     dice_loss = - dice_coeff + 1
     return dice_loss
+
 
 def tversky(outputs, labels, alpha=0.5, beta=0.5):
     eps = 1e-5
@@ -28,7 +30,6 @@ def tversky(outputs, labels, alpha=0.5, beta=0.5):
     return tversky_loss
 
 
-
 def one_hot_encode(label, num_classes):
     """
 
@@ -36,7 +37,7 @@ def one_hot_encode(label, num_classes):
     :param num_classes: K classes
     :return: label_ohe, Tensor of shape BxKxHxW or BxKxDxHxW
     """
-    assert(len(label.shape) == 3 or len(label.shape) == 4, 'Invalid Label Shape {}'.format(label.shape))
+    assert len(label.shape) == 3 or len(label.shape) == 4, 'Invalid Label Shape {}'.format(label.shape)
     if len(label.shape) == 3:
         label_ohe = torch.zeros((label.shape[0], num_classes, label.shape[1], label.shape[2]))
     elif len(label.shape) == 4:
@@ -46,6 +47,7 @@ def one_hot_encode(label, num_classes):
             label_ohe[batch_idx, cls] = (batch_el_label == cls)
     label_ohe = label_ohe.long()
     return label_ohe
+
 
 def dice_n_classes(outputs, labels, do_one_hot=False, get_list=False, device=None):
     """
@@ -74,7 +76,8 @@ def dice_n_classes(outputs, labels, do_one_hot=False, get_list=False, device=Non
     if get_list:
         return dices
     else:
-        return sum(dices) / num_classes
+        return sum(dices) / (num_classes - 1)
+
 
 def focal_dice_n_classes(outputs, labels, gamma=2., start_cls=0, weights=None,
                          do_one_hot=False, get_list=False, device=None):
@@ -114,4 +117,4 @@ def focal_dice_n_classes(outputs, labels, gamma=2., start_cls=0, weights=None,
     if get_list:
         return dices
     else:
-        return sum(dices) / num_classes
+        return sum(dices) / (num_classes - 1)

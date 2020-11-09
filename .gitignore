@@ -11,3 +11,4 @@ gifs/
 /projects/liver/geometric/prova_inf_vessels.py
 /projects/liver/geometric/or_between_model.py
 /projects/liver/geometric/index_segments.py
+__pycache__/

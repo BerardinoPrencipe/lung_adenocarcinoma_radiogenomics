@@ -1,3 +1,5 @@
+print(__name__)
+
 import numpy as np
 import torch
 import time
@@ -8,7 +10,7 @@ import cv2
 import imageio
 import matplotlib
 
-from utils_calc import normalize_data, normalize
+from utils.utils_calc import normalize_data, normalize
 
 # matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt

@@ -1,10 +1,9 @@
 import os
-import semseg.models.vnet
 import numpy as np
 import torch
 
 cuda = torch.cuda.is_available()
-use_multi = True
+use_multi = False
 
 # name of the model saved
 model_name = '25D'
@@ -14,6 +13,27 @@ if not use_multi:
     path_final_model = os.path.join(logs_dir,"model_"+model_name+".pht")
 else:
     path_final_model = os.path.join(logs_dir,"multi_gpu","model_"+model_name+".pht")
+
+path_final_model = 'logs/vessels/model_25D__2020-02-01__16_42_49.pht'
+path_final_model = 'logs/vessels/model_25D__2020-02-02__18_15_53.pht'
+path_final_model = 'logs/vessels_tumors/model_25D__2020-02-20__06_53_17.pht'
+
+from semseg.models.vnet_v2 import VXNet
+path_model = 'logs/vessels/model_epoch_0999.pht'
+
+path_final_model = 'logs/segments/model_25D__2020-02-19__07_13_36.pht'
+
+path_final_model = 'logs/liver_no_norm/model_25D__2020-03-05__11_22_13.pht'
+
+path_final_model = 'logs/liver/model_25D__2020-03-07__23_45_50.pht'
+
+path_final_model = 'logs/vessels/model_25D__2020-03-12__10_37_59.pht'
+
+path_final_model = 'logs/vessels_crossval_04/model_25D__2020-05-14__08_26_35.pht'
+
+path_final_model = 'logs/liver/model_25D__2020-06-14__21_13_44.pht'
+
+path_final_model = 'logs/vessels/model_25D__2020-06-26__13_48_04.pht'
 
 net_input_shape = (1,5,512,512)
 
@@ -26,7 +46,11 @@ with torch.no_grad():
     eps = 1e-6
     example = torch.rand(net_input_shape)
     if cuda: example = example.cuda()
+
     net = torch.load(path_final_model)
+    # net = VXNet(dropout=True, context=2, num_outs=2, no_softmax=False)
+    # net.load_state_dict(torch.load(path_model))
+
     if cuda: net = net.cuda()
     else: net = net.cpu()
     net.eval()
@@ -43,7 +67,7 @@ with torch.no_grad():
     print("Output Original     [0,0,0,:5]  = ", output_original[0,0,0,:5])
     print("Identical elements traced 1     = ", (output_traced == output_original).sum())
     print("Elements withing range traced 1 = ",( ( output_traced < (output_original + eps) ) * ((output_original - eps) < output_traced ) ).sum())
-    print("Total elements                  = ", 512 * 512 * 2)
+    print("Total elements                  = ", 512 * 512 * 5)
 
 if cuda:
     if use_multi:

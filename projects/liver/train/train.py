@@ -1,3 +1,7 @@
+# Try this (Windows):
+# set PYTHONPATH=.
+from __future__ import absolute_import
+
 import os
 import sys
 
@@ -9,7 +13,7 @@ current_path_abs = os.path.abspath('.')
 sys.path.append(current_path_abs)
 print('{} appended to sys!'.format(current_path_abs))
 
-from utils import print_dict
+from utils.utils import print_dict
 from projects.liver.data_util.data_load_util import *
 from projects.liver.train.util import train_model, get_model_name
 from projects.liver.train.config import *
@@ -58,9 +62,21 @@ def run(config, dataset):
 
 
 # python projects/liver/train/train.py
+# python projects/liver/train/train.py --dataset=liver
 # python projects/liver/train/train.py --dataset=pv
 # python projects/liver/train/train.py --dataset=segments
+# python projects/liver/train/train.py --dataset=vessels
+'''
+python projects/liver/train/train.py --dataset=vessels_crossval_00 &&
+python projects/liver/train/train.py --dataset=vessels_crossval_01 &&
+python projects/liver/train/train.py --dataset=vessels_crossval_02 &&
+python projects/liver/train/train.py --dataset=vessels_crossval_03 &&
+python projects/liver/train/train.py --dataset=vessels_crossval_04
+'''
 # python projects/liver/train/train.py --dataset=vessels_tumors
+# python projects/liver/train/train.py --dataset=vessels_only
+# python projects/liver/train/train.py --dataset=vessels_scardapane
+# python projects/liver/train/train.py --dataset=vessels_scardapane_one_class
 
 import argparse
 
@@ -126,8 +142,10 @@ if __name__ == "__main__":
         else:
             config[key] = dict_args[key]
 
-    config['low_lr_epoch'] = config['epochs'] // 6
-    config['val_epochs']   = config['epochs'] // 6
+    VAL_FRACTION = 6
+
+    config['low_lr_epoch'] = config['epochs'] // VAL_FRACTION
+    config['val_epochs']   = config['epochs'] // VAL_FRACTION
 
 
     run(config, dataset)

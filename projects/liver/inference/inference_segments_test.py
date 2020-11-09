@@ -4,7 +4,7 @@ import numpy as np
 import SimpleITK as sitk
 
 from utils_calc import normalize_data, normalize_data_old, get_mcc
-from projects.liver.util.inference import perform_inference_volumetric_image
+from projects.liver.util.inference import perform_inference_volumetric_image, map_thickness_to_spacing_context
 from projects.liver.train.config import window_hu
 from semseg.models.vnet_v2 import VXNet
 
@@ -28,7 +28,8 @@ net.eval()
 ########################
 path_to_dicom_dataset = 'E:/Datasets/LiverScardapane'
 # patient_name = '01_Dimastrochicco'
-patient_name = '02_Lilla'
+# patient_name = '02_Lilla'
+patient_name = '03_Leone'
 path_to_dicom_folder = os.path.join(path_to_dicom_dataset, patient_name)
 reader = sitk.ImageSeriesReader()
 dicom_names = reader.GetGDCMSeriesFileNames(path_to_dicom_folder)
@@ -39,7 +40,11 @@ data = sitk.GetArrayFromImage(image)
 
 data = normalize_data(data, window_hu)
 
-output = perform_inference_volumetric_image(net, data, context=2,
+thickness = image.GetSpacing()[2]
+
+spacing_context = map_thickness_to_spacing_context(thickness)
+
+output = perform_inference_volumetric_image(net, data, context=2, spacing_context=spacing_context,
                                             do_round=False, do_argmax=True, cuda_dev=cuda_dev)
 
 non_zero_elements = np.count_nonzero(output)

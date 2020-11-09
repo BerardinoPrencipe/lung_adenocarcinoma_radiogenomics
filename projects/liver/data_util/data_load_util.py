@@ -5,7 +5,8 @@ from projects.liver.data_util.data_load_3d import DataLoader3D
 
 def train_data_loader(train_folder, config):
     print('Building Training Set Loader...')
-    train = LiverDataSet(directory=train_folder, augment=config['augment'], context=config['context'])
+    train = LiverDataSet(directory=train_folder, augmentation=config['augmentation'],
+                         context=config['context'], do_normalize=config['do_normalize'])
     train_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights=train.getWeights(),
                                                                    num_samples=config['num_samples'])
     train_data = torch.utils.data.DataLoader(train, batch_size=config['batch_size'], shuffle=False,
@@ -16,7 +17,8 @@ def train_data_loader(train_folder, config):
 
 def val_data_loader(val_folder, config):
     print('Building Validation Set Loader...')
-    val = LiverDataSet(directory=val_folder, context=config['context'])
+    val = LiverDataSet(directory=val_folder, context=config['context'],
+                       augmentation=None, do_normalize=config['do_normalize'])
     val_data_list = []
     patients = val.getPatients()
     for key in patients.keys():
@@ -30,7 +32,7 @@ def val_data_loader(val_folder, config):
 
 def train_data_loader3d(train_folder, config):
     print('Building Training Set Loader...')
-    train = DataLoader3D(directory=train_folder, augment=config['augment'], context=config['depth'],
+    train = DataLoader3D(directory=train_folder, augmentation=config['augmentation'], context=config['depth'],
                          image_size=config['sample_xy_size'])
     train_sampler = torch.utils.data.sampler.WeightedRandomSampler(weights=train.getWeights(),
                                                                    num_samples=config['num_samples'])

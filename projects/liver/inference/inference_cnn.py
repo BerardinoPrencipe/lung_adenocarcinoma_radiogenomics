@@ -21,17 +21,13 @@ from projects.liver.train.config import window_hu
 from semseg.models.vnet_v2 import VXNet
 
 ### variables ###
-if isLinux:
-    test_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Volumes')
-    result_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Results')
-    gt_mask_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/GroundTruth')
-else:
-    test_folder = 'E:/Datasets/Sliver_Nifti/Volumes'
-    result_folder = 'E:/Datasets/Sliver_Nifti/Results'
-    gt_mask_folder = 'E:/Datasets/Sliver_Nifti/GroundTruth'
+test_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Volumes')
+result_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/Results')
+gt_mask_folder = os.path.join(current_path_abs, 'datasets/Sliver_Nifti/GroundTruth')
 
 # alpha_beta = 'a5_b5'
-alpha_beta = 'a3_b7'
+alpha_beta = 'augm'
+# alpha_beta = 'a3_b7'
 method = 'CNN'
 result_folder = os.path.join(result_folder, method, alpha_beta)
 
@@ -53,13 +49,22 @@ files_test_volumes = [file for file in os.listdir(test_folder)]
 # load network
 logs_dir = os.path.join(current_path_abs, 'logs/liver')
 cuda = torch.cuda.is_available()
-use_multi_gpu = True
+use_multi_gpu = False
 
-# net_path = 'logs/liver/model_25D__2020-01-22__14_00_38.pht'
-net_path = os.path.join(logs_dir, 'model_25D__2020-01-24__11_34_49.pht')
-if isLinux:
-    net_path = os.path.join(logs_dir, 'model_25D__2020-01-27__18_50_10.pht')
-    # net_path = os.path.join(logs_dir, max(os.listdir(logs_dir)))
+# 2000 Epochs - Liver - With dropout - With Data Augmentation - Dice Loss
+net_path = 'logs/liver/model_25D__2020-03-07__23_45_50.pht'
+
+# 2000 Epochs - Liver - No dropout - With Data Augmentation - Dice Loss
+net_path = 'logs/liver/model_25D__2020-06-14__21_13_44.pht'
+
+# 2000 Epochs - Liver - No dropout - With Data Augmentation - Tversky 0.7
+net_path = 'logs/liver/model_25D__2020-07-08__20_40_21.pht'
+
+# 2000 Epochs - Liver - No dropout - With Data Augmentation - Tversky 0.9
+
+
+# if isLinux:
+#    net_path = os.path.join(logs_dir, 'model_25D__2020-01-27__18_50_10.pht')
 print('Net Path = {}'.format(net_path))
 
 if torch.cuda.device_count() > 1:
@@ -71,6 +76,8 @@ print('Device Count = {}, using CUDA Device = {}'.format(torch.cuda.device_count
 use_state_dict = False
 
 if use_state_dict:
+    # 2000 Epochs - Liver - With Dropout - With Data Augmentation
+    net_path = "logs/liver/model_epoch_1998.pht"
     net = VXNet(dropout=True,context=2,num_outs=2)
     net.load_state_dict(torch.load(net_path))
 else:
@@ -125,12 +132,14 @@ val_list = [idx for idx in range(1, 21)]
 ious_pre   = np.zeros(len(val_list))
 ious_post  = np.zeros(len(val_list))
 
+voe_pre = np.zeros(len(val_list))
+voe_post = np.zeros(len(val_list))
+
 dices_pre  = np.zeros(len(val_list))
 dices_post = np.zeros(len(val_list))
 
 rvds_pre   = np.zeros(len(val_list))
 rvds_post  = np.zeros(len(val_list))
-
 
 assds_pre  = np.zeros(len(val_list))
 assds_post = np.zeros(len(val_list))
@@ -172,6 +181,9 @@ for p_id, (path_prediction_pre, path_prediction_post,
         ious_pre[p_id]   = mmb.jc(prediction_mask_pre, ground_truth_mask)
         ious_post[p_id]  = mmb.jc(prediction_mask_post, ground_truth_mask)
 
+        voe_pre[p_id] = 1 - ious_pre[p_id]
+        voe_post[p_id] = 1 - ious_post[p_id]
+
         dices_pre[p_id]  = mmb.dc(prediction_mask_pre, ground_truth_mask)
         dices_post[p_id] = mmb.dc(prediction_mask_post, ground_truth_mask)
 
@@ -186,24 +198,65 @@ for p_id, (path_prediction_pre, path_prediction_post,
         hds_post[p_id]   = mmb.hd(prediction_mask_post, ground_truth_mask, voxelspacing=voxel_spacing)
 
 
-avg_iou_pre  = np.mean(ious_pre)
-avg_iou_post = np.mean(ious_post)
+avg_iou_pre  = np.mean(ious_pre) * 100
+avg_iou_post = np.mean(ious_post) * 100
 
-avg_dice_pre  = np.mean(dices_pre)
-avg_dice_post = np.mean(dices_post)
+std_iou_pre = np.std(ious_pre, ddof=1) * 100
+std_iou_post = np.std(ious_post, ddof=1) * 100
 
-avg_rvd_pre  = np.mean(rvds_pre)
-avg_rvd_post = np.mean(rvds_post)
+avg_voe_pre = np.mean(voe_pre) * 100
+avg_voe_post = np.mean(voe_post) * 100
+
+std_voe_pre = np.std(voe_pre, ddof=1) * 100
+std_voe_post = np.std(voe_post, ddof=1) * 100
+
+avg_dice_pre  = np.mean(dices_pre) * 100
+avg_dice_post = np.mean(dices_post) * 100
+
+std_dice_pre = np.std(dices_pre, ddof=1) * 100
+std_dice_post = np.std(dices_post, ddof=1) * 100
+
+avg_rvd_pre  = np.mean(rvds_pre) * 100
+avg_rvd_post = np.mean(rvds_post) * 100
+
+std_rvd_pre = np.std(rvds_pre, ddof=1) * 100
+std_rvd_post = np.std(rvds_post, ddof=1) * 100
 
 avg_assd_pre  = np.mean(assds_pre)
 avg_assd_post = np.mean(assds_post)
 
+std_assd_pre = np.std(assds_pre, ddof=1)
+std_assd_post = np.std(assds_post, ddof=1)
+
 avg_hd_pre  = np.mean(hds_pre)
 avg_hd_post = np.mean(hds_post)
 
-print("Average IoU  pre = {:.4f} post = {:.4f} ".format(avg_iou_pre, avg_iou_post))
-print("Average Dice pre = {:.4f} post = {:.4f}".format(avg_dice_pre, avg_dice_post))
-print("Average RVD  pre = {:+.3f} post = {:+.3f}".format(avg_rvd_pre, avg_rvd_post))
-print("Average ASSD pre = {:.4f} post = {:.4f}".format(avg_assd_pre, avg_assd_post))
-print("Average HD   pre = {:.4f} post = {:.4f}".format(avg_hd_pre, avg_hd_post))
+std_hd_pre = np.std(hds_pre, ddof=1)
+std_hd_post = np.std(hds_post, ddof=1)
 
+str_to_print = ""
+
+str_to_print += "Average IoU  pre = {:.2f} post = {:.2f}\n".format(avg_iou_pre, avg_iou_post)
+str_to_print += "STD     IoU  pre = {:.2f} post = {:.2f}\n\n".format(std_iou_pre, std_iou_post)
+
+str_to_print += "Average VOE  pre = {:.2f} post = {:.2f}\n".format(avg_voe_pre, avg_voe_post)
+str_to_print += "STD     VOE  pre = {:.2f} post = {:.2f}\n\n".format(std_voe_pre, std_voe_post)
+
+str_to_print += "Average Dice pre = {:.2f} post = {:.2f}\n".format(avg_dice_pre, avg_dice_post)
+str_to_print += "STD     Dice pre = {:.2f} post = {:.2f}\n\n".format(std_dice_pre, std_dice_post)
+
+str_to_print += "Average RVD  pre = {:+.2f} post = {:+.2f}\n".format(avg_rvd_pre, avg_rvd_post)
+str_to_print += "STD     RVD  pre = {:+.2f} post = {:+.2f}\n\n".format(std_rvd_pre, std_rvd_post)
+
+str_to_print += "Average ASSD pre = {:.2f} post = {:.2f}\n".format(avg_assd_pre, avg_assd_post)
+str_to_print += "STD     ASSD pre = {:.2f} post = {:.2f}\n\n".format(std_assd_pre, std_assd_post)
+
+str_to_print += "Average HD   pre = {:.2f} post = {:.2f}\n".format(avg_hd_pre, avg_hd_post)
+str_to_print += "STD     HD   pre = {:.2f} post = {:.2f}\n\n".format(std_hd_pre, std_hd_post)
+
+print(str_to_print)
+
+import sys
+sys.stdout = open('logs/liver_icic_2000_epochs_without_dropout_tversky_07.txt', 'w')
+print(str_to_print)
+sys.stdout = sys.__stdout__

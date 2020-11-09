@@ -21,7 +21,7 @@ else:
 ############################
 ### SOURCE DATASET (nii) ###
 ############################
-dataset_path_base = 'E:/Datasets/LiverDecathlon'
+dataset_path_base = os.path.join(current_path_abs, 'datasets', 'LiverDecathlon')
 dataset_path_nii = os.path.join(dataset_path_base, 'nii')
 source_images_folder = os.path.join(dataset_path_nii, 'images')
 source_labels_vessels_tumors_folder = os.path.join(dataset_path_nii, 'labels_vessels_tumors')
@@ -34,12 +34,17 @@ VAL_INT_NUM = 50
 #################################
 # create destination folder and possible subfolders
 destination_folder = dataset_path_npy = os.path.join(dataset_path_base, 'npy_vessels')
+destination_folder_vessels = os.path.join(dataset_path_base, 'npy_vessels_only')
 destination_folder_masked = os.path.join(dataset_path_base, 'npy_vessels_masked')
 subfolders = ["train", "val"]
 
 if not os.path.isdir(destination_folder):
     os.makedirs(destination_folder)
     print('Created destionation_folder in {}'.format(destination_folder))
+
+if not os.path.isdir(destination_folder_vessels):
+    os.makedirs(destination_folder_vessels)
+    print('Created destination_folder_vessels in {}'.format(destination_folder_vessels))
 
 if not os.path.isdir(destination_folder_masked):
     os.makedirs(destination_folder_masked)
@@ -48,11 +53,15 @@ if not os.path.isdir(destination_folder_masked):
 for name in subfolders:
     if not os.path.isdir(os.path.join(destination_folder, name)):
         os.makedirs(os.path.join(destination_folder, name))
-        print('Created destination        folder subdir: {}'.format(name))
+        print('Created destination         folder subdir: {}'.format(name))
+
+    if not os.path.isdir(os.path.join(destination_folder_vessels, name)):
+        os.makedirs(os.path.join(destination_folder_vessels,name))
+        print('Created destination vessels folder subdir: {}'.format(name))
 
     if not os.path.isdir(os.path.join(destination_folder_masked, name)):
         os.makedirs(os.path.join(destination_folder_masked, name))
-        print('Created destination masked folder subdir: {}'.format(name))
+        print('Created destination masked  folder subdir: {}'.format(name))
 
 print('Source Image           Folder = {}'.format(source_images_folder))
 print('Source Liver Labels    Folder = {}'.format(source_labels_liver_folder))
@@ -60,6 +69,11 @@ print('Source Vessels Tumors  Folder = {}'.format(source_labels_vessels_tumors_f
 
 label_paths = os.listdir(source_labels_vessels_tumors_folder)
 label_paths.sort()
+
+label_paths_train = [label_path for label_path in label_paths if int(get_num_from_path(label_path)) < VAL_INT_NUM]
+label_paths_val = [label_path for label_path in label_paths if int(get_num_from_path(label_path)) >= VAL_INT_NUM]
+print('Len Train Set = ', len(label_paths_train))
+print('Len Val   Set = ', len(label_paths_val))
 
 for idx, label_path in enumerate(label_paths):
 
@@ -93,12 +107,16 @@ for idx, label_path in enumerate(label_paths):
     label_data = label_data_nib.get_data()
     liver_data = liver_data_nib.get_data()
 
-    print('Unique values of label data = {}'.format(np.unique(label_data)))
+    label_vessels_only_data = (label_data == 1).astype(np.uint8)
+
+    print('Unique values of label (Vessels and Tumors) data = {}'.format(np.unique(label_data)))
+    print('Unique values of label (Vessels Only)       data = {}'.format(np.unique(label_vessels_only_data)))
     print('Unique values of liver data = {}'.format(np.unique(liver_data)))
 
     # transpose so the z-axis (slices) are the first dimension
     image_data = np.transpose(image_data, (2, 0, 1))
     label_data = np.transpose(label_data, (2, 0, 1))
+    label_vessels_only_data = np.transpose(label_vessels_only_data, (2, 0, 1))
     liver_data = np.transpose(liver_data, (2, 0, 1))
 
     # mask label and image
@@ -106,13 +124,15 @@ for idx, label_path in enumerate(label_paths):
     masked_image_data = liver_data * image_data
 
     # loop through the mask slices
-    for i, (z_slice, z_slice_masked) in enumerate(zip(label_data, masked_label_data)):
+    for i, (z_slice, z_slice_vessels_only, z_slice_masked) in enumerate(zip(label_data, label_vessels_only_data, masked_label_data)):
         # save at new location (train or val)
         np.save(os.path.join(destination_folder, sub, new_label_filename + '_' + str(i)), z_slice)
+        np.save(os.path.join(destination_folder_vessels, sub, new_label_filename + '_' + str(i)), z_slice_vessels_only)
         np.save(os.path.join(destination_folder_masked, sub, new_label_filename + '_' + str(i)), z_slice_masked)
 
     # loop through the scan slices
     for i, (z_slice, z_slice_masked) in enumerate(zip(image_data, masked_image_data)):
         # save at new location (train or val)
         np.save(os.path.join(destination_folder, sub, new_image_filename + '_' + str(i)), z_slice)
+        np.save(os.path.join(destination_folder_vessels, sub, new_image_filename + '_' + str(i)), z_slice)
         np.save(os.path.join(destination_folder_masked, sub, new_image_filename + '_' + str(i)), z_slice_masked)

@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import medpy.metric.binary as mmb
 import sys
+import time
 from sklearn.metrics import confusion_matrix, matthews_corrcoef
 
 current_path_abs = os.path.abspath('.')
@@ -18,10 +19,11 @@ from projects.liver.util.inference import perform_inference_volumetric_image, ma
 from projects.liver.train.config import window_hu
 from semseg.models.vnet_v2 import VXNet
 
-do_mask_liver      = False
-inference_vessels  = False
-inference_segments = True
-use_state_dict     = False
+do_use_spacing_context  = False
+do_mask_liver           = False
+inference_vessels       = False
+inference_segments      = True
+use_state_dict          = False
 
 # Load net
 if inference_segments:
@@ -30,7 +32,18 @@ if inference_segments:
         net_segments = VXNet(dropout=True, context=2, num_outs=9, no_softmax=False)
         net_segments.load_state_dict(torch.load(path_net_segments))
     else:
-        path_net_segments = os.path.join(current_path_abs, 'logs/segments/model_25D__2020-02-19__07_13_36.pht')
+        if do_mask_liver:
+            model = 'model_25D__2020-02-27__06_35_54.pht'
+
+        else:
+            # NO AUGMENTATIONS
+            model = 'model_25D__2020-02-19__07_13_36.pht'
+            # AUGMENTATIONS
+            # model = 'model_25D__2020-02-28__11_42_39.pht'
+            # model = 'model_25D__2020-02-29__12_28_14.pht'
+            # model = 'model_25D__2020-03-18__07_44_49.pht'
+        path_net_segments = os.path.join(current_path_abs, 'logs/segments', model)
+
         net_segments = torch.load(path_net_segments)
     print('Network Path Segments = {}'.format(path_net_segments))
 
@@ -53,12 +66,13 @@ if inference_vessels:
     net_vessels = net_vessels.cuda(cuda_dev)
     net_vessels.eval()
 
-folder_dataset        = 'datasets/LiverDecathlon/nii/images'
-folder_liver_masks    = 'datasets/LiverDecathlon/nii/labels_liver'
-folder_segments_masks = 'datasets/LiverDecathlon/nii/labels_segments'
-folder_prediction_segments_before = 'datasets/LiverDecathlon/nii/pred_segments'
-folder_prediction_segments_after  = 'datasets/LiverDecathlon/nii/pred_segments_after'
-folder_prediction_vessels  = 'datasets/LiverDecathlon/nii/pred_vessels'
+folder_dataset        = 'datasets/LiverDecathlon'
+folder_input_images   = os.path.join(folder_dataset, 'nii/images' )
+folder_liver_masks    = os.path.join(folder_dataset, 'nii/labels_liver' )
+folder_segments_masks = os.path.join(folder_dataset, 'nii/labels_segments')
+folder_prediction_segments_before = os.path.join(folder_dataset, 'nii/pred_segments')
+folder_prediction_segments_after  = os.path.join(folder_dataset, 'nii/pred_segments_after')
+folder_prediction_vessels         = os.path.join(folder_dataset, 'nii/pred_vessels')
 
 if not os.path.exists(folder_prediction_segments_before):
     os.makedirs(folder_prediction_segments_before)
@@ -83,7 +97,7 @@ for idx in range(1,50):
 # Start iteration over val set
 for idx, image_path in enumerate(image_paths):
 
-    path_test_image = os.path.join(folder_dataset, image_path)
+    path_test_image = os.path.join(folder_input_images, image_path)
     path_test_pred_segments_before = os.path.join(folder_prediction_segments_before, image_path)
     path_test_pred_segments_after  = os.path.join(folder_prediction_segments_after, image_path)
     path_test_pred_vessels  = os.path.join(folder_prediction_vessels, image_path)
@@ -100,7 +114,7 @@ for idx, image_path in enumerate(image_paths):
     if do_mask_liver:
         data_liver = nib.load(path_test_liver)
         data_liver = data_liver.get_data()
-        data[data_liver == 0] = 0
+        data *= data_liver
 
     # normalize data
     data = normalize_data(data, window_hu)
@@ -110,15 +124,22 @@ for idx, image_path in enumerate(image_paths):
 
     # CNN
     if inference_segments:
-        spacing_context = map_thickness_to_spacing_context(thickness)
+        if do_use_spacing_context:
+            spacing_context = map_thickness_to_spacing_context(thickness)
+        else:
+            spacing_context = 1
         print('Thickness = {} Spacing Context = {}'.format(thickness, spacing_context))
         output_segments_before = perform_inference_volumetric_image(net_segments, data, context=2,
                                                                     spacing_context=spacing_context,
                                                                     do_round=False, do_argmax=True, cuda_dev=cuda_dev)
         print('Shape before correction: {}'.format(output_segments_before.shape))
+        start_time = time.time()
         output_segments = erase_non_max_cc_segments(output_segments_before)
         output_segments = correct_volume_slice_split(output_segments)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
         print('Shape after  correction: {}'.format(output_segments.shape))
+        print('Elapsed Time for correction: {}'.format(elapsed_time))
         output_segments = np.transpose(output_segments, (1, 2, 0)).astype(np.uint8)
 
         non_zero_elements_segments = np.count_nonzero(output_segments)
@@ -241,7 +262,16 @@ avg_dice_before = np.mean(dice_cls_before)
 print('Average Dice Before = {}'.format(avg_dice_before))
 print('Average Dice After  = {}'.format(avg_dice_after))
 
+metrics = {
+    'AccuracyBefore' : accuracy_before,
+    'AccuracyAfter'  : accuracy_after,
+    'AvgDiceBefore'  : avg_dice_before,
+    'AvgDiceAfter'   : avg_dice_after,
+    'DiceClsBefore'  : list(dice_cls_before),
+    'DiceClsAfter'   : list(dice_cls_after),
+}
 
-weights_segments_torch = torch.load('logs/segments/weights.pt')
-weights_segments_np = weights_segments_torch.numpy()
-
+import json
+json_path = os.path.join(folder_dataset, 'metrics_{}.json'.format(model))
+with open(json_path, 'w') as fp:
+    json.dump(metrics, fp)

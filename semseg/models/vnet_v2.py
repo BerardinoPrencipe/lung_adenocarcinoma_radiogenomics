@@ -2,6 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import os
+import sys
+
+curr_abs_path = os.path.abspath('.')
+sys.path.append(curr_abs_path)
+sys.path.append(os.path.join(curr_abs_path, 'utils'))
+
 from utils_calc import use_multi_gpu_model
 
 
