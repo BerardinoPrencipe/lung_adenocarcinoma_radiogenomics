@@ -17,7 +17,7 @@ from projects.liver.train.config import window_hu
 from semseg.models.vnet_v2 import VXNet
 
 # NEW VERSION
-val_list = ["{:02d}".format(idx) for idx in range(1,5)]
+val_list = ["{:02d}".format(idx) for idx in range(2,3)]
 print('Val List = {}'.format(val_list))
 
 # OLD VERSION
@@ -46,7 +46,7 @@ else:
     # LAB
     # path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-02-02__18_15_53.pht')
     # TESLA
-    path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-02-02__18_18_06.pht')
+    path_net = os.path.join(current_path_abs, 'logs/vessels/model_25D__2020-03-12__10_37_59.pht')
     net = torch.load(path_net)
 
 if torch.cuda.device_count() > 1:
@@ -68,7 +68,6 @@ print('Calculate CNN Output = {}'.format(calculate_cnn_out))
 if calculate_cnn_out:
     # Start iteration over val set
     for idx, folder_patient_valid in enumerate(folders_patients_valid):
-
         path_test_image = os.path.join(folder_dataset, folder_patient_valid, 'image', 'image.nii')
         path_test_pred  = os.path.join(folder_dataset, folder_patient_valid, 'image', 'pred.nii')
         path_test_preds.append(path_test_pred)
@@ -266,3 +265,27 @@ print('JSON Path = {}'.format(json_path))
 
 with open(json_path, 'w') as f:
     json.dump(data, f)
+
+import SimpleITK as sitk
+import numpy as np
+import os
+
+folder = "D:\\Universita\\Laurea Magistrale - Computer Science Engeneering\\Tesi\\LiverSegmentation\\datasets\\ircadb"
+
+pat = ["patient-01", "patient-02", "patient-03", "patient-04"]
+
+for p in pat:
+    p = pat[0]
+    hv_sitk = sitk.ReadImage(os.path.join(folder, p, "mask", "hv.nii"))
+    pv_sitk = sitk.ReadImage(os.path.join(folder, p, "mask", "pv.nii"))
+    # hv = sitk.GetArrayFromImage(hv_sitk)
+    # pv = sitk.GetArrayFromImage(pv_sitk)
+    # print("pv :", np.unique(pv))
+    # print("hv :", np.unique(hv))
+    ves_sitk = sitk.Or(hv_sitk,pv_sitk)
+    # ves = np.logical_or(hv,pv).astype(np.uint8)
+    # ves_sitk = sitk.GetImageFromArray(ves)
+    # ves_sitk.SetOrigin(hv_sitk.GetOrigin())
+    # ves_sitk.SetDirection(hv_sitk.GetDirection())
+    # ves_sitk.SetSpacing(hv_sitk.GetSpacing())
+    sitk.WriteImage(ves_sitk, os.path.join(folder, p, "mask", "hv_pv.nii.gz"))
