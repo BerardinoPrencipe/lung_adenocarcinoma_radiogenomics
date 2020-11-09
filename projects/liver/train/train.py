@@ -73,6 +73,9 @@ python projects/liver/train/train.py --dataset=vessels_crossval_02 &&
 python projects/liver/train/train.py --dataset=vessels_crossval_03 &&
 python projects/liver/train/train.py --dataset=vessels_crossval_04
 '''
+'''
+python projects/liver/train/train.py --dataset=spleen_crossval_00 && python projects/liver/train/train.py --dataset=spleen_crossval_01 && python projects/liver/train/train.py --dataset=spleen_crossval_02 && python projects/liver/train/train.py --dataset=spleen_crossval_03 
+'''
 # python projects/liver/train/train.py --dataset=vessels_tumors
 # python projects/liver/train/train.py --dataset=vessels_only
 # python projects/liver/train/train.py --dataset=vessels_scardapane

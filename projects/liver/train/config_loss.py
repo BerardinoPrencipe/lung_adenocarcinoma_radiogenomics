@@ -8,7 +8,6 @@ use_focal_dice = True
 use_vessels_weights = False
 use_segments_weights = False
 use_tversky = True
-# use_tversky = False
 
 
 #######################
@@ -58,8 +57,8 @@ def get_multi_dice_loss(outputs, labels, device=None):
 ###############
 ### TVERSKY ###
 ###############
-alpha, beta = 0.1, 0.9
-# alpha, beta = 0.3, 0.7
+# alpha, beta = 0.1, 0.9
+alpha, beta = 0.3, 0.7
 # alpha, beta = 0.5, 0.5
 print('Use Tversky: ', use_tversky)
 if use_tversky:

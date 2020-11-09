@@ -21,7 +21,7 @@ else:
 cross_val_steps = 4
 trainval_images = 41
 
-dataset_folder = os.path.join(current_path_abs, 'datasets/spleenDecathlon')
+dataset_folder = os.path.join(current_path_abs, 'datasets/Task09_Spleen')
 scan_folder = os.path.join(dataset_folder, 'imagesTr')
 mask_folder = os.path.join(dataset_folder, 'labelsTr')
 # source folder where the .nii.gz files are located

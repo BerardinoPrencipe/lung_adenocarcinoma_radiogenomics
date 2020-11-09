@@ -24,6 +24,7 @@ else:
 datasets = ["liver", "liver_no_norm",
             "vessels", "vessels_no_norm",
             "vessels_crossval_00", "vessels_crossval_01", "vessels_crossval_02", "vessels_crossval_03", "vessels_crossval_04",
+            "spleen_crossval_00", "spleen_crossval_01", "spleen_crossval_02", "spleen_crossval_03",
             "segments",
             "vessels_tumors", "vessels_only",
             "vessels_scardapane", "vessels_scardapane_one_class"]
@@ -55,7 +56,8 @@ else:
 def get_criterion(dataset):
     return None
 
-epochs  = 2001
+# epochs  = 2001
+epochs  = 1001
 use_3d  = False
 p = 0.1
 do_normalize = False
@@ -134,6 +136,18 @@ def get_train_val_folders(dataset):
     elif dataset == "vessels_crossval_04":
         train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_04/train')
         val_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_crossval_04/val')
+    elif dataset == "spleen_crossval_00":
+        train_folder = os.path.join(current_path_abs, 'datasets/Task09_Spleen/npy_crossval_000/train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/Task09_Spleen/npy_crossval_000/val')
+    elif dataset == "spleen_crossval_01":
+        train_folder = os.path.join(current_path_abs, 'datasets/Task09_Spleen/npy_crossval_001/train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/Task09_Spleen/npy_crossval_001/val')
+    elif dataset == "spleen_crossval_02":
+        train_folder = os.path.join(current_path_abs, 'datasets/Task09_Spleen/npy_crossval_002/train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/Task09_Spleen/npy_crossval_002/val')
+    elif dataset == "spleen_crossval_03":
+        train_folder = os.path.join(current_path_abs, 'datasets/Task09_Spleen/npy_crossval_003/train')
+        val_folder   = os.path.join(current_path_abs, 'datasets/Task09_Spleen/npy_crossval_003/val')
     elif dataset == "vessels_no_norm":
         train_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_no_norm/train')
         val_folder = os.path.join(current_path_abs, 'datasets/ircadb/npy_no_norm/val')
