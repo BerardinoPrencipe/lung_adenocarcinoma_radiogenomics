@@ -1,4 +1,14 @@
 logs/
 datasets/
 gifs/
+/projects/liver/geometric/ProvaRegressione.py
+/volume2.nii.gz
+/volume.nii.gz
+/results.pkl
+/data_files.pkl
+/projects/liver/geometric/prove.py
+/projects/liver/geometric/prova_inf_parenchima.py
+/projects/liver/geometric/prova_inf_vessels.py
+/projects/liver/geometric/or_between_model.py
+/projects/liver/geometric/index_segments.py
 __pycache__/
