@@ -82,9 +82,9 @@ class LiverDataSet(torch.utils.data.Dataset):
 
         return patient_dictionary
 
-def perform_augmentation(image, mask, augmentation):
-    """
 
+def perform_augmentation(image, mask, augmentation):
+    """ Perform Augmentation
     :param image: Image with shape C x H x W
     :param mask:  Mask  with shape 1 x H x W
     :param augmentation: imgaug object
@@ -99,10 +99,17 @@ def perform_augmentation(image, mask, augmentation):
     # Put Channels as last axis
     image = np.transpose(image, (1, 2, 0)) # H x W x C
     mask  = np.transpose(mask, (1, 2, 0))  # H x W x C
+
     if DEBUG:
+        print("Before Augmentation")
+        print("Image Shape = {}".format(image.shape))
+        print("Mask  Shape = {}".format(mask.shape))
         print(f'Image dtype = {image.dtype}')
 
     # Albumentations augmentation
+    if image.shape[2] == 1:
+        image = image[:,:,0]
+        mask = mask[:,:,0]
     data = {"image": image, "mask": mask}
     augmented = augmentation(**data)
     if DEBUG:
@@ -110,13 +117,20 @@ def perform_augmentation(image, mask, augmentation):
     image, mask = augmented["image"], augmented["mask"]
     if DEBUG:
         print(f'After  augmentation - Max = {image.max()} - Min = {image.min()}')
+    if len(image.shape) == 2:
+        image = np.expand_dims(image, axis=-1)
+        mask = np.expand_dims(mask, axis=-1)
     # Put Channels as first axis
     image = np.transpose(image, (2, 0, 1)) # C x H x W
     mask = np.transpose(mask, (2, 0, 1))   # C x H x W
-
+    if DEBUG:
+        print("After  Augmentation")
+        print("Image Shape = {}".format(image.shape))
+        print("Mask  Shape = {}".format(mask.shape))
+        print(f'Image dtype = {image.dtype}')
     # Verify that shapes didn't change
-    assert image.shape == image_shape, "Augmentation shouldn't change image size"
-    assert mask.shape == mask_shape, "Augmentation shouldn't change mask size"
+    assert image.shape == image_shape, "Augmentation shouldn't change image size. Original Image Shape = {} After Augmentation = {}".format(image_shape, image.shape)
+    assert mask.shape == mask_shape,   "Augmentation shouldn't change mask size.  Original Mask  Shape = {} After Augmentation = {}".format(mask_shape, mask.shape)
     return image, mask
 
 
@@ -133,8 +147,10 @@ def load_file(data_file, directory, augmentation=None, do_normalize=False):
         # inputs = normalize_data(inputs,interval=window_hu)
         inputs = normalize(inputs)
 
+    labels = labels.astype(np.uint8)
     features, targets = torch.from_numpy(inputs).float(), torch.from_numpy(labels).long()
     return (features, targets)
+
 
 # load data_file in directory and possibly augment including the slides above and below it
 def load_file_context(data_files, idx, context, directory, augmentation=None, do_normalize=False):

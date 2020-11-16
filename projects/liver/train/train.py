@@ -18,6 +18,7 @@ from projects.liver.data_util.data_load_util import *
 from projects.liver.train.util import train_model, get_model_name
 from projects.liver.train.config import *
 
+
 def run(config, dataset):
     logs_folder = get_logs_folder(dataset)
     train_folder, val_folder = get_train_val_folders(dataset)
@@ -80,6 +81,8 @@ python projects/liver/train/train.py --dataset=spleen_crossval_00 && python proj
 # python projects/liver/train/train.py --dataset=vessels_only
 # python projects/liver/train/train.py --dataset=vessels_scardapane
 # python projects/liver/train/train.py --dataset=vessels_scardapane_one_class
+# python projects/liver/train/train.py --dataset=covid19 --epochs=600
+# python projects/liver/train/train.py --dataset=covid19 --epochs=301 --context=0
 
 import argparse
 
@@ -126,6 +129,11 @@ if __name__ == "__main__":
         "--net",
         default='vnet',
         help="Specify the network to use [unet | vnet]"
+    )
+    parser.add_argument(
+        "--context",
+        default=2, type=int,
+        help="Specify the context"
     )
     parser.add_argument(
         "--lr",

@@ -3,7 +3,7 @@ from semseg.loss import tversky, dice_n_classes, dice as dice_loss, focal_dice_n
 
 eps = 1e-5
 LEARNING_RATE_REDUCTION_FACTOR = 10
-use_multi_dice = False
+use_multi_dice = True
 use_focal_dice = True
 use_vessels_weights = False
 use_segments_weights = False

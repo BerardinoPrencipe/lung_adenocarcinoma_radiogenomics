@@ -161,7 +161,7 @@ for idx_slice in range(zmax, zmin, -1):
     # Get corresponding slide
     for cc_idx in cc_idxs:
         node_name = 's_{}_{}'.format(idx_slice, cc_idx)
-        branch_label = nodes_container.get_node_from_name(node_name).label
+        branch_label = nodes_container.get_node_from_name(node_name).label_sitk
         branch_label = 's_128_1' if branch_label == 'main_branch' else branch_label
         labels[labels==cc_idx] = get_index_from_label(branch_label, bb_labels)
 
@@ -202,12 +202,12 @@ cluster.fit_predict(X)
 print(cluster.labels_)
 for idx, node in enumerate(nodes_container.nodes):
     label_from_clustering = cluster.labels_[idx]+1
-    node.label = label_from_clustering
+    node.label_sitk = label_from_clustering
 
 ####
 labels_ = set()
 for node in nodes_container.nodes:
-    label_ = node.label
+    label_ = node.label_sitk
     labels_.add(label_)
 
 ################
@@ -225,7 +225,7 @@ for idx_slice in range(zmax, zmin, -1):
     # Get corresponding slide
     for cc_idx in cc_idxs:
         node_name = 's_{}_{}'.format(idx_slice, cc_idx)
-        label_val = nodes_container.get_node_from_name(node_name).label
+        label_val = nodes_container.get_node_from_name(node_name).label_sitk
         labels[labels==cc_idx] = label_val
 
     mask_labelled[idx_slice,:,:] = labels

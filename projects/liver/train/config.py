@@ -27,7 +27,8 @@ datasets = ["liver", "liver_no_norm",
             "spleen_crossval_00", "spleen_crossval_01", "spleen_crossval_02", "spleen_crossval_03",
             "segments",
             "vessels_tumors", "vessels_only",
-            "vessels_scardapane", "vessels_scardapane_one_class"]
+            "vessels_scardapane", "vessels_scardapane_one_class",
+            "covid19"]
 dataset = datasets[-1]
 use_masked_dataset = False
 
@@ -101,6 +102,8 @@ def get_num_outs(dataset):
         num_outs = 3 # Background, Vessels, Tumors
     elif dataset == 'vessels_scardapane':
         num_outs = 3 # Background, HV, PV
+    elif dataset == 'covid19':
+        num_outs = 3 # Background, Ground Glass, Consolidation
     elif dataset == 'segments':
         num_outs = 9
     return num_outs
@@ -176,6 +179,9 @@ def get_train_val_folders(dataset):
         dataset_path = 'H:/Datasets/Liver/LiverScardapaneNew/npy_one_class'
         train_folder = os.path.join(dataset_path, 'train')
         val_folder = os.path.join(dataset_path, 'val')
+    elif dataset == "covid19":
+        train_folder = os.path.join(current_path_abs, 'datasets/CoVID19/npy/train')
+        val_folder = os.path.join(current_path_abs, 'datasets/CoVID19/npy/val')
 
     return train_folder, val_folder
 

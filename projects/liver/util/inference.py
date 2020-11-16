@@ -71,7 +71,7 @@ def perform_inference_volumetric_image(net, data, context=2, spacing_context=1, 
 
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print("Elapsed time is: ", elapsed_time, " for processing image with shape: ", output.shape)
+    print("Elapsed time is: {:.2f} for processing image with shape: {}".format(elapsed_time, output.shape))
     return output
 
 
