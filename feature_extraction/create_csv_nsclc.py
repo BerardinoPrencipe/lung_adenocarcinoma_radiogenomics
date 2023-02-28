@@ -1,15 +1,16 @@
 import os
-import pydicom
 import pandas as pd
 
-dataset_folder = '.\\feature_extraction\\NSCLC_nifti'
+dataset_folder = 'NSCLC_nifti'
 dataset_folder = os.path.abspath(dataset_folder)
-patients = os.listdir(dataset_folder)
 
 file_dict = {
     "Image": [],
     "Mask": []
 }
+
+patients = [f for f in os.listdir(dataset_folder) if not f.startswith('.')]
+
 
 for patient in patients:
 
@@ -30,4 +31,4 @@ for patient in patients:
             file_dict["Image"].append(path)
 
 file_pd = pd.DataFrame(file_dict)
-file_pd.to_csv(".\\feature_extraction\\dataset_NSCLC.csv")
+file_pd.to_csv("dataset_NSCLC.csv")
