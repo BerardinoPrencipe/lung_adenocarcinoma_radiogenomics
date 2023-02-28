@@ -1,5 +1,4 @@
 import os
-import json
 import pandas as pd
 
 dataset_folder = r'D:\Dropbox\Dropbox\Noduli_Polmonari\Dataset\Local_Foggia\dataset_anonimo'
