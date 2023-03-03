@@ -5,7 +5,7 @@ import pandas as pd
 if __name__ == "__main__":
 
     dataset = "dataset_NSCLC.csv"
-    output_file = "../dataset/feature_NSCLC.csv"
+    output_file = "../dataset/features_NSCLC.csv"
 
     dataset_pd = pd.read_csv(dataset, index_col=0)
 
